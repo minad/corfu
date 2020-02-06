@@ -1241,7 +1241,6 @@ Quit if no candidate is selected."
     ;; issue has been mentioned. We never uninstall this advice since the
     ;; advice is active *globally*.
     (advice-add #'completion--capf-wrapper :around #'corfu--capf-wrapper-advice)
-    (advice-add #'eldoc-display-message-no-interference-p :before-while #'corfu--eldoc-advice)
     (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
     (setq-local completion-in-region-function #'corfu--in-region))
    (t
@@ -1291,15 +1290,18 @@ The ORIG function takes the FUN and WHICH arguments."
               (apply #'derived-mode-p corfu-exclude-modes))
     (corfu-mode 1)))
 
-(defun corfu--eldoc-advice ()
-  "Return non-nil if Corfu is currently not active."
-  (not (and corfu-mode completion-in-region-mode)))
-
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-next corfu-previous corfu-first corfu-last corfu-quit corfu-reset
                corfu-complete corfu-insert corfu-scroll-up corfu-scroll-down
                corfu-insert-separator corfu-prompt-beginning corfu-prompt-end))
   (put sym 'completion-predicate #'ignore))
+
+(defun corfu--eldoc-advice ()
+  "Return non-nil if Corfu is currently not active."
+  (not (and corfu-mode completion-in-region-mode)))
+
+(advice-add #'eldoc-display-message-no-interference-p :before-while #'corfu--eldoc-advice)
+(eldoc-add-command #'corfu-complete #'corfu-insert)
 
 (provide 'corfu)
 ;;; corfu.el ends here
