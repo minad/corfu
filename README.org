@@ -1,0 +1,84 @@
+#+title: corfu.el - Completion Overlay Region FUnction
+#+author: Daniel Mendler
+#+language: en
+#+export_file_name: corfu.texi
+#+texinfo_dir_category: Emacs
+#+texinfo_dir_title: Corfu: (corfu).
+#+texinfo_dir_desc: Completion Overlay Region FUnction
+
+* Introduction
+
+Corfu provides a completion overlay for the default completion in region
+function. The current candidates are shown in a popup overlay below or above the
+point. Corfu can be considered the minimalistic completion-in-region counterpart
+of Vertico.
+
+Icomplete provides both completion-in-region and minibuffer completion in a
+single package. While Corfu and Vertico are technically very similar to
+Icomplete, Corfu and Vertico are two separate packages in order to optimize the
+UI for the two distinct use cases, also leading to code bases which are easier
+to understand.
+
+Corfu is a minimal package of less than 500 lines of code (my arbitrary limit
+for small components providing a single specific feature). In contrast to the
+very featureful and complex Company package, Corfu only provides the completion
+UI. No custom backends are provided. Only ~completion-at-point-functions~ are
+supported. However many code completion backends provide
+~completion-at-point-functions~, such that relying only on the default
+completion is often sufficient.
+
+[[https://github.com/minad/corfu/blob/main/screenshot.png?raw=true]]
+
+* Features
+
+- Popup display with arrow key navigation
+- The popup must be summoned explicitly by =TAB=
+- The current candidate is inserted with =TAB= and selected with =RET=
+- Candidates sorting by prefix, string length and alphabetically
+- Completion is automatically left, after a candidate has been selected.
+- Filter string can contain arbitrary characters and spaces (needed
+  when filtering with the [[https://github.com/oantolin/orderless][Orderless]] completion style)
+
+* Configuration
+
+Corfu must be installed manually as of now. After installation, the local minor
+mode can be enabled with =M-x corfu-mode=. In order to configure Corfu and other
+packages in your init.el, you may want to use ~use-package~. I recommend to give
+orderless completion a try, which is different from the familiar prefix TAB
+completion. Here is an example configuration:
+
+#+begin_src emacs-lisp
+  ;; Enable TAB completion
+  (use-package emacs
+    :init
+    (setq tab-always-indent 'complete))
+
+  ;; Enable corfu
+  (use-package corfu
+    :hook ((prog-mode . corfu-mode)
+           (eshell-mode . corfu-mode)))
+
+  ;; Use the `orderless' completion style.
+  ;; Enable `partial-completion' for files to allow path expansion.
+  ;; You may prefer to use `initials' instead of `partial-completion'.
+  (use-package orderless
+    :init
+    (setq completion-styles '(orderless)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles . (partial-completion))))))
+#+end_src
+
+* Complementary packages
+
+Corfu works well together with all packages providing code completion via the
+~completion-at-point-functions~. Furthermore it supports various completion
+styles, including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
+expressions are separated by spaces.
+
+You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package, which provides a vertical
+minibuffer completion system. Vertico is the minibuffer counterpart of Corfu.
+
+* Contributions
+
+Since this package is part of GNU ELPA, contributions require copyright
+assignment to the FSF.
