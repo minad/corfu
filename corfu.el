@@ -321,7 +321,9 @@
 (defun corfu--post-command-hook ()
   "Refresh Corfu after last command."
   (pcase completion-in-region--data
-    ((and `(,beg ,end ,table ,pred) (guard (<= beg (point) end)))
+    ((and `(,beg ,end ,table ,pred)
+          (guard (eq (marker-buffer beg) (current-buffer)))
+          (guard (<= beg (point) end)))
      (corfu--refresh beg end table pred)))
   (unless corfu--popup-ovs
     (completion-in-region-mode -1)))
