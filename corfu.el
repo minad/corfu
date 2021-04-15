@@ -328,26 +328,6 @@
   (unless corfu--popup-ovs
     (completion-in-region-mode -1)))
 
-(defun corfu--teardown ()
-  "Teardown Corfu."
-  (mapc #'delete-overlay corfu--popup-ovs)
-  (when-let (map (assq #'completion-in-region-mode minor-mode-overriding-map-alist))
-    (setcdr map completion-in-region-mode-map))
-  (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
-  (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
-  (when corfu--current-ov
-    (delete-overlay corfu--current-ov))
-  (mapc #'kill-local-variable '(corfu--base
-                                corfu--candidates
-                                corfu--highlight
-                                corfu--index
-                                corfu--input
-                                corfu--total
-                                corfu--popup-ovs
-                                corfu--current-ov
-                                completion-show-inline-help
-                                completion-auto-help)))
-
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
   (setq corfu--index (max -1 (min index (- corfu--total 1))))
@@ -427,15 +407,33 @@
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
-  ;; Keep completion alive when popup is shown
-  (let ((pred completion-in-region-mode--predicate))
-    (setq completion-in-region-mode--predicate
-          (lambda () (or corfu--popup-ovs (funcall pred)))))
+  ;; Keep completion alive when popup is shown (disable predicate check!)
+  (remove-hook 'post-command-hook #'completion-in-region--postch)
   (set (make-local-variable 'completion-show-inline-help) nil)
   (set (make-local-variable 'completion-auto-help) nil)
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
   (add-hook 'pre-command-hook #'corfu--pre-command-hook nil 'local)
   (add-hook 'post-command-hook #'corfu--post-command-hook nil 'local))
+
+(defun corfu--teardown ()
+  "Teardown Corfu."
+  (mapc #'delete-overlay corfu--popup-ovs)
+  (when-let (map (assq #'completion-in-region-mode minor-mode-overriding-map-alist))
+    (setcdr map completion-in-region-mode-map))
+  (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
+  (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
+  (when corfu--current-ov
+    (delete-overlay corfu--current-ov))
+  (mapc #'kill-local-variable '(corfu--base
+                                corfu--candidates
+                                corfu--highlight
+                                corfu--index
+                                corfu--input
+                                corfu--total
+                                corfu--popup-ovs
+                                corfu--current-ov
+                                completion-show-inline-help
+                                completion-auto-help)))
 
 (defun corfu--mode-hook ()
   "Corfu mode hook."
