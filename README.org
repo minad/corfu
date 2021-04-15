@@ -38,6 +38,14 @@ completion may often be sufficient.
 - Completion is automatically left after candidate selection
 - Filter string can contain arbitrary characters and spaces (needed
   when filtering with the [[https://github.com/oantolin/orderless][Orderless]] completion style)
+- Deferred completion style highlighting for performance
+
+Notable non-feature: Annotations are not supported, but could be added
+relatively easily (see the annotation branch). However annotations in the
+completion popup are a bit too much for my taste, in particular if one considers
+verbose annotations like documentation strings or annotations in the style of
+[[https://github.com/minad/marginalia][Marginalia]]. These annotations work better in Vertico or in the =*Completions*=
+buffer.
 
 * Configuration
 
