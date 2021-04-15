@@ -131,13 +131,20 @@
 
 (defun corfu--popup (pos idx lo bar lines)
   "Show LINES as popup at POS, with IDX highlighted and scrollbar between LO and LO+BAR."
-  (let* ((width (if lines (apply #'max (mapcar #'string-width lines)) 0))
-         (col (+ (- pos (line-beginning-position)) corfu--base))
+  (let* ((col (+ (- pos (line-beginning-position)) corfu--base))
          (row 0)
+         (width (- (window-total-width) col 10))
          (pixelpos (cdr (window-absolute-pixel-position pos)))
          (lh (window-default-line-height))
          (count (length lines))
          (tail))
+    (if (< width 10)
+        (setq width (/ (window-total-width) 2)
+              lines (mapcar (lambda (x) (truncate-string-to-width x width)) lines)
+              width (apply #'max (mapcar #'string-width lines))
+              col (max 0 (- col width 2)))
+      (setq lines (mapcar (lambda (x) (truncate-string-to-width x width)) lines)
+            width (apply #'max (mapcar #'string-width lines))))
     (save-excursion
       (when (and (>= count (floor (- (window-pixel-height) pixelpos) lh))
                  (< count (floor pixelpos lh)))
@@ -348,7 +355,9 @@
         (setq corfu--current-ov nil))
     (pcase-let ((`(,beg ,end . ,_) completion-in-region--data))
       (unless corfu--current-ov
-        (setq corfu--current-ov (make-overlay beg end nil t t)))
+        (setq corfu--current-ov (make-overlay beg end nil t t))
+        (overlay-put corfu--current-ov 'priority 1000)
+        (overlay-put corfu--current-ov 'window (selected-window)))
       (overlay-put corfu--current-ov 'display (nth corfu--index corfu--candidates)))))
 
 (defun corfu-next ()
