@@ -74,9 +74,9 @@
 
 (defface corfu-bar
   '((((class color) (min-colors 88) (background dark))
-     :background "#888")
+     :background "#444")
     (((class color) (min-colors 88) (background light))
-     :background "#666")
+     :background "#bbb")
     (t :background "black"))
   "Face used for the scrollbar.")
 
@@ -86,7 +86,7 @@
     (((class color) (min-colors 88) (background light))
      :background "#bbb")
     (t :background "gray"))
-  "Face used for the background of the scrollbar.")
+  "Face used for the border line.")
 
 (defvar corfu-map
   (let ((map (make-sparse-keymap)))
