@@ -47,6 +47,10 @@
   "Maximal number of candidates to show."
   :type 'integer)
 
+(defcustom corfu-cycle nil
+  "Enable cycling for `corfu-next' and `corfu-previous'."
+  :type 'boolean)
+
 (defgroup corfu-faces nil
   "Faces used by Corfu."
   :group 'corfu
@@ -328,12 +332,18 @@
 (defun corfu-next ()
   "Go to next candidate."
   (interactive)
-  (corfu--goto (1+ corfu--index)))
+  (corfu--goto
+   (if (and corfu-cycle (= (1+ corfu--index) corfu--total))
+       -1
+     (1+ corfu--index))))
 
 (defun corfu-previous ()
   "Go to previous candidate."
   (interactive)
-  (corfu--goto (- corfu--index 1)))
+  (corfu--goto
+   (if (and corfu-cycle (< corfu--index 0))
+       (- corfu--total 1)
+     (- corfu--index 1))))
 
 (defun corfu-scroll-down ()
   "Go back by one page."
