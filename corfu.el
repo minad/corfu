@@ -78,6 +78,8 @@
     (define-key map [up] #'corfu-previous)
     (define-key map [remap next-line] #'corfu-next)
     (define-key map [remap previous-line] #'corfu-previous)
+    (define-key map [remap completion-at-point] #'corfu-complete)
+    (define-key map "\e\e\e" #'keyboard-quit)
     (define-key map "\r" #'corfu-insert)
     (define-key map "\t" #'corfu-complete)
     map)
