@@ -14,28 +14,28 @@ point. Corfu can be considered the minimalistic completion-in-region counterpart
 of Vertico.
 
 Icomplete provides both completion-in-region and minibuffer completion in a
-single package. While Corfu and Vertico are technically very similar to
-Icomplete, Corfu and Vertico are two separate packages in order to optimize the
-UI for the two distinct use cases, also leading to code bases which are easier
-to understand.
+single package. While Corfu and Vertico are technically similar to Icomplete,
+Corfu and Vertico are two separate packages in order to optimize the UI for the
+two distinct use cases, also leading to code bases which are easier to
+understand.
 
 Corfu is a minimal package of less than 500 lines of code (my arbitrary limit
 for small components providing a single specific feature). In contrast to the
-very featureful and complex Company package, Corfu only provides the completion
-UI. No custom backends are provided. Only ~completion-at-point-functions~ are
-supported. However many code completion backends provide
+featureful and complex Company package, Corfu only provides the completion
+UI. No custom backends are provided. The completions are provided by the
+~completion-at-point-functions~. However many code completion backends provide
 ~completion-at-point-functions~, such that relying only on the default
-completion is often sufficient.
+completion may often be sufficient.
 
 [[https://github.com/minad/corfu/blob/main/screenshot.png?raw=true]]
 
 * Features
 
-- Popup display with arrow key navigation
+- Popup display with scrollbar indicator and arrow key navigation
 - The popup must be summoned explicitly by =TAB=
 - The current candidate is inserted with =TAB= and selected with =RET=
 - Candidates sorting by prefix, string length and alphabetically
-- Completion is automatically left, after a candidate has been selected.
+- Completion is automatically left after candidate selection
 - Filter string can contain arbitrary characters and spaces (needed
   when filtering with the [[https://github.com/oantolin/orderless][Orderless]] completion style)
 
