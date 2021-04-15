@@ -56,16 +56,36 @@
   :group 'corfu
   :group 'faces)
 
-(defface corfu-background '((t :background "#FFE" :inherit default))
+(defface corfu-background
+  '((((class color) (min-colors 88) (background dark))
+     :background "#222" :inherit default)
+    (((class color) (min-colors 88) (background light))
+     :background "#ffe" :inherit default)
+    (t :background "gray" :foreground "black" :inherit default))
   "Face used to for the overlay background.")
 
-(defface corfu-current '((t :background "#CEF" :inherit default))
+(defface corfu-current
+  '((((class color) (min-colors 88) (background dark))
+     :background "#137" :inherit default)
+    (((class color) (min-colors 88) (background light))
+     :background "#cef" :inherit default)
+    (t :background "blue" :foreground "white" :inherit default))
   "Face used to highlight the currently selected candidate.")
 
-(defface corfu-bar '((t :foreground "#666"))
+(defface corfu-bar
+  '((((class color) (min-colors 88) (background dark))
+     :foreground "#888")
+    (((class color) (min-colors 88) (background light))
+     :foreground "#666")
+    (t :background "black"))
   "Face used for the scrollbar.")
 
-(defface corfu-border '((t :foreground "#BBB"))
+(defface corfu-border
+  '((((class color) (min-colors 88) (background dark))
+     :foreground "#444")
+    (((class color) (min-colors 88) (background light))
+     :foreground "#bbb")
+    (t :background "gray"))
   "Face used for the background of the scrollbar.")
 
 (defvar corfu-map
