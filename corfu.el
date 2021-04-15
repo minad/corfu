@@ -74,17 +74,17 @@
 
 (defface corfu-bar
   '((((class color) (min-colors 88) (background dark))
-     :foreground "#888")
+     :background "#888")
     (((class color) (min-colors 88) (background light))
-     :foreground "#666")
+     :background "#666")
     (t :background "black"))
   "Face used for the scrollbar.")
 
 (defface corfu-border
   '((((class color) (min-colors 88) (background dark))
-     :foreground "#444")
+     :background "#444")
     (((class color) (min-colors 88) (background light))
-     :foreground "#bbb")
+     :background "#bbb")
     (t :background "gray"))
   "Face used for the background of the scrollbar.")
 
@@ -129,13 +129,43 @@
 (defvar-local corfu--popup-ovs nil
   "Overlay showing the candidates.")
 
+(defvar-local corfu--borders nil
+  "Cached border images.")
+
+(defun corfu--color (face)
+  "Return hex color from FACE."
+  (apply #'format "#%02x%02x%02x"
+         (mapcar (lambda (x) (/ x 256))
+                 (color-values (face-attribute face :background)))))
+
+(defun corfu--border (color width)
+  "Generate border with COLOR and WIDTH."
+  (or (cdr (assoc (cons color width) corfu--borders))
+      (pcase-let* ((`(,w . ,h) (window-text-pixel-size nil (point-min) (1+ (point-min))))
+                   (data (format
+                          "/* XPM */\nstatic char *x[] = {\n\"%s %s 2 1\",\n\"# c %s\",\n\". c None\""
+                          w h (corfu--color color))))
+        (dotimes (_ h)
+          (setq data (concat data ",\n\""
+                             (funcall (if (< width 0) #'reverse #'identity)
+                                      (concat (make-string (abs width) ?#)
+                                              (make-string (- w (abs width)) ?.)))
+                             "\"")))
+        (setq data (propertize " " 'display
+                               `(image :data ,(concat data "};") :type xpm :scale 1 :ascent center)))
+        (push (cons (cons color width) data) corfu--borders)
+        data)))
+
 (defun corfu--popup (pos idx lo bar lines)
   "Show LINES as popup at POS, with IDX highlighted and scrollbar between LO and LO+BAR."
-  (let* ((col (+ (- pos (line-beginning-position)) corfu--base))
-         (row 0)
+  (let* ((lborder (corfu--border 'corfu-border 1))
+         (rborder (corfu--border 'corfu-border -1))
+         (rbar (corfu--border 'corfu-bar -5))
+         (col (+ (- pos (line-beginning-position)) corfu--base))
          (width (- (window-total-width) col 10))
          (pixelpos (cdr (window-absolute-pixel-position pos)))
          (lh (window-default-line-height))
+         (row 0)
          (count (length lines))
          (tail))
     (if (< width 10)
@@ -162,13 +192,13 @@
                (ov
                 (if prefix
                     (make-overlay end end)
-                  (make-overlay (min (+ beg col) end) (min (+ beg col width (if lo 2 1)) end))))
+                  (make-overlay (min (+ beg col) end) (min (+ beg col width 2) end))))
                (str (concat
-                     " "
+                     (propertize lborder 'face (if (= row idx) 'corfu-current 'corfu-background))
                      line
                      (make-string (- width (string-width line)) 32)
-                     (and lo (propertize "▐" 'face
-                                         (if (<= lo row (+ lo bar)) 'corfu-bar 'corfu-border))))))
+                     (propertize (if (and lo (<= lo row (+ lo bar))) rbar rborder)
+                                 'face (if (= row idx) 'corfu-current 'corfu-background)))))
           (add-face-text-property 0 (length str) (if (= row idx) 'corfu-current 'corfu-background) 'append str)
           (overlay-put ov 'priority (- 1000 row))
           (overlay-put ov 'window (selected-window))
@@ -432,6 +462,7 @@
                                 corfu--total
                                 corfu--popup-ovs
                                 corfu--current-ov
+                                corfu--borders
                                 completion-show-inline-help
                                 completion-auto-help)))
 
