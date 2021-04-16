@@ -129,6 +129,9 @@
 (defvar-local corfu--popup-ovs nil
   "Overlay showing the candidates.")
 
+(defvar-local corfu--extra-properties nil
+  "Extra completion properties.")
+
 (defvar-local corfu--borders nil
   "Cached border images.")
 
@@ -260,12 +263,12 @@
         (lambda (x) (and (not (string-match-p ignore x)) (funcall pred x)))
       (lambda (x) (not (string-match-p ignore x))))))
 
-(defun corfu--recompute-candidates (content bounds pt table pred)
-  "Recompute candidates from CONTENT, BOUNDS, PT, TABLE and PRED."
-  (let* ((field (substring content (car bounds) (+ pt (cdr bounds))))
-         (metadata (completion-metadata (substring content 0 pt) table pred))
+(defun corfu--recompute-candidates (str bounds pt table pred)
+  "Recompute candidates from STR, BOUNDS, PT, TABLE and PRED."
+  (let* ((field (substring str (car bounds) (+ pt (cdr bounds))))
+         (metadata (completion-metadata (substring str 0 pt) table pred))
          (completing-file (eq (completion-metadata-get metadata 'category) 'file))
-         (all-hl (corfu--all-completions content table
+         (all-hl (corfu--all-completions str table
                                          (if completing-file
                                              (corfu--file-predicate pred)
                                            pred)
@@ -285,12 +288,12 @@
     (setq all (corfu--move-to-front field all))
     (list base (length all) all (cdr all-hl))))
 
-(defun corfu--update-candidates (content bounds pt table pred)
-  "Update candidates from CONTENT, BOUNDS, PT, TABLE and PRED."
+(defun corfu--update-candidates (str bounds pt table pred)
+  "Update candidates from STR, BOUNDS, PT, TABLE and PRED."
   (pcase (let ((while-no-input-ignore-events '(selection-request)))
-           (while-no-input (corfu--recompute-candidates content bounds pt table pred)))
+           (while-no-input (corfu--recompute-candidates str bounds pt table pred)))
     (`(,base ,total ,candidates ,hl)
-     (setq corfu--input (cons content pt)
+     (setq corfu--input (cons str pt)
            corfu--candidates candidates
            corfu--base base
            corfu--total total
@@ -308,9 +311,9 @@
 (defun corfu--refresh (beg end table pred)
   "Refresh Corfu overlays, given BEG, END, TABLE and PRED."
   (let* ((pt (- (point) beg))
-         (content (buffer-substring-no-properties beg end))
-         (before (substring content 0 pt))
-         (after (substring content pt))
+         (str (buffer-substring-no-properties beg end))
+         (before (substring str 0 pt))
+         (after (substring str pt))
          ;; bug#47678: `completion-boundaries` fails for `partial-completion`
          ;; if the cursor is moved between the slashes of "~//".
          ;; See also vertico.el which has the same issue.
@@ -320,20 +323,20 @@
                                                 pred
                                                 after)
                        (t (cons 0 (length after)))))))
-    (unless (equal corfu--input (cons content pt))
-      (corfu--update-candidates content bounds pt table pred))
+    (unless (equal corfu--input (cons str pt))
+      (corfu--update-candidates str bounds pt table pred))
     (when (and
            ;; Empty input
            (or (eq this-command 'completion-at-point)
                (string-prefix-p "corfu-" (prin1-to-string this-command))
                (/= beg end))
            ;; Input after boundary is empty
-           (not (and (= (car bounds) (length content))
-                     (test-completion content table pred)))
+           (not (and (= (car bounds) (length str))
+                     (test-completion str table pred)))
            ;; No candidates
            corfu--candidates
            ;; Single candidate
-           (not (equal corfu--candidates (list content))))
+           (not (equal corfu--candidates (list str))))
       (let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
                          (max 0 (- corfu--total corfu-count))))
              (end (min (+ start corfu-count) corfu--total))
@@ -418,10 +421,10 @@
       (corfu-insert)
     (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                  (pt (max 0 (- (point) beg)))
-                 (content (buffer-substring-no-properties beg end))
-                 (metadata (completion-metadata (substring content 0 pt) table pred)))
-      (pcase (completion-try-completion content table pred pt metadata)
-        ((and `(,newstr . ,newpt) (guard (not (equal content newstr))))
+                 (str (buffer-substring-no-properties beg end))
+                 (metadata (completion-metadata (substring str 0 pt) table pred)))
+      (pcase (completion-try-completion str table pred pt metadata)
+        ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
          (completion--replace beg end newstr)
          (goto-char (+ beg newpt)))))))
 
@@ -429,12 +432,13 @@
   "Insert current candidate."
   (interactive)
   (pcase-let* ((`(,beg ,end . _) completion-in-region--data)
-               (content (buffer-substring-no-properties beg end)))
-    (completion--replace
-     beg end
-     (concat (substring content 0 corfu--base)
-             (substring-no-properties (nth (max 0 corfu--index) corfu--candidates)))))
-  (completion-in-region-mode -1))
+               (str (buffer-substring-no-properties beg end))
+               (newstr (concat (substring str 0 corfu--base)
+                               (substring-no-properties (nth (max 0 corfu--index) corfu--candidates)))))
+    (completion--replace beg end newstr)
+    (when-let (exit (plist-get corfu--extra-properties :exit-function))
+      (funcall exit newstr 'finished))
+    (completion-in-region-mode -1)))
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
@@ -442,6 +446,7 @@
   (remove-hook 'post-command-hook #'completion-in-region--postch)
   (set (make-local-variable 'completion-show-inline-help) nil)
   (set (make-local-variable 'completion-auto-help) nil)
+  (setq corfu--extra-properties completion-extra-properties)
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
   (add-hook 'pre-command-hook #'corfu--pre-command-hook nil 'local)
   (add-hook 'post-command-hook #'corfu--post-command-hook nil 'local))
@@ -464,6 +469,7 @@
                                 corfu--popup-ovs
                                 corfu--current-ov
                                 corfu--borders
+                                corfu--extra-properties
                                 completion-show-inline-help
                                 completion-auto-help)))
 
