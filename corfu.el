@@ -148,9 +148,7 @@
     corfu--input
     corfu--total
     corfu--overlays
-    corfu--extra-properties
-    completion-show-inline-help
-    completion-auto-help)
+    corfu--extra-properties)
   "Buffer-local state variables used by Corfu.")
 
 (defun corfu--char-size ()
@@ -526,8 +524,6 @@
   "Setup Corfu completion state."
   ;; Keep completion alive when popup is shown (disable predicate check!)
   (remove-hook 'post-command-hook #'completion-in-region--postch)
-  (set (make-local-variable 'completion-show-inline-help) nil)
-  (set (make-local-variable 'completion-auto-help) nil)
   (setq corfu--extra-properties completion-extra-properties)
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
   (add-hook 'pre-command-hook #'corfu--pre-command-hook nil 'local)
@@ -546,13 +542,21 @@
       (corfu--setup)
     (corfu--teardown)))
 
+(defun corfu--completion-in-region (&rest args)
+  "Corfu completion in region function passing ARGS to `completion--in-region'."
+  (let ((completion-show-inline-help)
+        (completion-auto-help))
+    (apply #'completion--in-region args)))
+
 ;;;###autoload
 (define-minor-mode corfu-mode
   "Completion Overlay Region FUnction"
   :local t
-  (if corfu-mode
-      (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
-    (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook 'local)))
+  (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook 'local)
+  (kill-local-variable completion-in-region-function)
+  (when corfu-mode
+    (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
+    (setq-local completion-in-region-function #'corfu--completion-in-region)))
 
 (provide 'corfu)
 ;;; corfu.el ends here
