@@ -132,12 +132,6 @@
 (defvar-local corfu--borders nil
   "Cached border images.")
 
-(defun corfu--color (face)
-  "Return hex color from FACE."
-  (apply #'format "#%02x%02x%02x"
-         (mapcar (lambda (x) (/ x 256))
-                 (color-values (face-attribute face :background)))))
-
 (defun corfu--char-size ()
   "Return character size in pixels."
   (let ((fra face-remapping-alist))
@@ -151,17 +145,16 @@
 (defun corfu--border (w h color width)
   "Generate border with COLOR and WIDTH and image size W*H."
   (or (cdr (assoc (cons color width) corfu--borders))
-      (let ((data (format
-                   "/* XPM */\nstatic char *x[] = {\n\"%s %s 2 1\",\n\"# c %s\",\n\". c None\""
-                   w h (corfu--color color))))
+      (let ((data (format "P1\n %s %s\n" w h)))
         (dotimes (_ h)
-          (setq data (concat data ",\n\""
-                             (funcall (if (< width 0) #'reverse #'identity)
-                                      (concat (make-string (abs width) ?#)
-                                              (make-string (- w (abs width)) ?.)))
-                             "\"")))
-        (setq data (propertize " " 'display
-                               `(image :data ,(concat data "};") :type xpm :scale 1 :ascent center)))
+          (setq data (concat data (funcall (if (< width 0) #'reverse #'identity)
+                                           (concat (make-string (abs width) ?0)
+                                                   (make-string (- w (abs width)) ?1))))))
+        (setq data (propertize
+                    " " 'display
+                    `(image :data ,data :type pbm :scale 1 :ascent center
+                            :background ,(face-attribute color :background)
+                            :mask (heuristic (0 0 0)))))
         (push (cons (cons color width) data) corfu--borders)
         data)))
 
