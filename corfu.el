@@ -277,11 +277,10 @@
         (lambda (x) (and (not (string-match-p ignore x)) (funcall pred x)))
       (lambda (x) (not (string-match-p ignore x))))))
 
-(defun corfu--recompute-candidates (str bounds pt table pred)
-  "Recompute candidates from STR, BOUNDS, PT, TABLE and PRED."
+(defun corfu--recompute-candidates (str bounds metadata pt table pred)
+  "Recompute candidates from STR, BOUNDS, METADATA, PT, TABLE and PRED."
   (let* ((field (substring str (car bounds) (+ pt (cdr bounds))))
-         (metadata (completion-metadata (substring str 0 pt) table pred))
-         (completing-file (eq (completion-metadata-get metadata 'category) 'file))
+         (completing-file (eq (corfu--metadata-get metadata 'category) 'file))
          (all-hl (corfu--all-completions str table
                                          (if completing-file
                                              (corfu--file-predicate pred)
@@ -289,7 +288,7 @@
                                          pt metadata))
          (all (car all-hl))
          (base (if-let (last (last all)) (prog1 (cdr last) (setcdr last nil)) 0)))
-    (setq all (if-let (sort (completion-metadata-get metadata 'display-sort-function))
+    (setq all (if-let (sort (corfu--metadata-get metadata 'display-sort-function))
                   (funcall sort all)
                 (sort all #'corfu--sort-predicate)))
     ;; Move candidates which match prefix to the beginning
@@ -302,10 +301,10 @@
     (setq all (corfu--move-to-front field all))
     (list base (length all) all (cdr all-hl))))
 
-(defun corfu--update-candidates (str bounds pt table pred)
-  "Update candidates from STR, BOUNDS, PT, TABLE and PRED."
+(defun corfu--update-candidates (str bounds metadata pt table pred)
+  "Update candidates from STR, BOUNDS, METADATA, PT, TABLE and PRED."
   (pcase (let ((while-no-input-ignore-events '(selection-request)))
-           (while-no-input (corfu--recompute-candidates str bounds pt table pred)))
+           (while-no-input (corfu--recompute-candidates str bounds metadata pt table pred)))
     (`(,base ,total ,candidates ,hl)
      (setq corfu--input (cons str pt)
            corfu--candidates candidates
@@ -326,11 +325,40 @@
   (interactive)
   (completion-in-region-mode -1))
 
+(defun corfu--annotate (metadata candidates)
+  "Annotate CANDIDATES with annotation function specified by METADATA."
+  (if-let (aff (or (corfu--metadata-get metadata 'affixation-function)
+                   (plist-get corfu--extra-properties :affixation-function)))
+      (funcall aff candidates)
+    (if-let (ann (or (corfu--metadata-get metadata 'annotation-function)
+                     (plist-get corfu--extra-properties :annotation-function)))
+        (mapcar (lambda (cand) (list cand (or (funcall ann cand) ""))) candidates)
+      candidates)))
+
+;; XXX Do not use `completion-metadata-get' in order to avoid Marginalia.
+;; The Marginalia annotators are way to heavy for the Corfu popup!
+(defun corfu--metadata-get (metadata prop)
+  "Return PROP from METADATA."
+  (cdr (assq prop metadata)))
+
+(defun corfu--format-candidate (ann-cand)
+  "Format annotated ANN-CAND string."
+  (let* ((prefix "") (suffix "")
+         (cand (pcase ann-cand
+                 (`(,c ,s) (setq suffix s) c)
+                 (`(,c ,p ,s) (setq prefix p suffix s) c)
+                 (c c))))
+    (concat prefix cand
+            (if (text-property-not-all 0 (length suffix) 'face nil suffix)
+                suffix
+              (propertize suffix 'face 'completions-annotations)))))
+
 (defun corfu--update-display ()
   "Refresh Corfu UI."
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
+               (metadata (completion-metadata (substring str 0 pt) table pred))
                (before (substring str 0 pt))
                (after (substring str pt))
                ;; bug#47678: `completion-boundaries` fails for `partial-completion`
@@ -343,7 +371,7 @@
                                                       after)
                              (t (cons 0 (length after)))))))
     (unless (equal corfu--input (cons str pt))
-      (corfu--update-candidates str bounds pt table pred))
+      (corfu--update-candidates str bounds metadata pt table pred))
     (when (and
            ;; Empty input
            (or (eq this-command 'completion-at-point)
@@ -361,7 +389,10 @@
              (last (min (+ start corfu-count) corfu--total))
              (bar (ceiling (* corfu-count corfu-count) corfu--total))
              (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
-             (candidates (funcall corfu--highlight (seq-subseq corfu--candidates start last))))
+             (candidates (thread-last (seq-subseq corfu--candidates start last)
+                           (funcall corfu--highlight)
+                           (corfu--annotate metadata)
+                           (mapcar #'corfu--format-candidate))))
         (when (>= curr 0)
           (let ((ov (make-overlay beg end nil t t)))
             (overlay-put ov 'priority 2000)

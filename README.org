@@ -40,16 +40,9 @@ completion may often be sufficient.
   when filtering with the [[https://github.com/oantolin/orderless][Orderless]] completion style)
 - Deferred completion style highlighting for performance
 - Jumping to location/documentation of current candidate (Company extension)
+- Support for ~annotation-function~ and ~affixation-function~
 
-Notable non-features:
-
-+ Annotations are not supported, but could be added
-  relatively easily (see the annotation branch). However annotations in the
-  completion popup are a bit too much for my taste, in particular if one
-  considers verbose annotations like documentation strings or annotations in the
-  style of [[https://github.com/minad/marginalia][Marginalia]]. These annotations work better in Vertico or in the
-  =*Completions*= buffer.
-+ Timer-based/Idle automatic completions are not supported.
+Notable non-feature: Timer-based automatic completions are not supported.
 
 * Configuration
 
@@ -112,8 +105,6 @@ minibuffer completion system. Vertico is the minibuffer counterpart of Corfu.
 This package is experimental and new. I am not yet claiming that this package
 works correctly. There are a few known caveats.
 
-- Annotations are not supported (~annotation-function~, ~company-kind~)
-- Company metadata is not shown (~company-docsig~)
 - No caching, the completion table is called directly.
 - The =:exit-function= handling is probably insufficient.
 - The overlay popup is brittle (Alternatives: Posframe, Postip?)
@@ -122,6 +113,8 @@ works correctly. There are a few known caveats.
 - The completion exit predicate is deliberatly ignored in order to
   give the completion style full control.
 - Completion is terminated if there are no matches. Add optional confirmation?
+- Company kind icons are not supported (~company-kind~)
+- Company metadata is not shown (~company-docsig~)
 
 * Contributions
 
