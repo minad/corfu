@@ -56,11 +56,6 @@ orderless completion a try, which is different from the familiar prefix TAB
 completion. Here is an example configuration:
 
 #+begin_src emacs-lisp
-  ;; Enable TAB completion
-  (use-package emacs
-    :init
-    (setq tab-always-indent 'complete))
-
   ;; Configure corfu
   (use-package corfu
     ;; Optionally use TAB for cycling, default is `corfu-complete'.
@@ -86,6 +81,16 @@ completion. Here is an example configuration:
     (setq completion-styles '(orderless)
           completion-category-defaults nil
           completion-category-overrides '((file (styles . (partial-completion))))))
+
+  ;; A few more useful configurations...
+  (use-package emacs
+    :init
+    ;; TAB cycle if there are only few candidates
+    (setq completion-cycle-threshold 3)
+
+    ;; Enable indentation+completion using the TAB key.
+    ;; Completion is often bound to M-TAB.
+    (setq tab-always-indent 'complete))
 #+end_src
 
 * Complementary packages
