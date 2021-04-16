@@ -137,29 +137,24 @@
 
 (defun corfu--char-size ()
   "Return character size in pixels."
-  (let ((fra face-remapping-alist))
-    (with-temp-buffer
-      (setq-local face-remapping-alist fra)
-      (cl-letf (((window-buffer) (current-buffer)))
-        (insert " ")
-        (window-text-pixel-size nil (point-min) (1+ (point-min)))))))
+  (let ((lh (line-pixel-height)))
+    (cons (round (* lh (frame-char-width)) (frame-char-height)) lh)))
 
 ;; TODO Is there a better way to generate an image? Bitmap vector?
 (defun corfu--border (w h color width)
   "Generate border with COLOR and WIDTH and image size W*H."
-  (or (cdr (assoc (cons color width) corfu--borders))
-      (let ((data (format "P1\n %s %s\n" w h)))
-        (dotimes (_ h)
-          (setq data (concat data (funcall (if (< width 0) #'reverse #'identity)
-                                           (concat (make-string (abs width) ?0)
-                                                   (make-string (- w (abs width)) ?1))))))
-        (setq data (propertize
-                    " " 'display
-                    `(image :data ,data :type pbm :scale 1 :ascent center
-                            :background ,(face-attribute color :background)
-                            :mask (heuristic (0 0 0)))))
-        (push (cons (cons color width) data) corfu--borders)
-        data)))
+  (or (alist-get (cons color width) corfu--borders nil #'equal)
+      (setf (alist-get (cons color width) corfu--borders nil #'equal)
+            (let ((row (funcall (if (< width 0) #'reverse #'identity)
+                                (concat (make-string (abs width) ?0)
+                                        (make-string (- w (abs width)) ?1)))))
+              (propertize
+               " " 'display
+               `(image :data ,(format "P1\n %s %s\n%s" w h
+                                      (mapconcat (lambda (_) row) (number-sequence 1 h) ""))
+                       :type pbm :scale 1 :ascent center
+                       :background ,(face-attribute color :background)
+                       :mask (heuristic (0 0 0))))))))
 
 (defun corfu--popup (pos idx lo bar lines)
   "Show LINES as popup at POS, with IDX highlighted and scrollbar between LO and LO+BAR."
@@ -170,7 +165,6 @@
          (col (+ (- pos (line-beginning-position)) corfu--base))
          (width (- (window-total-width) col 10))
          (pixelpos (cdr (window-absolute-pixel-position pos)))
-         (lh (window-default-line-height))
          (row 0)
          (count (length lines))
          (tail))
@@ -182,8 +176,8 @@
       (setq lines (mapcar (lambda (x) (truncate-string-to-width x width)) lines)
             width (apply #'max (mapcar #'string-width lines))))
     (save-excursion
-      (when (and (>= count (floor (- (window-pixel-height) pixelpos) lh))
-                 (< count (floor pixelpos lh)))
+      (when (and (>= count (floor (- (window-pixel-height) pixelpos) (cdr size)))
+                 (< count (floor pixelpos (cdr size))))
         (forward-line (- -1 count)))
       (beginning-of-line)
       (dolist (line lines)
@@ -195,10 +189,9 @@
         (let* ((beg (point))
                (end (line-end-position))
                (prefix (or tail (and (> col (- end beg)) (make-string (- col (- end beg)) 32))))
-               (ov
-                (if prefix
-                    (make-overlay end end)
-                  (make-overlay (min (+ beg col) end) (min (+ beg col width 2) end))))
+               (ov (if prefix
+                       (make-overlay end end)
+                     (make-overlay (min (+ beg col) end) (min (+ beg col width 2) end))))
                (str (concat
                      (propertize lborder 'face (if (= row idx) 'corfu-current 'corfu-background))
                      line
@@ -454,12 +447,9 @@
 (defun corfu--teardown ()
   "Teardown Corfu."
   (mapc #'delete-overlay corfu--popup-ovs)
-  (when-let (map (assq #'completion-in-region-mode minor-mode-overriding-map-alist))
-    (setcdr map completion-in-region-mode-map))
+  (when corfu--current-ov (delete-overlay corfu--current-ov))
   (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
   (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
-  (when corfu--current-ov
-    (delete-overlay corfu--current-ov))
   (mapc #'kill-local-variable '(corfu--base
                                 corfu--candidates
                                 corfu--highlight
