@@ -112,15 +112,16 @@ minibuffer completion system. Vertico is the minibuffer counterpart of Corfu.
 This package is experimental and new. I am not yet claiming that this package
 works correctly. There are a few known caveats.
 
-+ Annotations are not supported (~annotation-function~, ~company-kind~)
-+ Company metadata is not shown (~company-docsig~)
-+ No caching, the completion table is called directly.
-+ The =:exit-function= handling is probably insufficient.
-+ The thin popup borders are only drawn if =line-spacing=nil=.
-+ The abort handling could be improved. Undo the completion input?
-+ The completion exit predicate is deliberatly ignored in order to
+- Annotations are not supported (~annotation-function~, ~company-kind~)
+- Company metadata is not shown (~company-docsig~)
+- No caching, the completion table is called directly.
+- The =:exit-function= handling is probably insufficient.
+- The overlay popup is brittle (Alternatives: Posframe, Postip?)
+- The thin popup borders are only drawn if =line-spacing=nil=.
+- The abort handling could be improved. Undo the completion input?
+- The completion exit predicate is deliberatly ignored in order to
   give the completion style full control.
-+ Completion is terminated if there are no matches. Add optional confirmation?
+- Completion is terminated if there are no matches. Add optional confirmation?
 
 * Contributions
 

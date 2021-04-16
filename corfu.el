@@ -99,7 +99,8 @@
     (define-key map [remap next-line] #'corfu-next)
     (define-key map [remap previous-line] #'corfu-previous)
     (define-key map [remap completion-at-point] #'corfu-complete)
-    (define-key map "\e\e\e" #'keyboard-quit)
+    (define-key map "\e\e\e" #'corfu-abort)
+    (define-key map "\C-g" #'corfu-abort)
     (define-key map "\r" #'corfu-insert)
     (define-key map "\t" #'corfu-complete)
     (define-key map "\eg" #'corfu-show-location)
@@ -135,6 +136,19 @@
   "\\`\\(corfu-\\|scroll-other-window\\)"
   "Keep Corfu popup alive during commands matching this regexp.")
 
+(defconst corfu--state-vars
+  '(corfu--base
+    corfu--candidates
+    corfu--highlight
+    corfu--index
+    corfu--input
+    corfu--total
+    corfu--overlays
+    corfu--extra-properties
+    completion-show-inline-help
+    completion-auto-help)
+  "Buffer-local state variables used by Corfu.")
+
 (defun corfu--char-size ()
   "Return character size in pixels."
   (let ((lh (line-pixel-height)))
@@ -148,7 +162,7 @@
                               (make-string (- w (abs width)) ?1)))))
     (propertize
      " " 'display
-     `(image :data ,(format "P1\n %s %s\n%s" w h
+     `(image :data ,(format "P1\n%s %s\n%s" w h
                             (mapconcat (lambda (_) row) (number-sequence 1 h) ""))
              :type pbm :scale 1 :ascent center
              :background ,(face-attribute color :foreground)
@@ -300,10 +314,14 @@
   "Delete overlays."
   (mapc #'delete-overlay corfu--overlays)
   (setq corfu--overlays nil)
-  (when (and (>= corfu--index 0)
-             (not (string-match-p corfu--keep-alive (prin1-to-string this-command)))
-             (not (eq this-command 'keyboard-quit)))
+  (unless (or (< corfu--index 0)
+              (string-match-p corfu--keep-alive (prin1-to-string this-command)))
     (corfu-insert)))
+
+(defun corfu-abort ()
+  "Abort Corfu completion."
+  (interactive)
+  (completion-in-region-mode -1))
 
 (defun corfu--update-display ()
   "Refresh Corfu UI."
@@ -329,8 +347,7 @@
                (string-match-p corfu--keep-alive (prin1-to-string this-command))
                (/= beg end))
            ;; Input after boundary is empty
-           (not (and (= (car bounds) (length str))
-                     (test-completion str table pred)))
+           (not (and (= (car bounds) (length str)) (test-completion str table pred)))
            ;; XXX Completion is terminated if there are no matches. Add optional confirmation?
            corfu--candidates
            ;; Single candidate
@@ -484,19 +501,10 @@
 
 (defun corfu--teardown ()
   "Teardown Corfu."
-  (mapc #'delete-overlay corfu--overlays)
   (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
   (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
-  (mapc #'kill-local-variable '(corfu--base
-                                corfu--candidates
-                                corfu--highlight
-                                corfu--index
-                                corfu--input
-                                corfu--total
-                                corfu--overlays
-                                corfu--extra-properties
-                                completion-show-inline-help
-                                completion-auto-help)))
+  (mapc #'delete-overlay corfu--overlays)
+  (mapc #'kill-local-variable corfu--state-vars))
 
 (defun corfu--mode-hook ()
   "Corfu mode hook."
