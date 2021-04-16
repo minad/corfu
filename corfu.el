@@ -47,6 +47,10 @@
   "Maximal number of candidates to show."
   :type 'integer)
 
+(defcustom corfu-min-width 15
+  "Minimum popup width."
+  :type 'integer)
+
 (defcustom corfu-cycle nil
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
@@ -177,18 +181,17 @@
          (rborder (corfu--border (car size) (cdr size) 'corfu-border -1))
          (rbar (corfu--border (car size) (cdr size) 'corfu-bar (- (ceiling (car size) 3))))
          (col (+ (- pos (line-beginning-position)) corfu--base))
-         (width (- (window-total-width) col 10))
+         (max-width (min (/ (window-total-width) 2) (- (window-total-width) col)))
          (pixelpos (cdr (window-absolute-pixel-position pos)))
-         (row 0)
          (count (length lines))
-         (tail))
-    (if (< width 10)
-        (setq width (/ (window-total-width) 2)
+         (row 0) (tail) (width))
+    (if (< max-width corfu-min-width)
+        (setq width (max corfu-min-width (/ (window-total-width) 2))
               lines (mapcar (lambda (x) (truncate-string-to-width x width)) lines)
               width (apply #'max (mapcar #'string-width lines))
               col (max 0 (- col width 2)))
-      (setq lines (mapcar (lambda (x) (truncate-string-to-width x width)) lines)
-            width (apply #'max (mapcar #'string-width lines))))
+      (setq lines (mapcar (lambda (x) (truncate-string-to-width x max-width)) lines)
+            width (apply #'max corfu-min-width (mapcar #'string-width lines))))
     (save-excursion
       (when (and (>= count (floor (- (window-pixel-height) pixelpos) (cdr size)))
                  (< count (floor pixelpos (cdr size))))
