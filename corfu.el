@@ -74,18 +74,18 @@
 
 (defface corfu-bar
   '((((class color) (min-colors 88) (background dark))
-     :background "#444")
+     :foreground "#444" :background "#bbb")
     (((class color) (min-colors 88) (background light))
-     :background "#bbb")
-    (t :background "black"))
+     :foreground "#bbb" :background "#444")
+    (t :foreground "gray" :background "black"))
   "Face used for the scrollbar.")
 
 (defface corfu-border
   '((((class color) (min-colors 88) (background dark))
-     :background "#444")
+     :foreground "#444" :background "#444" )
     (((class color) (min-colors 88) (background light))
-     :background "#bbb")
-    (t :background "gray"))
+     :foreground "#bbb" :background "#bbb")
+    (t :foreground "gray"))
   "Face used for the border line.")
 
 (defvar corfu-map
@@ -153,12 +153,14 @@
                `(image :data ,(format "P1\n %s %s\n%s" w h
                                       (mapconcat (lambda (_) row) (number-sequence 1 h) ""))
                        :type pbm :scale 1 :ascent center
-                       :background ,(face-attribute color :background)
+                       :background ,(face-attribute color :foreground)
                        :mask (heuristic (0 0 0))))))))
 
 (defun corfu--popup (pos idx lo bar lines)
   "Show LINES as popup at POS, with IDX highlighted and scrollbar between LO and LO+BAR."
   (let* ((size (corfu--char-size))
+         ;; XXX Deactivate fancy border on terminal or if line-spacing is used
+         (fancy-ui (and (not line-spacing) (display-graphic-p)))
          (lborder (corfu--border (car size) (cdr size) 'corfu-border 1))
          (rborder (corfu--border (car size) (cdr size) 'corfu-border -1))
          (rbar (corfu--border (car size) (cdr size) 'corfu-bar (- (ceiling (car size) 3))))
@@ -193,11 +195,15 @@
                        (make-overlay end end)
                      (make-overlay (min (+ beg col) end) (min (+ beg col width 2) end))))
                (str (concat
-                     (propertize lborder 'face (if (= row idx) 'corfu-current 'corfu-background))
+                     (if fancy-ui
+                         (propertize lborder 'face (if (= row idx) 'corfu-current 'corfu-background))
+                       (propertize " " 'face (if (= row idx) 'corfu-current 'corfu-background)))
                      line
                      (make-string (- width (string-width line)) 32)
-                     (propertize (if (and lo (<= lo row (+ lo bar))) rbar rborder)
-                                 'face (if (= row idx) 'corfu-current 'corfu-background)))))
+                     (if fancy-ui
+                         (propertize (if (and lo (<= lo row (+ lo bar))) rbar rborder)
+                                     'face (if (= row idx) 'corfu-current 'corfu-background))
+                       (propertize " " 'face (if (and lo (<= lo row (+ lo bar))) 'corfu-bar 'corfu-border))))))
           (add-face-text-property 0 (length str) (if (= row idx) 'corfu-current 'corfu-background) 'append str)
           (overlay-put ov 'priority (- 1000 row))
           (overlay-put ov 'window (selected-window))
