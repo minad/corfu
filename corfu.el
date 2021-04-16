@@ -102,6 +102,8 @@
     (define-key map "\e\e\e" #'keyboard-quit)
     (define-key map "\r" #'corfu-insert)
     (define-key map "\t" #'corfu-complete)
+    (define-key map "\eg" #'corfu-show-location)
+    (define-key map "\eh" #'corfu-show-documentation)
     map)
   "Corfu keymap used when popup is shown.")
 
@@ -128,6 +130,10 @@
 
 (defvar-local corfu--extra-properties nil
   "Extra completion properties.")
+
+(defvar corfu--keep-alive
+  "\\`\\(corfu-\\|scroll-other-window\\)"
+  "Keep Corfu popup alive during commands matching this regexp.")
 
 (defun corfu--char-size ()
   "Return character size in pixels."
@@ -295,7 +301,7 @@
   (mapc #'delete-overlay corfu--overlays)
   (setq corfu--overlays nil)
   (when (and (>= corfu--index 0)
-             (not (string-prefix-p "corfu-" (prin1-to-string this-command)))
+             (not (string-match-p corfu--keep-alive (prin1-to-string this-command)))
              (not (eq this-command 'keyboard-quit)))
     (corfu-insert)))
 
@@ -320,7 +326,7 @@
     (when (and
            ;; Empty input
            (or (eq this-command 'completion-at-point)
-               (string-prefix-p "corfu-" (prin1-to-string this-command))
+               (string-match-p corfu--keep-alive (prin1-to-string this-command))
                (/= beg end))
            ;; Input after boundary is empty
            (not (and (= (car bounds) (length str))
@@ -397,6 +403,46 @@
   "Go to last candidate."
   (interactive)
   (corfu--goto (- corfu--total 1)))
+
+(defun corfu--restore-on-next-command ()
+  "Restore window configuration before next command."
+  (let ((config (current-window-configuration))
+        (other other-window-scroll-buffer)
+        (hide (make-symbol "corfu--hide-help")))
+    (fset hide (lambda ()
+                 (remove-hook 'pre-command-hook hide)
+                 (setq other-window-scroll-buffer other)
+                 (set-window-configuration config)))
+    (run-at-time 0 nil (lambda () (add-hook 'pre-command-hook hide)))))
+
+;; Company support, taken from `company.el', see `company-show-doc-buffer'.
+(defun corfu-show-documentation ()
+  "Show documentation of current candidate."
+  (interactive)
+  (when-let* ((fun (and (>= corfu--index 0) (plist-get corfu--extra-properties :company-doc-buffer)))
+              (res (funcall fun (nth corfu--index corfu--candidates))))
+    (let ((buf (or (car-safe res) res)))
+      (corfu--restore-on-next-command)
+      (setq other-window-scroll-buffer (get-buffer buf))
+      (set-window-start (display-buffer buf t) (or (cdr-safe res) (point-min))))))
+
+;; Company support, taken from `company.el', see `company-show-location'.
+(defun corfu-show-location ()
+  "Show location of current candidate."
+  (interactive)
+  (when-let* ((fun (and (>= corfu--index 0) (plist-get corfu--extra-properties :company-location)))
+              (loc (funcall fun (nth corfu--index corfu--candidates))))
+    (let ((buf (or (and (bufferp (car loc)) (car loc)) (find-file-noselect (car loc) t))))
+      (corfu--restore-on-next-command)
+      (with-selected-window (display-buffer buf t)
+        (setq other-window-scroll-buffer (current-buffer))
+        (save-restriction
+          (widen)
+          (if (bufferp (car loc))
+              (goto-char (cdr loc))
+            (goto-char (point-min))
+            (forward-line (1- (cdr loc))))
+          (set-window-start nil (point)))))))
 
 (defun corfu-complete ()
   "Try to complete current input."

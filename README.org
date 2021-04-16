@@ -39,6 +39,7 @@ completion may often be sufficient.
 - Filter string can contain arbitrary characters and spaces (needed
   when filtering with the [[https://github.com/oantolin/orderless][Orderless]] completion style)
 - Deferred completion style highlighting for performance
+- Jumping to location/documentation of current candidate (Company extension)
 
 Notable non-features:
 
@@ -111,8 +112,8 @@ minibuffer completion system. Vertico is the minibuffer counterpart of Corfu.
 This package is experimental and new. I am not yet claiming that this package
 works correctly. There are a few known caveats.
 
-+ Annotations are not supported.
-+ Company enhancements are not supported (~company-docsig~, ~company-location~, ...).
++ Annotations are not supported (~annotation-function~, ~company-kind~)
++ Company metadata is not shown (~company-docsig~)
 + No caching, the completion table is called directly.
 + The =:exit-function= handling is probably insufficient.
 + The thin popup borders are only drawn if =line-spacing=nil=.
