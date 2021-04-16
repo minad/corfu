@@ -422,20 +422,18 @@
                  (metadata (completion-metadata (substring content 0 pt) table pred)))
       (pcase (completion-try-completion content table pred pt metadata)
         ((and `(,newstr . ,newpt) (guard (not (equal content newstr))))
-         (atomic-change-group
-           (delete-region beg end)
-           (insert newstr)
-           (goto-char (+ beg newpt))))))))
+         (completion--replace beg end newstr)
+         (goto-char (+ beg newpt)))))))
 
 (defun corfu-insert ()
   "Insert current candidate."
   (interactive)
   (pcase-let* ((`(,beg ,end . _) completion-in-region--data)
                (content (buffer-substring-no-properties beg end)))
-    (atomic-change-group
-      (delete-region beg end))
-      (insert (concat (substring content 0 corfu--base)
-                      (substring-no-properties (nth (max 0 corfu--index) corfu--candidates)))))
+    (completion--replace
+     beg end
+     (concat (substring content 0 corfu--base)
+             (substring-no-properties (nth (max 0 corfu--index) corfu--candidates)))))
   (completion-in-region-mode -1))
 
 (defun corfu--setup ()
