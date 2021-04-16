@@ -555,7 +555,7 @@
   "Completion Overlay Region FUnction"
   :local t
   (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook 'local)
-  (kill-local-variable completion-in-region-function)
+  (kill-local-variable 'completion-in-region-function)
   (when corfu-mode
     (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
     (setq-local completion-in-region-function #'corfu--completion-in-region)))
