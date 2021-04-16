@@ -138,13 +138,22 @@
          (mapcar (lambda (x) (/ x 256))
                  (color-values (face-attribute face :background)))))
 
-(defun corfu--border (color width)
-  "Generate border with COLOR and WIDTH."
+(defun corfu--char-size ()
+  "Return character size in pixels."
+  (let ((fra face-remapping-alist))
+    (with-temp-buffer
+      (setq-local face-remapping-alist fra)
+      (cl-letf (((window-buffer) (current-buffer)))
+        (insert " ")
+        (window-text-pixel-size nil (point-min) (1+ (point-min)))))))
+
+;; TODO Is there a better way to generate an image? Bitmap vector?
+(defun corfu--border (w h color width)
+  "Generate border with COLOR and WIDTH and image size W*H."
   (or (cdr (assoc (cons color width) corfu--borders))
-      (pcase-let* ((`(,w . ,h) (window-text-pixel-size nil (point-min) (1+ (point-min))))
-                   (data (format
-                          "/* XPM */\nstatic char *x[] = {\n\"%s %s 2 1\",\n\"# c %s\",\n\". c None\""
-                          w h (corfu--color color))))
+      (let ((data (format
+                   "/* XPM */\nstatic char *x[] = {\n\"%s %s 2 1\",\n\"# c %s\",\n\". c None\""
+                   w h (corfu--color color))))
         (dotimes (_ h)
           (setq data (concat data ",\n\""
                              (funcall (if (< width 0) #'reverse #'identity)
@@ -158,9 +167,10 @@
 
 (defun corfu--popup (pos idx lo bar lines)
   "Show LINES as popup at POS, with IDX highlighted and scrollbar between LO and LO+BAR."
-  (let* ((lborder (corfu--border 'corfu-border 1))
-         (rborder (corfu--border 'corfu-border -1))
-         (rbar (corfu--border 'corfu-bar -5))
+  (let* ((size (corfu--char-size))
+         (lborder (corfu--border (car size) (cdr size) 'corfu-border 1))
+         (rborder (corfu--border (car size) (cdr size) 'corfu-border -1))
+         (rbar (corfu--border (car size) (cdr size) 'corfu-bar (- (ceiling (car size) 3))))
          (col (+ (- pos (line-beginning-position)) corfu--base))
          (width (- (window-total-width) col 10))
          (pixelpos (cdr (window-absolute-pixel-position pos)))
