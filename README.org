@@ -35,17 +35,20 @@ completion may often be sufficient.
 - The popup must be summoned explicitly by =TAB=
 - The current candidate is inserted with =TAB= and selected with =RET=
 - Candidates sorting by prefix, string length and alphabetically
-- Completion is automatically left after candidate selection
+- Completion is automatically terminated after candidate selection
 - Filter string can contain arbitrary characters and spaces (needed
   when filtering with the [[https://github.com/oantolin/orderless][Orderless]] completion style)
 - Deferred completion style highlighting for performance
 
-Notable non-feature: Annotations are not supported, but could be added
-relatively easily (see the annotation branch). However annotations in the
-completion popup are a bit too much for my taste, in particular if one considers
-verbose annotations like documentation strings or annotations in the style of
-[[https://github.com/minad/marginalia][Marginalia]]. These annotations work better in Vertico or in the =*Completions*=
-buffer.
+Notable non-features:
+
++ Annotations are not supported, but could be added
+  relatively easily (see the annotation branch). However annotations in the
+  completion popup are a bit too much for my taste, in particular if one
+  considers verbose annotations like documentation strings or annotations in the
+  style of [[https://github.com/minad/marginalia][Marginalia]]. These annotations work better in Vertico or in the
+  =*Completions*= buffer.
++ Timer-based/Idle automatic completions are not supported.
 
 * Configuration
 
@@ -102,6 +105,21 @@ expressions are separated by spaces.
 
 You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package, which provides a vertical
 minibuffer completion system. Vertico is the minibuffer counterpart of Corfu.
+
+* Caveats
+
+This package is experimental and new. I am not yet claiming that this package
+works correctly. There are a few known caveats.
+
++ Annotations are not supported.
++ Company enhancements are not supported (~company-docsig~, ~company-location~, ...).
++ No caching, the completion table is called directly.
++ The =:exit-function= handling is probably insufficient.
++ The thin popup borders are only drawn if =line-spacing=nil=.
++ The abort handling could be improved. Undo the completion input?
++ The completion exit predicate is deliberatly ignored in order to
+  give the completion style full control.
++ Completion is terminated if there are no matches. Add optional confirmation?
 
 * Contributions
 

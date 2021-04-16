@@ -134,7 +134,7 @@
   (let ((lh (line-pixel-height)))
     (cons (round (* lh (frame-char-width)) (frame-char-height)) lh)))
 
-;; TODO Is there a better way to generate an image? Bitmap vector?
+;; XXX Is there a better way to generate an image? Bitmap vector?
 (defun corfu--border (w h color width)
   "Generate border with COLOR and WIDTH and image size W*H."
   (let ((row (funcall (if (< width 0) #'reverse #'identity)
@@ -325,7 +325,7 @@
            ;; Input after boundary is empty
            (not (and (= (car bounds) (length str))
                      (test-completion str table pred)))
-           ;; No candidates
+           ;; XXX Completion is terminated if there are no matches. Add optional confirmation?
            corfu--candidates
            ;; Single candidate
            (not (equal corfu--candidates (list str))))
@@ -420,6 +420,7 @@
                (newstr (concat (substring str 0 corfu--base)
                                (substring-no-properties (nth (max 0 corfu--index) corfu--candidates)))))
     (completion--replace beg end newstr)
+    ;; XXX Is the :exit-function handling sufficient?
     (when-let (exit (plist-get corfu--extra-properties :exit-function))
       (funcall exit newstr 'finished))
     (completion-in-region-mode -1)))
