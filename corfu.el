@@ -123,17 +123,11 @@
 (defvar-local corfu--input nil
   "Cons of last prompt contents and point or t.")
 
-(defvar-local corfu--current-ov nil
-  "Overlay showing the current candidate.")
-
-(defvar-local corfu--popup-ovs nil
+(defvar-local corfu--overlays nil
   "Overlay showing the candidates.")
 
 (defvar-local corfu--extra-properties nil
   "Extra completion properties.")
-
-(defvar-local corfu--borders nil
-  "Cached border images.")
 
 (defun corfu--char-size ()
   "Return character size in pixels."
@@ -143,18 +137,16 @@
 ;; TODO Is there a better way to generate an image? Bitmap vector?
 (defun corfu--border (w h color width)
   "Generate border with COLOR and WIDTH and image size W*H."
-  (or (alist-get (cons color width) corfu--borders nil #'equal)
-      (setf (alist-get (cons color width) corfu--borders nil #'equal)
-            (let ((row (funcall (if (< width 0) #'reverse #'identity)
-                                (concat (make-string (abs width) ?0)
-                                        (make-string (- w (abs width)) ?1)))))
-              (propertize
-               " " 'display
-               `(image :data ,(format "P1\n %s %s\n%s" w h
-                                      (mapconcat (lambda (_) row) (number-sequence 1 h) ""))
-                       :type pbm :scale 1 :ascent center
-                       :background ,(face-attribute color :foreground)
-                       :mask (heuristic (0 0 0))))))))
+  (let ((row (funcall (if (< width 0) #'reverse #'identity)
+                      (concat (make-string (abs width) ?0)
+                              (make-string (- w (abs width)) ?1)))))
+    (propertize
+     " " 'display
+     `(image :data ,(format "P1\n %s %s\n%s" w h
+                            (mapconcat (lambda (_) row) (number-sequence 1 h) ""))
+             :type pbm :scale 1 :ascent center
+             :background ,(face-attribute color :foreground)
+             :mask (heuristic (0 0 0))))))
 
 (defun corfu--popup (pos idx lo bar lines)
   "Show LINES as popup at POS, with IDX highlighted and scrollbar between LO and LO+BAR."
@@ -209,7 +201,7 @@
           (overlay-put ov 'window (selected-window))
           (overlay-put ov 'invisible t)
           (overlay-put ov 'after-string (concat prefix str))
-          (push ov corfu--popup-ovs)
+          (push ov corfu--overlays)
           (setq row (1+ row)))))))
 
 (defun corfu--move-to-front (elem list)
@@ -300,28 +292,29 @@
 
 (defun corfu--pre-command-hook ()
   "Delete overlays."
-  (mapc #'delete-overlay corfu--popup-ovs)
-  (setq corfu--popup-ovs nil)
+  (mapc #'delete-overlay corfu--overlays)
+  (setq corfu--overlays nil)
   (when (and (>= corfu--index 0)
              (not (string-prefix-p "corfu-" (prin1-to-string this-command)))
              (not (eq this-command 'keyboard-quit)))
     (corfu-insert)))
 
-(defun corfu--refresh (beg end table pred)
-  "Refresh Corfu overlays, given BEG, END, TABLE and PRED."
-  (let* ((pt (- (point) beg))
-         (str (buffer-substring-no-properties beg end))
-         (before (substring str 0 pt))
-         (after (substring str pt))
-         ;; bug#47678: `completion-boundaries` fails for `partial-completion`
-         ;; if the cursor is moved between the slashes of "~//".
-         ;; See also vertico.el which has the same issue.
-         (bounds (or (condition-case nil
-                         (completion-boundaries before
-                                                table
-                                                pred
-                                                after)
-                       (t (cons 0 (length after)))))))
+(defun corfu--update-display ()
+  "Refresh Corfu UI."
+  (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
+               (pt (- (point) beg))
+               (str (buffer-substring-no-properties beg end))
+               (before (substring str 0 pt))
+               (after (substring str pt))
+               ;; bug#47678: `completion-boundaries` fails for `partial-completion`
+               ;; if the cursor is moved between the slashes of "~//".
+               ;; See also vertico.el which has the same issue.
+               (bounds (or (condition-case nil
+                               (completion-boundaries before
+                                                      table
+                                                      pred
+                                                      after)
+                             (t (cons 0 (length after)))))))
     (unless (equal corfu--input (cons str pt))
       (corfu--update-candidates str bounds pt table pred))
     (when (and
@@ -338,44 +331,36 @@
            (not (equal corfu--candidates (list str))))
       (let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
                          (max 0 (- corfu--total corfu-count))))
-             (end (min (+ start corfu-count) corfu--total))
+             (curr (- corfu--index start))
+             (last (min (+ start corfu-count) corfu--total))
              (bar (ceiling (* corfu-count corfu-count) corfu--total))
-             (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total))))
+             (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
+             (candidates (funcall corfu--highlight (seq-subseq corfu--candidates start last))))
+        (when (>= curr 0)
+          (let ((ov (make-overlay beg end nil t t)))
+            (overlay-put ov 'priority 2000)
+            (overlay-put ov 'window (selected-window))
+            (overlay-put ov 'display (nth curr candidates))
+            (push ov corfu--overlays)))
         ;; Nonlinearity at the end and the beginning
         (when (/= start 0)
           (setq lo (max 1 lo)))
-        (when (/= end corfu--total)
+        (when (/= last corfu--total)
           (setq lo (min (- corfu-count bar 2) lo)))
-        (corfu--popup beg
-                      (- corfu--index start)
-                      (and (> corfu--total corfu-count) lo)
-                      bar
-                      (funcall corfu--highlight
-                               (seq-subseq corfu--candidates start end)))))))
+        (corfu--popup beg curr (and (> corfu--total corfu-count) lo) bar candidates)))))
 
 (defun corfu--post-command-hook ()
   "Refresh Corfu after last command."
   (pcase completion-in-region--data
-    ((and `(,beg ,end ,table ,pred)
-          (guard (eq (marker-buffer beg) (current-buffer)))
-          (guard (<= beg (point) end)))
-     (corfu--refresh beg end table pred)))
-  (unless corfu--popup-ovs
+    (`(,beg ,end ,_table ,_pred)
+     (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
+       (corfu--update-display))))
+  (unless corfu--overlays
     (completion-in-region-mode -1)))
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
-  (setq corfu--index (max -1 (min index (- corfu--total 1))))
-  (if (< corfu--index 0)
-      (when corfu--current-ov
-        (delete-overlay corfu--current-ov)
-        (setq corfu--current-ov nil))
-    (pcase-let ((`(,beg ,end . ,_) completion-in-region--data))
-      (unless corfu--current-ov
-        (setq corfu--current-ov (make-overlay beg end nil t t))
-        (overlay-put corfu--current-ov 'priority 1000)
-        (overlay-put corfu--current-ov 'window (selected-window)))
-      (overlay-put corfu--current-ov 'display (nth corfu--index corfu--candidates)))))
+  (setq corfu--index (max -1 (min index (- corfu--total 1)))))
 
 (defun corfu-next ()
   "Go to next candidate."
@@ -452,8 +437,7 @@
 
 (defun corfu--teardown ()
   "Teardown Corfu."
-  (mapc #'delete-overlay corfu--popup-ovs)
-  (when corfu--current-ov (delete-overlay corfu--current-ov))
+  (mapc #'delete-overlay corfu--overlays)
   (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
   (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
   (mapc #'kill-local-variable '(corfu--base
@@ -462,9 +446,7 @@
                                 corfu--index
                                 corfu--input
                                 corfu--total
-                                corfu--popup-ovs
-                                corfu--current-ov
-                                corfu--borders
+                                corfu--overlays
                                 corfu--extra-properties
                                 completion-show-inline-help
                                 completion-auto-help)))
