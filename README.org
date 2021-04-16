@@ -46,11 +46,12 @@ Notable non-feature: Timer-based automatic completions are not supported.
 
 * Configuration
 
-Corfu must be installed manually as of now. After installation, the local minor
-mode can be enabled with =M-x corfu-mode=. In order to configure Corfu and other
-packages in your init.el, you may want to use ~use-package~. I recommend to give
-orderless completion a try, which is different from the familiar prefix TAB
-completion. Here is an example configuration:
+Corfu is available from [[http://elpa.gnu.org/packages/corfu.html][GNU ELPA]], such that it can be installed directly via
+~package-install~. After installation, the local minor mode can be enabled with
+=M-x corfu-mode=. In order to configure Corfu and other packages in your
+init.el, you may want to use ~use-package~. I recommend to give orderless
+completion a try, which is different from the familiar prefix TAB completion.
+Here is an example configuration:
 
 #+begin_src emacs-lisp
   ;; Configure corfu
