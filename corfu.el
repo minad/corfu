@@ -26,8 +26,8 @@
 
 ;;; Commentary:
 
-;; Corfu provides a completion overlay for the default completion in
-;; region function. The current candidates are shown in a popup
+;; Corfu enhances the default completion in region function with a
+;; completion overlay. The current candidates are shown in a popup
 ;; overlay below or above the point. Corfu can be considered the
 ;; minimalistic completion-in-region counterpart of Vertico.
 
