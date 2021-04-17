@@ -159,9 +159,9 @@
 ;; XXX Is there a better way to generate an image? Bitmap vector?
 (defun corfu--border (w h color width)
   "Generate border with COLOR and WIDTH and image size W*H."
-  (let ((row (funcall (if (< width 0) #'reverse #'identity)
-                      (concat (make-string (abs width) ?0)
-                              (make-string (- w (abs width)) ?1)))))
+  (let ((row (if (< width 0)
+                 (concat (make-string (- w (- width)) ?1) (make-string (- width) ?0))
+               (concat (make-string width ?0) (make-string (- w width) ?1)))))
     (propertize
      " " 'display
      `(image :data ,(format "P1\n%s %s\n%s" w h
@@ -180,7 +180,8 @@
          (rbar (corfu--border (car size) (cdr size) 'corfu-bar (- (ceiling (car size) 3))))
          (col (+ (- pos (line-beginning-position)) corfu--base))
          (max-width (min (/ (window-total-width) 2) (- (window-total-width) col 4)))
-         (pixel-pos (cdr (window-absolute-pixel-position pos)))
+         (ypos (- (line-number-at-pos pos)
+                  (save-excursion (move-to-window-line 0) (line-number-at-pos))))
          (count (length lines))
          (row 0) (width) (formatted) (beg))
     (if (< max-width corfu-min-width)
@@ -192,8 +193,8 @@
             width (apply #'max corfu-min-width (mapcar #'string-width lines))))
     (save-excursion
       (beginning-of-line)
-      (forward-line (if (and (>= count (floor (- (window-pixel-height) pixel-pos) (cdr size)))
-                             (< count (floor pixel-pos (cdr size))))
+      (forward-line (if (and (< count ypos)
+                             (>= count (- (floor (window-pixel-height) (cdr size)) ypos 1)))
                         (- count) 1))
       (setq beg (point))
       (when (save-excursion
