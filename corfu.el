@@ -82,15 +82,17 @@
     (((class color) (min-colors 88) (background light))
      :foreground "#bbb" :background "#444")
     (t :foreground "gray" :background "black"))
-  "Face used for the scrollbar.")
+  "The foreground color is used for the scrollbar indicator.
+If `line-spacing/=nil' or in text-mode, the background color is used instead.")
 
 (defface corfu-border
   '((((class color) (min-colors 88) (background dark))
      :foreground "#444" :background "#444" )
     (((class color) (min-colors 88) (background light))
-     :foreground "#bbb" :background "#bbb")
-    (t :foreground "gray"))
-  "Face used for the border line.")
+     :foreground "#bbb" :background "#ddd")
+    (t :foreground "gray" :background "gray"))
+  "The foreground color used for the thin border.
+If `line-spacing/=nil' or in text-mode, the background color is used instead.")
 
 (defvar corfu-map
   (let ((map (make-sparse-keymap)))
@@ -157,27 +159,32 @@
     (cons (round (* lh (frame-char-width)) (frame-char-height)) lh)))
 
 ;; XXX Is there a better way to generate an image? Bitmap vector?
-(defun corfu--border (w h color width)
-  "Generate border with COLOR and WIDTH and image size W*H."
+(defun corfu--border (w h width fg bg)
+  "Generate border with FG and BG colors, WIDTH and image size W*H."
   (let ((row (if (< width 0)
-                 (concat (make-string (- w (- width)) ?1) (make-string (- width) ?0))
-               (concat (make-string width ?0) (make-string (- w width) ?1)))))
+                 (concat (make-string (- w (- width)) ?0) (make-string (- width) ?1))
+               (concat (make-string width ?1) (make-string (- w width) ?0)))))
     (propertize
      " " 'display
      `(image :data ,(format "P1\n%s %s\n%s" w h
                             (mapconcat (lambda (_) row) (number-sequence 1 h) ""))
              :type pbm :scale 1 :ascent center
-             :background ,(face-attribute color :foreground)
-             :mask (heuristic (0 0 0))))))
+             :background ,(face-attribute bg :background)
+             :foreground ,(face-attribute fg :foreground)))))
 
 (defun corfu--popup (pos idx lo bar lines)
   "Show LINES as popup at POS, with IDX highlighted and scrollbar between LO and LO+BAR."
   (let* ((size (corfu--char-size))
          ;; XXX Deactivate fancy border on terminal or if line-spacing is used
          (fancy-ui (and (not line-spacing) (display-graphic-p)))
-         (lborder (corfu--border (car size) (cdr size) 'corfu-border 1))
-         (rborder (corfu--border (car size) (cdr size) 'corfu-border -1))
-         (rbar (corfu--border (car size) (cdr size) 'corfu-bar (- (ceiling (car size) 3))))
+         (lborder-curr (corfu--border (car size) (cdr size) 1 'corfu-border 'corfu-current))
+         (rborder-curr (corfu--border (car size) (cdr size) -1 'corfu-border 'corfu-current))
+         (rbar-curr (corfu--border (car size) (cdr size) (- (ceiling (car size) 3))
+                                   'corfu-bar 'corfu-current))
+         (lborder (corfu--border (car size) (cdr size) 1 'corfu-border 'corfu-background))
+         (rborder (corfu--border (car size) (cdr size) -1 'corfu-border 'corfu-background))
+         (rbar (corfu--border (car size) (cdr size) (- (ceiling (car size) 3))
+                              'corfu-bar 'corfu-background))
          (col (+ (- pos (line-beginning-position)) corfu--base))
          (max-width (min (/ (window-total-width) 2) (- (window-total-width) col 4)))
          (ypos (- (line-number-at-pos pos)
@@ -205,14 +212,16 @@
         (let ((bufline (buffer-substring (point) (line-end-position)))
               (str (concat
                     (if fancy-ui
-                        (propertize lborder 'face (if (= row idx) 'corfu-current 'corfu-background))
-                      (propertize " " 'face (if (= row idx) 'corfu-current 'corfu-background)))
+                        (if (= row idx) lborder-curr lborder)
+                      (propertize " " 'face 'corfu-border))
                     line
                     (make-string (- width (string-width line)) 32)
                     (if fancy-ui
-                        (propertize (if (and lo (<= lo row (+ lo bar))) rbar rborder)
-                                    'face (if (= row idx) 'corfu-current 'corfu-background))
-                      (propertize " " 'face (if (and lo (<= lo row (+ lo bar))) 'corfu-bar 'corfu-border))))))
+                        (if (and lo (<= lo row (+ lo bar)))
+                            (if (= row idx) rbar-curr rbar)
+                          (if (= row idx) rborder-curr rborder))
+                      (propertize " " 'face (if (and lo (<= lo row (+ lo bar)))
+                                                'corfu-bar 'corfu-border))))))
           (add-face-text-property 0 (length str) (if (= row idx) 'corfu-current 'corfu-background) 'append str)
           (push (concat
                  (truncate-string-to-width bufline col 0 32) str
