@@ -287,6 +287,12 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
         (lambda (x) (and (not (string-match-p ignore x)) (funcall pred x)))
       (lambda (x) (not (string-match-p ignore x))))))
 
+(defun corfu--move-prefix-candidates-to-front (field candidates)
+  "Move CANDIDATES which match prefix of FIELD to the beginning."
+  (let ((word (replace-regexp-in-string " .*" "" field)))
+    (nconc (seq-filter (lambda (x) (string-prefix-p word x)) candidates)
+           (seq-remove (lambda (x) (string-prefix-p word x)) candidates))))
+
 (defun corfu--recompute-candidates (str bounds metadata pt table pred)
   "Recompute candidates from STR, BOUNDS, METADATA, PT, TABLE and PRED."
   (let* ((field (substring str (car bounds) (+ pt (cdr bounds))))
@@ -301,11 +307,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
     (setq all (if-let (sort (corfu--metadata-get metadata 'display-sort-function))
                   (funcall sort all)
                 (sort all #'corfu--sort-predicate)))
-    ;; Move candidates which match prefix to the beginning
-    (let* ((word (replace-regexp-in-string " .*" "" field))
-           (prefix (seq-filter (lambda (x) (string-prefix-p word x)) all))
-           (not-prefix (seq-remove (lambda (x) (string-prefix-p word x)) all)))
-      (setq all (nconc prefix not-prefix)))
+    (setq all (corfu--move-prefix-candidates-to-front field all))
     (when (and completing-file (not (string-suffix-p "/" field)))
       (setq all (corfu--move-to-front (concat field "/") all)))
     (setq all (corfu--move-to-front field all))
