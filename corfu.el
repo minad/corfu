@@ -461,6 +461,8 @@
         (other other-window-scroll-buffer)
         (hide (make-symbol "corfu--hide-help")))
     (fset hide (lambda ()
+                 (when (eq this-command #'corfu-abort)
+                   (setq this-command #'ignore))
                  (remove-hook 'pre-command-hook hide)
                  (setq other-window-scroll-buffer other)
                  (set-window-configuration config)))
