@@ -110,7 +110,6 @@ This package is experimental and new. I am not yet claiming that this package
 works correctly. There are a few known technical caveats.
 
 - No additional caching, the completion table is called repeatedly.
-- The =:exit-function= is always called with argument =finished= after insertion.
 - The overlay popup is brittle (Alternatives to consider: Posframe, Postip)
 - The thin popup borders are only drawn if =line-spacing=nil=.
 - The abort handling could be improved, for example the input could be undone.

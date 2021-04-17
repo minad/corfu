@@ -331,7 +331,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   (setq corfu--overlays nil)
   (unless (or (< corfu--index 0)
               (string-match-p corfu--keep-alive (prin1-to-string this-command)))
-    (corfu-insert)))
+    (corfu--insert 'exact))) ;; Complete with "exact" input
 
 (defun corfu-abort ()
   "Abort Corfu completion."
@@ -387,11 +387,8 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
       (corfu--update-candidates str bounds metadata pt table pred))
     (when (and
            ;; Empty input
-           (or (eq this-command 'completion-at-point)
-               (string-match-p corfu--keep-alive (prin1-to-string this-command))
-               (/= beg end))
-           ;; Input after boundary is empty
-           (not (and (= (car bounds) (length str)) (test-completion str table pred)))
+           (or (eq this-command 'completion-at-point) (/= beg end)
+               (string-match-p corfu--keep-alive (prin1-to-string this-command)))
            ;; XXX Completion is terminated if there are no matches. Add optional confirmation?
            corfu--candidates
            ;; Single candidate, which matches input exactly
@@ -518,7 +515,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   "Try to complete current input."
   (interactive)
   (if (>= corfu--index 0)
-      (corfu-insert)
+      (corfu--insert nil) ;; Continue completion
     (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                  (pt (max 0 (- (point) beg)))
                  (str (buffer-substring-no-properties beg end))
@@ -528,18 +525,29 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
          (completion--replace beg end newstr)
          (goto-char (+ beg newpt)))))))
 
+(defun corfu--insert (status)
+  "Insert current candidate, exit with STATUS if non-nil."
+  (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
+               (str (buffer-substring-no-properties beg end))
+               (newstr (if (and (< corfu--index 0) (not (equal str ""))
+                                (test-completion str table pred))
+                           ;; No candidate selected and current input is a valid completion.
+                           ;; For example str can be a valid path, e.g., ~/dir/.
+                           str
+                         (concat (substring str 0 corfu--base)
+                                 (substring-no-properties (nth (max 0 corfu--index) corfu--candidates))))))
+    (completion--replace beg end newstr)
+    (if (not status)
+        (setq corfu--index -1) ;; Reset selection, but continue completion.
+      ;; XXX Is the :exit-function handling sufficient?
+      (when-let (exit (plist-get corfu--extra-properties :exit-function))
+        (funcall exit newstr status))
+      (completion-in-region-mode -1))))
+
 (defun corfu-insert ()
   "Insert current candidate."
   (interactive)
-  (pcase-let* ((`(,beg ,end . _) completion-in-region--data)
-               (str (buffer-substring-no-properties beg end))
-               (newstr (concat (substring str 0 corfu--base)
-                               (substring-no-properties (nth (max 0 corfu--index) corfu--candidates)))))
-    (completion--replace beg end newstr)
-    ;; XXX Is the :exit-function handling sufficient?
-    (when-let (exit (plist-get corfu--extra-properties :exit-function))
-      (funcall exit newstr 'finished))
-    (completion-in-region-mode -1)))
+  (corfu--insert 'finished))
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
