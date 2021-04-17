@@ -454,9 +454,9 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   (corfu--goto (+ corfu--index corfu-count)))
 
 (defun corfu-first ()
-  "Go to first candidate."
+  "Go to first candidate, or to the prompt when the first candidate is selected."
   (interactive)
-  (corfu--goto 0))
+  (corfu--goto (if (> corfu--index 0) 0 -1)))
 
 (defun corfu-last ()
   "Go to last candidate."
