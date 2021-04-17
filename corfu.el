@@ -55,6 +55,10 @@
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
+(defcustom corfu-fancy t
+  "Show the scroll bar and the border in popups."
+  :type 'boolean)
+
 (defgroup corfu-faces nil
   "Faces used by Corfu."
   :group 'corfu
@@ -178,7 +182,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   "Show LINES as popup at POS, with IDX highlighted and scrollbar between LO and LO+BAR."
   (let* ((size (corfu--char-size))
          ;; XXX Deactivate fancy border on terminal or if line-spacing is used
-         (fancy (and (not line-spacing) (display-graphic-p)))
+         (fancy (and corfu-fancy (not line-spacing) (display-graphic-p)))
          (lborder-curr (corfu--border (car size) (cdr size) 1 'corfu-border 'corfu-current))
          (rborder-curr (corfu--border (car size) (cdr size) -1 'corfu-border 'corfu-current))
          (rbar-curr (corfu--border (car size) (cdr size) (- (ceiling (car size) 3))
@@ -220,8 +224,11 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
                         (if (and lo (<= lo row (+ lo bar)))
                             (if (= row idx) rbar-curr rbar)
                           (if (= row idx) rborder-curr rborder))
-                      (propertize " " 'face (if (and lo (<= lo row (+ lo bar)))
-                                                'corfu-bar 'corfu-border))))))
+                      (propertize " " 'face (cond ((and lo (<= lo row (+ lo bar)))
+						   'corfu-bar)
+						  (corfu-fancy 'corfu-border)
+						  ((= row idx) 'corfu-current)
+						  ('corfu-background)))))))
           (add-face-text-property 0 (length str) (if (= row idx) 'corfu-current 'corfu-background) 'append str)
           (push (concat
                  (truncate-string-to-width bufline col 0 32) str
