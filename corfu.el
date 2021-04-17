@@ -394,7 +394,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
            (not (and (= (car bounds) (length str)) (test-completion str table pred)))
            ;; XXX Completion is terminated if there are no matches. Add optional confirmation?
            corfu--candidates
-           ;; Single candidate
+           ;; Single candidate, which matches input exactly
            (not (equal corfu--candidates (list str))))
       (let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
                          (max 0 (- corfu--total corfu-count))))
@@ -408,7 +408,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
           (let ((ov (make-overlay beg end nil t t)))
             (overlay-put ov 'priority 1000)
             (overlay-put ov 'window (selected-window))
-            (overlay-put ov 'display (nth curr cands))
+            (overlay-put ov 'display (concat (substring str 0 corfu--base) (nth curr cands)))
             (push ov corfu--overlays)))
         ;; Nonlinearity at the end and the beginning
         (when (/= start 0)
