@@ -112,8 +112,9 @@ works correctly. There are a few known caveats.
 - The overlay popup is brittle (Alternatives: Posframe, Postip?)
 - The thin popup borders are only drawn if =line-spacing=nil=.
 - The abort handling could be improved. Undo the completion input?
-- The completion exit predicate is deliberatly ignored in order to
-  give the completion style full control.
+- The ~completion-in-region-mode-predicate~ is deliberatly ignored in order to
+  give the completion style full control. This predicate checks if the start
+  position of the completion changed by calling the backend.
 - Completion is terminated if there are no matches. Add optional confirmation?
 - Company kind icons are not supported (~company-kind~)
 - Company metadata is not shown (~company-docsig~)
