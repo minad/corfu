@@ -55,6 +55,11 @@
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
+;; XXX Maybe there should be a `completion-in-region-styles' variable in Emacs
+(defcustom corfu-completion-styles nil
+  "Completion styles to use for completion in region, defaults to `completion-styles'."
+  :type '(choice (const nil) (repeat symbol)))
+
 (defgroup corfu-faces nil
   "Faces used by Corfu."
   :group 'corfu
@@ -270,7 +275,8 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
               (lambda (pattern cands)
                 (setq hl (lambda (x) (orderless-highlight-matches pattern x)))
                 cands)))
-    (cons (apply #'completion-all-completions args) hl)))
+    (let ((completion-styles (or corfu-completion-styles completion-styles)))
+      (cons (apply #'completion-all-completions args) hl))))
 
 (defun corfu--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
@@ -471,11 +477,11 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
         (other other-window-scroll-buffer)
         (restore (make-symbol "corfu--restore")))
     (fset restore (lambda ()
-                 (when (eq this-command #'corfu-abort)
-                   (setq this-command #'ignore))
-                 (remove-hook 'pre-command-hook restore)
-                 (setq other-window-scroll-buffer other)
-                 (set-window-configuration config)))
+                    (when (eq this-command #'corfu-abort)
+                      (setq this-command #'ignore))
+                    (remove-hook 'pre-command-hook restore)
+                    (setq other-window-scroll-buffer other)
+                    (set-window-configuration config)))
     (run-at-time 0 nil (lambda () (add-hook 'pre-command-hook restore)))))
 
 ;; Company support, taken from `company.el', see `company-show-doc-buffer'.
@@ -522,7 +528,8 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
                  (pt (max 0 (- (point) beg)))
                  (str (buffer-substring-no-properties beg end))
                  (metadata (completion-metadata (substring str 0 pt) table pred)))
-      (pcase (completion-try-completion str table pred pt metadata)
+      (pcase (let ((completion-styles (or corfu-completion-styles completion-styles)))
+               (completion-try-completion str table pred pt metadata))
         ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
          (completion--replace beg end newstr)
          (goto-char (+ beg newpt)))))))
@@ -564,7 +571,8 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
 
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
-  (let ((completion-show-inline-help)
+  (let ((completion-styles (or corfu-completion-styles completion-styles))
+        (completion-show-inline-help)
         (completion-auto-help))
     (apply #'completion--in-region args)))
 
