@@ -579,7 +579,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
 ;;;###autoload
 (define-minor-mode corfu-mode
   "Completion Overlay Region FUnction"
-  :local t
+  :global nil
   (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook 'local)
   (kill-local-variable 'completion-in-region-function)
   (when corfu-mode
