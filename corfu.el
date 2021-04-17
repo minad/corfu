@@ -183,7 +183,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   "Show LINES as popup at POS, with IDX highlighted and scrollbar between LO and LO+BAR."
   (let* ((size (corfu--char-size))
          ;; XXX Deactivate fancy border on terminal or if line-spacing is used
-         (fancy-ui (and (not line-spacing) (display-graphic-p)))
+         (fancy (and (not line-spacing) (display-graphic-p)))
          (lborder-curr (corfu--border (car size) (cdr size) 1 'corfu-border 'corfu-current))
          (rborder-curr (corfu--border (car size) (cdr size) -1 'corfu-border 'corfu-current))
          (rbar-curr (corfu--border (car size) (cdr size) (- (ceiling (car size) 3))
@@ -218,12 +218,10 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
       (dolist (line lines)
         (let ((bufline (buffer-substring (point) (line-end-position)))
               (str (concat
-                    (if fancy-ui
-                        (if (= row idx) lborder-curr lborder)
-                      (propertize " " 'face 'corfu-border))
+                    (if fancy (if (= row idx) lborder-curr lborder) " ")
                     line
                     (make-string (- width (string-width line)) 32)
-                    (if fancy-ui
+                    (if fancy
                         (if (and lo (<= lo row (+ lo bar)))
                             (if (= row idx) rbar-curr rbar)
                           (if (= row idx) rborder-curr rborder))
