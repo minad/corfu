@@ -216,12 +216,13 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
                     (if fancy (if (= row idx) lborder-curr lborder) " ")
                     line
                     (make-string (- width (string-width line)) 32)
-                    (if fancy
-                        (if (and lo (<= lo row (+ lo bar)))
-                            (if (= row idx) rbar-curr rbar)
-                          (if (= row idx) rborder-curr rborder))
-                      (propertize " " 'face (if (and lo (<= lo row (+ lo bar)))
-                                                'corfu-bar 'corfu-border))))))
+                    (cond
+                     (fancy (if (and lo (<= lo row (+ lo bar)))
+                                (if (= row idx) rbar-curr rbar)
+                              (if (= row idx) rborder-curr rborder)))
+                     (lo (propertize " " 'face (if (<= lo row (+ lo bar))
+                                                   'corfu-bar 'corfu-border)))
+                     (t " ")))))
           (add-face-text-property 0 (length str) (if (= row idx) 'corfu-current 'corfu-background) 'append str)
           (push (concat
                  (truncate-string-to-width bufline col 0 32) str
