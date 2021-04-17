@@ -94,6 +94,23 @@ Here is an example configuration:
     (setq tab-always-indent 'complete))
 #+end_src
 
+* Key bindings
+
+Corfu uses a transient keymap ~corfu-map~ which is active while the popup is shown.
+The keymap defines the following remappings and bindings:
+
+- ~beginning-of-buffer~ -> ~corfu-first~
+- ~end-of-buffer~ -> ~corfu-last~
+- ~scroll-down-command~ -> ~corfu-scroll-down~
+- ~scroll-up-command~ -> ~corfu-scroll-up~
+- ~next-line~, =down=, =M-n= -> ~corfu-next~
+- ~previous-line~, =up=, =M-p= -> ~corfu-previous~
+- ~completion-at-point~, =TAB= -> ~corfu-complete~
+- =RET= -> ~corfu-insert~
+- =M-g= -> ~corfu-show-location~
+- =M-h= -> ~corfu-show-documentation~
+- =C-g=, =ESC ESC ESC= -> ~corfu-abort~
+
 * Complementary packages
 
 Corfu works well together with all packages providing code completion via the
