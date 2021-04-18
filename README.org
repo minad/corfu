@@ -135,6 +135,7 @@ works correctly. There are a few known technical caveats.
   if the starting point of the completion changed.
 - Completion is terminated if there are no matches. Add optional confirmation?
 - Company kind icons and metadata are not supported (~company-kind~, ~company-docsig~)
+- No support for multi-backends like Company (Implement a multi-capf?)
 
 * Contributions
 
