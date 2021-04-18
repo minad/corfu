@@ -469,11 +469,11 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
         (other other-window-scroll-buffer)
         (restore (make-symbol "corfu--restore")))
     (fset restore (lambda ()
-                 (when (eq this-command #'corfu-abort)
-                   (setq this-command #'ignore))
-                 (remove-hook 'pre-command-hook restore)
-                 (setq other-window-scroll-buffer other)
-                 (set-window-configuration config)))
+                    (when (eq this-command #'corfu-abort)
+                      (setq this-command #'ignore))
+                    (remove-hook 'pre-command-hook restore)
+                    (setq other-window-scroll-buffer other)
+                    (set-window-configuration config)))
     (run-at-time 0 nil (lambda () (add-hook 'pre-command-hook restore)))))
 
 ;; Company support, taken from `company.el', see `company-show-doc-buffer'.
@@ -551,8 +551,6 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
-  ;; Keep completion alive when popup is shown (disable predicate check!)
-  (remove-hook 'post-command-hook #'completion-in-region--postch)
   (setq corfu--extra-properties completion-extra-properties)
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
   (add-hook 'pre-command-hook #'corfu--pre-command-hook nil 'local)
@@ -574,7 +572,10 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
   (let ((completion-show-inline-help)
-        (completion-auto-help))
+        (completion-auto-help)
+        ;; Disable original predicate check, keep completion alive when popup is shown
+        (completion-in-region-mode-predicate
+         (and completion-in-region-mode-predicate (lambda () t))))
     (apply #'completion--in-region args)))
 
 ;;;###autoload
