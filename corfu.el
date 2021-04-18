@@ -47,9 +47,10 @@
   "Maximal number of candidates to show."
   :type 'integer)
 
-(defcustom corfu-min-width 15
-  "Minimum popup width."
-  :type 'integer)
+(defcustom corfu-width-limits
+  (cons 15 80)
+  "Popup width limits."
+  :type '(cons integer integer))
 
 (defcustom corfu-cycle nil
   "Enable cycling for `corfu-next' and `corfu-previous'."
@@ -188,18 +189,19 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
          (rbar (corfu--border (car size) (cdr size) (- (ceiling (car size) 3))
                               'corfu-bar 'corfu-background))
          (col (+ (- pos (line-beginning-position)) corfu--base))
-         (max-width (min (/ (window-total-width) 2) (- (window-total-width) col 4)))
+         (max-width (min (cdr corfu-width-limits) (/ (window-total-width) 2)))
+         (rest-width (- (window-total-width) col 4))
          (ypos (- (line-number-at-pos pos)
                   (save-excursion (move-to-window-line 0) (line-number-at-pos))))
          (count (length lines))
          (row 0) (width) (formatted) (beg))
-    (if (< max-width corfu-min-width)
-        (setq width (max corfu-min-width (/ (window-total-width) 2))
-              lines (mapcar (lambda (x) (truncate-string-to-width x width)) lines)
-              width (apply #'max (mapcar #'string-width lines))
+    (if (< rest-width (car corfu-width-limits))
+        (setq lines (mapcar (lambda (x) (truncate-string-to-width x max-width)) lines)
+              width (apply #'max (car corfu-width-limits) (mapcar #'string-width lines))
               col (max 0 (- col width 2)))
-      (setq lines (mapcar (lambda (x) (truncate-string-to-width x max-width)) lines)
-            width (apply #'max corfu-min-width (mapcar #'string-width lines))))
+      (setq max-width (min rest-width max-width)
+            lines (mapcar (lambda (x) (truncate-string-to-width x max-width)) lines)
+            width (apply #'max (car corfu-width-limits) (mapcar #'string-width lines))))
     (save-excursion
       (beginning-of-line)
       (forward-line (if (and (< count ypos)
