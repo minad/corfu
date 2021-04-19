@@ -248,6 +248,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
     list))
 
 ;; bug#47711: Deferred highlighting for `completion-all-completions'
+;; XXX There is one complication: `completion--twq-all' already adds `completions-common-part'.
 (declare-function orderless-highlight-matches "ext:orderless")
 (defun corfu--all-completions (&rest args)
   "Compute all completions for ARGS with deferred highlighting."
