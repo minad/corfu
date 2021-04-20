@@ -334,7 +334,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   (setq corfu--overlays nil)
   (unless (or (< corfu--index 0)
               (string-match-p corfu--keep-alive (prin1-to-string this-command)))
-    (corfu--insert 'exact))) ;; Complete with "exact" input
+    (corfu--insert 'exact)))
 
 (defun corfu-abort ()
   "Abort Corfu completion."
@@ -545,13 +545,16 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
       (setq str (concat (substring str 0 corfu--base)
                         (substring-no-properties
                          (nth (max 0 corfu--index) corfu--candidates))))
-      (completion--replace beg end str))
-    (if (not status)
-        (setq corfu--index -1) ;; Reset selection, but continue completion.
-      ;; XXX Is the :exit-function handling sufficient?
-      (when-let (exit (plist-get corfu--extra-properties :exit-function))
-        (funcall exit str status))
-      (completion-in-region-mode -1))))
+      (completion--replace beg end str)
+      (setq corfu--index -1)) ;; Reset selection, but continue completion.
+    (when status (corfu--done str status)))) ;; Exit with status
+
+(defun corfu--done (str status)
+  "Call the `:exit-function' with STR and STATUS and exit completion."
+  ;; XXX Is the :exit-function handling sufficient?
+  (when-let (exit (plist-get corfu--extra-properties :exit-function))
+    (funcall exit str status))
+  (completion-in-region-mode -1))
 
 (defun corfu-insert ()
   "Insert current candidate."
