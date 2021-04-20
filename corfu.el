@@ -388,14 +388,13 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
                              (t (cons 0 (length after)))))))
     (unless (equal corfu--input (cons str pt))
       (corfu--update-candidates str bounds metadata pt table pred))
-    (when (and
-           ;; Empty input
-           (or (eq this-command 'completion-at-point) (/= beg end)
-               (string-match-p corfu--keep-alive (prin1-to-string this-command)))
-           ;; XXX Completion is terminated if there are no matches. Add optional confirmation?
-           corfu--candidates
-           ;; Single candidate, which matches input exactly
-           (not (equal corfu--candidates (list str))))
+    (cond
+     ((and
+       corfu--candidates ;; 1. There are candidates (XXX: Optional confirmation if there are none?)
+       (not (equal corfu--candidates (list str))) ;; 2. Not a single exactly matching candidate
+       (or (/= beg end)  ;; 3. Input is non-empty
+           (eq this-command 'completion-at-point)
+           (string-match-p corfu--keep-alive (prin1-to-string this-command))))
       (let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
                          (max 0 (- corfu--total corfu-count))))
              (curr (- corfu--index start))
@@ -415,7 +414,13 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
           (setq lo (max 1 lo)))
         (when (/= last corfu--total)
           (setq lo (min (- corfu-count bar 2) lo)))
-        (corfu--popup beg curr (and (> corfu--total corfu-count) lo) bar ann-cands)))))
+        (corfu--popup beg curr (and (> corfu--total corfu-count) lo) bar ann-cands)))
+     ;; When after `completion-at-point/corfu-complete', no further completion is possible and the
+     ;; current string is a valid match, exit with status 'finished.
+     ((and (memq this-command '(corfu-complete completion-at-point))
+           (not (stringp (try-completion str table pred)))
+           (test-completion str table pred))
+      (corfu--done str 'finished)))))
 
 (defun corfu--post-command-hook ()
   "Refresh Corfu after last command."
