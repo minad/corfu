@@ -65,6 +65,7 @@ Here is an example configuration:
     ;; For example it is not a useful UI for completions at point in the
     ;; minibuffer.
     :hook ((prog-mode . corfu-mode)
+           (shell-mode . corfu-mode)
            (eshell-mode . corfu-mode))
 
     :config
