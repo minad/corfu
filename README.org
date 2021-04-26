@@ -131,11 +131,10 @@ works correctly. There are a few known technical caveats.
 - The abort handling could be improved, for example the input could be undone.
 - The ~completion-in-region-mode-predicate~ is ignored in order to
   give the completion style full control. The predicate asks the backend if
-  the starting point of the completion changed.
-- Completion is terminated if there are no matches. Add optional confirmation?
+  the starting point of the completion has changed.
 - Company kind icons and metadata are not supported (~company-kind~, ~company-docsig~)
 - No support for multi-backends like Company (Implement a multi-capf?)
-- No support for sorting by history, since ~completion-at-point~ does not
+- No sorting by history, since ~completion-at-point~ does not
   maintain a history (See branch =history= for a possible solution).
 
 * Contributions
