@@ -488,7 +488,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
                     (remove-hook 'pre-command-hook restore)
                     (setq other-window-scroll-buffer other)
                     (set-window-configuration config)))
-    (run-at-time 0 nil (lambda () (add-hook 'pre-command-hook restore)))))
+    (add-hook 'pre-command-hook restore)))
 
 ;; Company support, taken from `company.el', see `company-show-doc-buffer'.
 (defun corfu-show-documentation ()
