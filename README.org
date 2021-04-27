@@ -61,14 +61,16 @@ Here is an example configuration:
     ;;        ("TAB" . corfu-next)
     ;;        ("S-TAB" . corfu-previous))
 
-    ;; Enable the overlay only for certain modes.
-    ;; For example it is not a useful UI for completions at point in the
-    ;; minibuffer.
-    :hook ((prog-mode . corfu-mode)
-           (shell-mode . corfu-mode)
-           (eshell-mode . corfu-mode))
+    ;; You may want to enable Corfu only for certain modes.
+    ;; :hook ((prog-mode . corfu-mode)
+    ;;        (shell-mode . corfu-mode)
+    ;;        (eshell-mode . corfu-mode))
 
     :config
+
+    ;; Alternatively enable Corfu globally.
+    ;; This is recommended if Corfu is used with dabbrev.
+    (corfu-global-mode)
 
     ;; Optionally enable cycling for `corfu-next' and `corfu-previous'.
     ;; (setq corfu-cycle t)
@@ -82,6 +84,12 @@ Here is an example configuration:
     (setq completion-styles '(orderless)
           completion-category-defaults nil
           completion-category-overrides '((file (styles . (partial-completion))))))
+
+  ;; Dabbrev works with Corfu
+  (use-package dabbrev
+    ;; Swap M-/ and C-M-/
+    :bind (("M-/" . dabbrev-completion)
+           ("C-M-/" . dabbrev-expand)))
 
   ;; A few more useful configurations...
   (use-package emacs

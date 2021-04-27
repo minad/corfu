@@ -212,7 +212,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
               width (apply #'max (car corfu-width-limits) (mapcar #'string-width lines))))
       (beginning-of-line)
       (forward-line (if (and (< count ypos)
-                             (>= count (- (floor (window-pixel-height) (cdr size)) ypos 1)))
+                             (>= count (- (floor (window-pixel-height) (cdr size)) ypos 2)))
                         (- count) 1))
       (setq beg (point))
       (when (save-excursion
@@ -606,9 +606,10 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   "Corfu completion in region function passing ARGS to `completion--in-region'."
   (let ((completion-show-inline-help)
         (completion-auto-help)
-        ;; Disable original predicate check, keep completion alive when popup is shown
-        (completion-in-region-mode-predicate
-         (and completion-in-region-mode-predicate (lambda () t))))
+        ;; XXX Disable original predicate check, keep completion alive when
+        ;; popup is shown. Since the predicate is set always, it is ensured
+        ;; that `completion-in-region-mode' is turned on.
+        (completion-in-region-mode-predicate (lambda () t)))
     (apply #'completion--in-region args)))
 
 ;;;###autoload
@@ -620,6 +621,14 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   (when corfu-mode
     (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
     (setq-local completion-in-region-function #'corfu--completion-in-region)))
+
+;;;###autoload
+(define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on)
+
+(defun corfu--on ()
+  "Turn on `corfu-mode'."
+  (unless (minibufferp)
+    (corfu-mode 1)))
 
 (provide 'corfu)
 ;;; corfu.el ends here
