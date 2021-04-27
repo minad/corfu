@@ -392,7 +392,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
                 suffix
               (propertize suffix 'face 'completions-annotations)))))
 
-(defun corfu--update-display (beg end str metadata)
+(defun corfu--show-candidates (beg end str metadata)
   "Update display given BEG, END, STR and METADATA."
   (let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
                      (max 0 (- corfu--total corfu-count))))
@@ -420,7 +420,8 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
-               (metadata (completion-metadata (substring str 0 pt) table pred)))
+               (metadata (completion-metadata (substring str 0 pt) table pred))
+               (initializing (not corfu--input)))
     (cond
      ;; XXX Guard against errors during candidate generation.
      ;; Turn off completion immediately if there are errors
@@ -430,16 +431,19 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
           (unless (equal corfu--input (cons str pt))
             (and (corfu--update-candidates str metadata pt table pred)) nil)
         (t (message "%s" (error-message-string err)))))
-     ((and (not corfu--candidates) ;; 1. There are no candidates
-           corfu-confirm)          ;; 2. Confirmation is enabled
-      (corfu--popup beg (list corfu-confirm)))
+     ((and (not corfu--candidates)                    ;; 1. There are no candidates
+           initializing)                              ;; 2. Initializing, first retrieval of candidates.
+      (minibuffer-message "No match"))                ;; ==> Show error message
+     ((and (not corfu--candidates)                    ;; 1. There are no candidates
+           corfu-confirm)                             ;; 2. Confirmation is enabled
+      (corfu--popup beg (list corfu-confirm)))        ;; ==> Show confirm popup
      ((and corfu--candidates                          ;; 1. There exist candidates
            (not (equal corfu--candidates (list str))) ;; 2. Not a sole exactly matching candidate
            (or (/= beg end)                           ;; 3. Input is non-empty
-               (eq this-command 'completion-at-point)
+               (eq this-command 'completion-at-point) ;; ==> Show candidates popup
                (and (symbolp this-command)
                     (string-match-p corfu--keep-alive (symbol-name this-command)))))
-      (corfu--update-display beg end str metadata))
+      (corfu--show-candidates beg end str metadata))
      ;; When after `completion-at-point/corfu-complete', no further completion is possible and the
      ;; current string is a valid match, exit with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
