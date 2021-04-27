@@ -151,7 +151,8 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   "Extra completion properties.")
 
 (defvar corfu--keep-alive
-  "\\`\\(corfu-\\|scroll-other-window\\)"
+  ;; nil is undefined command
+  "\\`\\(nil\\|completion-at-point\\|corfu-.*\\|scroll-other-window.*\\)\\'"
   "Keep Corfu popup alive during commands matching this regexp.")
 
 (defconst corfu--state-vars
@@ -350,13 +351,16 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
            corfu--total total
            corfu--highlight hl))))
 
+(defun corfu--keep-alive-p ()
+  "Return t if the Corfu popup should stay alive."
+  (and (symbolp this-command)
+       (string-match-p corfu--keep-alive (symbol-name this-command))))
+
 (defun corfu--pre-command-hook ()
   "Delete overlays."
   (mapc #'delete-overlay corfu--overlays)
   (setq corfu--overlays nil)
-  (unless (or (< corfu--index 0)
-              (and (symbolp this-command)
-                   (string-match-p corfu--keep-alive (symbol-name this-command))))
+  (unless (or (< corfu--index 0) (corfu--keep-alive-p))
     (corfu--insert 'exact)))
 
 (defun corfu-abort ()
@@ -431,19 +435,16 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
           (unless (equal corfu--input (cons str pt))
             (and (corfu--update-candidates str metadata pt table pred)) nil)
         (t (message "%s" (error-message-string err)))))
-     ((and (not corfu--candidates)                    ;; 1. There are no candidates
-           initializing)                              ;; 2. Initializing, first retrieval of candidates.
-      (minibuffer-message "No match"))                ;; ==> Show error message
-     ((and (not corfu--candidates)                    ;; 1. There are no candidates
-           corfu-confirm)                             ;; 2. Confirmation is enabled
-      (corfu--popup beg (list corfu-confirm)))        ;; ==> Show confirm popup
-     ((and corfu--candidates                          ;; 1. There exist candidates
-           (not (equal corfu--candidates (list str))) ;; 2. Not a sole exactly matching candidate
-           (or (/= beg end)                           ;; 3. Input is non-empty
-               (eq this-command 'completion-at-point) ;; ==> Show candidates popup
-               (and (symbolp this-command)
-                    (string-match-p corfu--keep-alive (symbol-name this-command)))))
-      (corfu--show-candidates beg end str metadata))
+     ((and (not corfu--candidates)                    ;; 1) There are no candidates
+           initializing)                              ;; &  Initializing, first retrieval of candidates.
+      (minibuffer-message "No match"))                ;; => Show error message
+     ((and (not corfu--candidates)                    ;; 2) There are no candidates
+           corfu-confirm)                             ;; &  Confirmation is enabled
+      (corfu--popup beg (list corfu-confirm)))        ;; => Show confirmation popup
+     ((and corfu--candidates                          ;; 3) There exist candidates
+           (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
+           (or (/= beg end) (corfu--keep-alive-p)))   ;; &  Input is non-empty or keep-alive command
+      (corfu--show-candidates beg end str metadata))  ;; => Show candidates popup
      ;; When after `completion-at-point/corfu-complete', no further completion is possible and the
      ;; current string is a valid match, exit with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
