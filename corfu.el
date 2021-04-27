@@ -285,12 +285,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
               (lambda (pattern cands)
                 (setq hl (lambda (x) (orderless-highlight-matches pattern x)))
                 cands)))
-    ;; XXX dabbrev throws error "No dynamic expansion ... found".
-    ;; TODO report as bug? Are completion tables supposed to throw errors?
-    (cons (condition-case nil
-              (apply #'completion-all-completions args)
-            (t nil))
-          hl)))
+    (cons (apply #'completion-all-completions args) hl)))
 
 (defun corfu--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
@@ -426,9 +421,15 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
                (metadata (completion-metadata (substring str 0 pt) table pred)))
-    (unless (equal corfu--input (cons str pt))
-      (corfu--update-candidates str metadata pt table pred))
     (cond
+     ;; XXX Guard against errors during candidate generation.
+     ;; Turn off completion immediately if there are errors
+     ;; For example dabbrev throws error "No dynamic expansion ... found".
+     ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
+     ((condition-case err
+          (unless (equal corfu--input (cons str pt))
+            (and (corfu--update-candidates str metadata pt table pred)) nil)
+        (t (message "%s" (error-message-string err)))))
      ((and (not corfu--candidates) ;; 1. There are no candidates
            corfu-confirm)          ;; 2. Confirmation is enabled
       (corfu--popup beg (list corfu-confirm)))
