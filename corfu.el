@@ -375,7 +375,7 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
       (funcall aff candidates)
     (if-let (ann (or (corfu--metadata-get metadata 'annotation-function)
                      (plist-get corfu--extra-properties :annotation-function)))
-        (mapcar (lambda (cand) (list cand (or (funcall ann cand) ""))) candidates)
+        (mapcar (lambda (cand) (list cand "" (or (funcall ann cand) ""))) candidates)
       candidates)))
 
 ;; XXX Do not use `completion-metadata-get' in order to avoid Marginalia.
@@ -384,17 +384,14 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
   "Return PROP from METADATA."
   (cdr (assq prop metadata)))
 
-(defun corfu--format-candidate (ann-cand)
-  "Format annotated ANN-CAND string."
-  (let* ((prefix "") (suffix "")
-         (cand (pcase ann-cand
-                 (`(,c ,s) (setq suffix s) c)
-                 (`(,c ,p ,s) (setq prefix p suffix s) c)
-                 (c c))))
-    (concat prefix cand
-            (if (text-property-not-all 0 (length suffix) 'face nil suffix)
-                suffix
-              (propertize suffix 'face 'completions-annotations)))))
+(defun corfu--format-candidate (cand)
+  "Format annotated CAND string."
+  (if (consp cand)
+      (concat (cadr cand) (car cand)
+              (if (text-property-not-all 0 (length (caddr cand)) 'face nil (caddr cand))
+                  (caddr cand)
+                (propertize (caddr cand) 'face 'completions-annotations)))
+    cand))
 
 (defun corfu--show-candidates (beg end str metadata)
   "Update display given BEG, END, STR and METADATA."
