@@ -285,7 +285,12 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
               (lambda (pattern cands)
                 (setq hl (lambda (x) (orderless-highlight-matches pattern x)))
                 cands)))
-    (cons (apply #'completion-all-completions args) hl)))
+    ;; XXX dabbrev throws error "No dynamic expansion ... found".
+    ;; TODO report as bug? Are completion tables supposed to throw errors?
+    (cons (condition-case nil
+              (apply #'completion-all-completions args)
+            (t nil))
+          hl)))
 
 (defun corfu--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
