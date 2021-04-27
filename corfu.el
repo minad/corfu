@@ -429,14 +429,15 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
     (unless (equal corfu--input (cons str pt))
       (corfu--update-candidates str metadata pt table pred))
     (cond
-     ((and (not corfu--candidates) corfu-confirm)
+     ((and (not corfu--candidates) ;; 1. There are no candidates
+           corfu-confirm)          ;; 2. Confirmation is enabled
       (corfu--popup beg (list corfu-confirm)))
-     ((and
-       corfu--candidates ;; 1. There exist candidates
-       (not (equal corfu--candidates (list str))) ;; 2. Not a single exactly matching candidate
-       (or (/= beg end)  ;; 3. Input is non-empty
-           (eq this-command 'completion-at-point)
-           (string-match-p corfu--keep-alive (prin1-to-string this-command))))
+     ((and corfu--candidates                          ;; 1. There exist candidates
+           (not (equal corfu--candidates (list str))) ;; 2. Not a sole exactly matching candidate
+           (or (/= beg end)                           ;; 3. Input is non-empty
+               (eq this-command 'completion-at-point)
+               (and (symbolp this-command)
+                    (string-match-p corfu--keep-alive (symbol-name this-command)))))
       (corfu--update-display beg end str metadata))
      ;; When after `completion-at-point/corfu-complete', no further completion is possible and the
      ;; current string is a valid match, exit with status 'finished.
