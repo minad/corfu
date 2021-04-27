@@ -19,7 +19,7 @@ Corfu and Vertico are two separate packages in order to optimize the UI for the
 two distinct use cases, also leading to code bases which are easier to
 understand.
 
-Corfu is a minimal package (~500 lines of code without whitespace and comments).
+Corfu is a minimal package (~600 lines of code without whitespace and comments).
 In contrast to the featureful and complex Company package, Corfu concentrates on
 the completion UI and does not include custom completion backends. Completions
 are either provided by commands like ~dabbrev-completion~ or by pluggable

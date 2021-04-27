@@ -61,6 +61,10 @@
 Set to nil in order to disable confirmation."
   :type '(choice (const nil) string))
 
+(defcustom corfu-excluded-modes nil
+  "List of modes excluded by `corfu-global-mode'."
+  :type '(repeat symbol))
+
 (defgroup corfu-faces nil
   "Faces used by Corfu."
   :group 'corfu
@@ -626,8 +630,10 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
 (define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on)
 
 (defun corfu--on ()
-  "Turn on `corfu-mode'."
-  (unless (minibufferp)
+  "Turn `corfu-mode' on."
+  (unless (or noninteractive
+              (eq (aref (buffer-name) 0) ?\s)
+              (memq major-mode corfu-excluded-modes))
     (corfu-mode 1)))
 
 (provide 'corfu)
