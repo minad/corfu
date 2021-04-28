@@ -175,10 +175,10 @@ Set to nil in order to disable confirmation."
          (after-make-frame-functions)
          (edge (window-inside-pixel-edges))
          (lh (line-pixel-height))
-         (x (max 0 (min (+ (car edge) x) (- (frame-pixel-width) width))))
+         (x (max 0 (min (+ (car edge) x -1) (- (frame-pixel-width) width))))
          (y (+ (cadr edge) y))
 	 (y (if (> (+ y height (* 3 lh)) (frame-pixel-height))
-		(- y height)
+		(- y height 1)
               (+ y lh)))
          (buffer (get-buffer-create " *corfu*")))
     (with-current-buffer buffer
