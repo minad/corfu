@@ -193,7 +193,8 @@ Set to nil in order to disable confirmation."
                   fringes-outside-margins 0)
       (let (inhibit-modification-hooks)
         (erase-buffer)
-        (insert content)))
+        (insert content)
+        (goto-char (point-min))))
     (unless (and (frame-live-p corfu--frame)
                  (eq (frame-parent corfu--frame) (window-frame)))
       (when corfu--frame
@@ -632,7 +633,10 @@ Set to nil in order to disable confirmation."
   (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
   (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
   (when corfu--overlay (delete-overlay corfu--overlay))
-  (when (frame-live-p corfu--frame) (make-frame-invisible corfu--frame))
+  (when (frame-live-p corfu--frame)
+    (make-frame-invisible corfu--frame)
+    (with-current-buffer (window-buffer (frame-root-window corfu--frame))
+      (erase-buffer)))
   (mapc #'kill-local-variable corfu--state-vars))
 
 (defun corfu--mode-hook ()
