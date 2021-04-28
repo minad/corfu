@@ -465,22 +465,22 @@ Set to nil in order to disable confirmation."
            initializing)                              ;; &  Initializing, first retrieval of candidates.
       (minibuffer-message "No match")                 ;; => Show error message
       nil)
-     ((and (not corfu--candidates)                    ;; 2) There are no candidates
-           corfu-confirm)                             ;; &  Confirmation is enabled
-      (corfu--popup beg (list corfu-confirm))         ;; => Show confirmation popup
-      t)
-     ((and corfu--candidates                          ;; 3) There exist candidates
+     ((and corfu--candidates                          ;; 2) There exist candidates
            (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
            (or (/= beg end) (corfu--keep-alive-p)))   ;; &  Input is non-empty or keep-alive command
       (corfu--show-candidates beg end str metadata)   ;; => Show candidates popup
       t)
-     ;; When after `completion-at-point/corfu-complete', no further completion is possible and the
+     ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
      ;; current string is a valid match, exit with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
            (not (stringp (try-completion str table pred)))
            (test-completion str table pred))
       (corfu--done str 'finished)
-      nil))))
+      nil)
+     ((and (not corfu--candidates)                    ;; 4) There are no candidates
+           corfu-confirm)                             ;; &  Confirmation is enabled
+      (corfu--popup beg (list corfu-confirm))         ;; => Show confirmation popup
+      t))))
 
 (defun corfu--pre-command-hook ()
   "Insert selected candidate unless keep alive command."
