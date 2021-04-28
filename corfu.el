@@ -88,19 +88,19 @@ Set to nil in order to disable confirmation."
 
 (defface corfu-bar
   '((((class color) (min-colors 88) (background dark))
-     :foreground "#444")
+     :background "#444")
     (((class color) (min-colors 88) (background light))
-     :foreground "#bbb")
-    (t :foreground "gray"))
-  "The foreground color is used for the scrollbar indicator.")
+     :background "#bbb")
+    (t :background "gray"))
+  "The background color is used for the scrollbar indicator.")
 
 (defface corfu-border
   '((((class color) (min-colors 88) (background dark))
-     :foreground "#444")
+     :background "#444")
     (((class color) (min-colors 88) (background light))
-     :foreground "#bbb")
-    (t :foreground "gray"))
-  "The foreground color used for the thin border.")
+     :background "#bbb")
+    (t :background "gray"))
+  "The background color used for the thin border.")
 
 (defvar corfu-map
   (let ((map (make-sparse-keymap)))
@@ -167,20 +167,6 @@ Set to nil in order to disable confirmation."
     corfu--extra-properties)
   "Buffer-local state variables used by Corfu.")
 
-;; XXX Is there a better way to generate an image? Bitmap vector?
-(defun corfu--border (w h width fg bg)
-  "Generate border with FG and BG colors, WIDTH and image size W*H."
-  (let ((row (if (< width 0)
-                 (concat (make-string (- w (- width)) ?0) (make-string (- width) ?1))
-               (concat (make-string width ?1) (make-string (- w width) ?0)))))
-    (propertize
-     " " 'display
-     `(image :data ,(format "P1\n%s %s\n%s" w h
-                            (mapconcat (lambda (_) row) (number-sequence 1 h) ""))
-             :type pbm :scale 1 :ascent center
-             :background ,(face-attribute bg :background)
-             :foreground ,(face-attribute fg :foreground)))))
-
 ;; Function adapted from posframe.el by tumashu
 (defun corfu--child-frame (x y width height content)
   "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT."
@@ -243,7 +229,7 @@ Set to nil in order to disable confirmation."
                (visibility . nil)
                (no-special-glyphs . t))))
       (set-window-buffer (frame-root-window corfu--frame) buffer)
-      (set-face-background 'internal-border (face-attribute 'corfu-border :foreground) corfu--frame)
+      (set-face-background 'internal-border (face-attribute 'corfu-border :background) corfu--frame)
       (redisplay)) ;; force face loading?
     (set-frame-position corfu--frame x y)
     (set-frame-size corfu--frame width height t)
@@ -253,15 +239,11 @@ Set to nil in order to disable confirmation."
   "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
   (let* ((cw (frame-char-width))
          (ch (frame-char-height))
-         (bw (ceiling cw 1.6))
-         (lborder (corfu--border bw ch 0 'corfu-border 'corfu-background))
-         (lborder-curr (corfu--border bw ch 0 'corfu-border 'corfu-current))
-         (rborder (corfu--border bw ch 0 'corfu-border 'corfu-background))
-         (rborder-curr (corfu--border bw ch 0 'corfu-border 'corfu-current))
-         (rbar-curr (corfu--border bw ch (- (ceiling cw 4))
-                                   'corfu-bar 'corfu-current))
-         (rbar (corfu--border bw ch (- (ceiling cw 4))
-                              'corfu-bar 'corfu-background))
+         (mw (ceiling cw 1.6))
+         (margin (propertize " " 'display `(space :width (,mw))))
+         (margin-bar (concat
+                      (propertize " " 'display `(space :width (,(- mw (ceiling cw 4)))))
+                      (propertize " " 'face 'corfu-bar 'display `(space :width (,(ceiling cw 4))))))
          (width (min (cdr corfu-width-limits)
                      (/ (frame-width) 2)
                      (apply #'max (car corfu-width-limits)
@@ -269,15 +251,14 @@ Set to nil in order to disable confirmation."
          (row 0)
          (pos (posn-x-y (posn-at-point pos))))
     (corfu--child-frame
-     (- (or (car pos) 0) bw) (or (cdr pos) 0)
-     (+ (* width cw) bw bw) (* (length lines) ch)
+     (- (or (car pos) 0) mw) (or (cdr pos) 0)
+     (+ (* width cw) mw mw) (* (length lines) ch)
      (mapconcat (lambda (line)
                   (let ((str (concat
-                              (if (eq row curr) lborder-curr lborder)
+                              margin
                               (truncate-string-to-width line width 0 32)
                               (if (and lo (<= lo row (+ lo bar)))
-                                  (if (eq row curr) rbar-curr rbar)
-                                (if (eq row curr) rborder-curr rborder)))))
+                                  margin-bar margin))))
                     (when (eq row curr)
                       (add-face-text-property
                        0 (length str) 'corfu-current 'append str))
