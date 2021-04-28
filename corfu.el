@@ -485,7 +485,7 @@ Set to nil in order to disable confirmation."
   (unless (or (< corfu--index 0) (corfu--keep-alive-p))
     (corfu--insert 'exact)))
 
-(defun corfu--window-configuration-change-hook ()
+(defun corfu--window-change-hook ()
   "Terminate completion when window configuration changed."
   (completion-in-region-mode -1))
 
@@ -542,12 +542,18 @@ Set to nil in order to disable confirmation."
   (let ((config (current-window-configuration))
         (other other-window-scroll-buffer)
         (restore (make-symbol "corfu--restore")))
-    (fset restore (lambda ()
-                    (when (eq this-command #'corfu-abort)
-                      (setq this-command #'ignore))
-                    (remove-hook 'pre-command-hook restore)
-                    (setq other-window-scroll-buffer other)
-                    (set-window-configuration config)))
+    (remove-hook 'window-configuration-change-hook
+                 #'corfu--window-change-hook 'local)
+    (fset restore
+          (lambda ()
+            (when (eq this-command #'corfu-abort)
+              (setq this-command #'ignore))
+            (remove-hook 'pre-command-hook restore)
+            (setq other-window-scroll-buffer other)
+            (set-window-configuration config)
+            (redisplay) ;; force configuration change
+            (add-hook 'window-configuration-change-hook
+                      #'corfu--window-change-hook nil 'local)))
     (add-hook 'pre-command-hook restore)))
 
 ;; Company support, taken from `company.el', see `company-show-doc-buffer'.
@@ -638,13 +644,13 @@ Set to nil in order to disable confirmation."
   "Setup Corfu completion state."
   (setq corfu--extra-properties completion-extra-properties)
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
-  (add-hook 'window-configuration-change-hook #'corfu--window-configuration-change-hook nil 'local)
+  (add-hook 'window-configuration-change-hook #'corfu--window-change-hook nil 'local)
   (add-hook 'pre-command-hook #'corfu--pre-command-hook nil 'local)
   (add-hook 'post-command-hook #'corfu--post-command-hook nil 'local))
 
 (defun corfu--teardown ()
   "Teardown Corfu."
-  (remove-hook 'window-configuration-change-hook #'corfu--window-configuration-change-hook 'local)
+  (remove-hook 'window-configuration-change-hook #'corfu--window-change-hook 'local)
   (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
   (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
   (when corfu--overlay (delete-overlay corfu--overlay))
