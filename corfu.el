@@ -201,7 +201,6 @@ Set to nil in order to disable confirmation."
       (setq corfu--frame
             (make-frame
              `((parent-frame . ,(window-frame))
-               (background-color . ,(face-attribute 'corfu-background :background))
                (no-accept-focus . t)
                (min-width . t)
                (min-height . t)
@@ -223,8 +222,9 @@ Set to nil in order to disable confirmation."
                (cursor-type . nil)
                (minibuffer . nil)
                (visibility . nil)
-               (no-special-glyphs . t))))
-      (set-face-background 'internal-border (face-attribute 'corfu-border :background) corfu--frame))
+               (no-special-glyphs . t)))))
+    (set-face-background 'internal-border (face-attribute 'corfu-border :background) corfu--frame)
+    (set-frame-parameter corfu--frame 'background-color (face-attribute 'corfu-background :background))
     (set-window-buffer (frame-root-window corfu--frame) buffer)
     (set-frame-position corfu--frame x y)
     (set-frame-size corfu--frame width height t)
