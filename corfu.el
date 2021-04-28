@@ -185,6 +185,15 @@ If `line-spacing/=nil' or in text-mode, the background color is used instead.")
              :background ,(face-attribute bg :background)
              :foreground ,(face-attribute fg :foreground)))))
 
+;; XXX The popup code is unreliable. There are many problematic
+;; scenarios where the popup may fail:
+;; 1. display-line-numbers-mode
+;; 2. Overhanging lines (popup at the end of buffer)
+;; 3. Overhanging columns (popup at the end of line)
+;; 4. Outline folding
+;; 5. Wide characters like TAB
+;; 6. Lines with invisible/display properties (Org folding)
+;; 7. Scrolled windows
 (defun corfu--popup (pos lines &optional curr lo bar)
   "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
   (save-excursion
