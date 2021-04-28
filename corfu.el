@@ -480,7 +480,7 @@ Set to nil in order to disable confirmation."
         (`(,beg ,end ,_table ,_pred)
          (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
            (corfu--update))))
-      (completion-in-region-mode -1)))
+      (corfu-abort)))
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
@@ -611,14 +611,14 @@ Set to nil in order to disable confirmation."
   ;; XXX Is the :exit-function handling sufficient?
   (when-let (exit (plist-get corfu--extra-properties :exit-function))
     (funcall exit str status))
-  (completion-in-region-mode -1))
+  (corfu-abort))
 
 (defun corfu-insert ()
   "Insert current candidate."
   (interactive)
   (if (> corfu--total 0)
       (corfu--insert 'finished)
-    (completion-in-region-mode -1)))
+    (corfu-abort)))
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
