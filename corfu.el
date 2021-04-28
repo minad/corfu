@@ -230,7 +230,7 @@ Set to nil in order to disable confirmation."
                (no-special-glyphs . t))))
       (set-window-buffer (frame-root-window corfu--frame) buffer)
       (set-face-background 'internal-border (face-attribute 'corfu-border :background) corfu--frame)
-      (redisplay)) ;; force face loading?
+      (redraw-frame corfu--frame)) ;; force face loading?
     (set-frame-position corfu--frame x y)
     (set-frame-size corfu--frame width height t)
     (make-frame-visible corfu--frame)))
