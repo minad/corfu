@@ -231,7 +231,7 @@ Set to nil in order to disable confirmation."
     (set-frame-size corfu--frame width height t)
     (make-frame-visible corfu--frame)))
 
-(defun corfu--popup (pos lines &optional curr lo bar)
+(defun corfu--popup-show (pos lines &optional curr lo bar)
   "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
   (let* ((cw (frame-char-width))
          (ch (frame-char-height))
@@ -261,6 +261,14 @@ Set to nil in order to disable confirmation."
                     (setq row (1+ row))
                     str))
                 lines "\n"))))
+
+(defun corfu--popup-hide ()
+  "Hide Corfu popup."
+  (when (frame-live-p corfu--frame)
+    (make-frame-invisible corfu--frame)
+    (with-current-buffer (window-buffer (frame-root-window corfu--frame))
+      (erase-buffer)))
+  (remove-hook 'window-configuration-change-hook #'corfu--popup-hide))
 
 (defun corfu--move-to-front (elem list)
   "Move ELEM to front of LIST."
@@ -417,7 +425,7 @@ Set to nil in order to disable confirmation."
       (setq lo (max 1 lo)))
     (when (/= last corfu--total)
       (setq lo (min (- corfu-count bar 2) lo)))
-    (corfu--popup (+ beg corfu--base) ann-cands curr (and (> corfu--total corfu-count) lo) bar)))
+    (corfu--popup-show (+ beg corfu--base) ann-cands curr (and (> corfu--total corfu-count) lo) bar)))
 
 (defun corfu--update ()
   "Refresh Corfu UI."
@@ -454,26 +462,18 @@ Set to nil in order to disable confirmation."
       nil)
      ((and (not corfu--candidates)                    ;; 4) There are no candidates
            corfu-no-match)                            ;; &  Confirmation is enabled
-      (corfu--popup beg (list corfu-no-match))        ;; => Show confirmation popup
+      (corfu--popup-show beg (list corfu-no-match))   ;; => Show confirmation popup
       t))))
 
 (defun corfu--pre-command-hook ()
   "Insert selected candidate unless keep alive command."
-  (add-hook 'window-configuration-change-hook #'corfu--hide)
+  (add-hook 'window-configuration-change-hook #'corfu--popup-hide)
   (unless (or (< corfu--index 0) (corfu--keep-alive-p))
     (corfu--insert 'exact)))
 
-(defun corfu--hide ()
-  "Hide Corfu popup."
-  (when (frame-live-p corfu--frame)
-    (make-frame-invisible corfu--frame)
-    (with-current-buffer (window-buffer (frame-root-window corfu--frame))
-      (erase-buffer)))
-  (remove-hook 'window-configuration-change-hook #'corfu--hide))
-
 (defun corfu--post-command-hook ()
   "Refresh Corfu after last command."
-  (remove-hook 'window-configuration-change-hook #'corfu--hide)
+  (remove-hook 'window-configuration-change-hook #'corfu--popup-hide)
   (or (pcase completion-in-region--data
         (`(,beg ,end ,_table ,_pred)
          (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
@@ -627,7 +627,7 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--teardown ()
   "Teardown Corfu."
-  (corfu--hide)
+  (corfu--popup-hide)
   (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
   (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
   (when corfu--overlay (delete-overlay corfu--overlay))
