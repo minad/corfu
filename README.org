@@ -10,7 +10,7 @@
 
 Corfu enhances the default completion in region function with a completion
 overlay. The current candidates are shown in a popup below or above the point.
-Corfu can be considered the minimalistic completion-in-region counterpart of the
+Corfu can be considered the minimalistic ~completion-in-region~ counterpart of the
 [[https://github.com/minad/vertico][Vertico]] minibuffer UI.
 
 Icomplete implements both completion-in-region and minibuffer completion in a

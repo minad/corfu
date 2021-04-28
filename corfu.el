@@ -56,7 +56,7 @@
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
-(defcustom corfu-confirm "(No match)"
+(defcustom corfu-confirm (propertize "No match" 'face 'italic)
   "Show this confirmation string if there is no match.
 Set to nil in order to disable confirmation."
   :type '(choice (const nil) string))
@@ -76,7 +76,7 @@ Set to nil in order to disable confirmation."
     (((class color) (min-colors 88) (background light))
      :background "#ffe" :inherit default)
     (t :background "gray" :foreground "black" :inherit default))
-  "Face used to for the overlay background.")
+  "Face used to for the popup background.")
 
 (defface corfu-current
   '((((class color) (min-colors 88) (background dark))
