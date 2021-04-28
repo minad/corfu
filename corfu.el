@@ -428,7 +428,6 @@ Set to nil in order to disable confirmation."
          (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
          (ann-cands (mapcar #'corfu--format-candidate (corfu--annotate metadata cands))))
     (when (>= curr 0)
-      (when corfu--overlay (delete-overlay corfu--overlay))
       (setq corfu--overlay (make-overlay beg end nil t t))
       (overlay-put corfu--overlay 'priority 1000)
       (overlay-put corfu--overlay 'window (selected-window))
@@ -480,6 +479,9 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--pre-command-hook ()
   "Insert selected candidate unless keep alive command."
+  (when corfu--overlay
+    (delete-overlay corfu--overlay)
+    (setq corfu--overlay nil))
   (unless (or (< corfu--index 0) (corfu--keep-alive-p))
     (corfu--insert 'exact)))
 
