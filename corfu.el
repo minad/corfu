@@ -181,7 +181,7 @@ Set to nil in order to disable confirmation."
       (setq-local mode-line-format nil
                   header-line-format nil
                   frame-title-format ""
-                  truncate-lines nil
+                  truncate-lines t
                   cursor-type nil
                   cursor-in-non-selected-windows nil
                   show-trailing-whitespace nil
@@ -224,7 +224,7 @@ Set to nil in order to disable confirmation."
                (minibuffer . nil)
                (visibility . nil)
                (no-special-glyphs . t))))
-      (set-face-background 'internal-border (face-attribute 'corfu-border :background) corfu--frame)) ;; force face loading?
+      (set-face-background 'internal-border (face-attribute 'corfu-border :background) corfu--frame))
     (set-window-buffer (frame-root-window corfu--frame) buffer)
     (set-frame-position corfu--frame x y)
     (set-frame-size corfu--frame width height t)
@@ -236,9 +236,8 @@ Set to nil in order to disable confirmation."
          (ch (frame-char-height))
          (mw (ceiling cw 1.6))
          (margin (propertize " " 'display `(space :width (,mw))))
-         (margin-bar (concat
-                      (propertize " " 'display `(space :width (,(- mw (ceiling cw 4)))))
-                      (propertize " " 'face 'corfu-bar 'display `(space :width (,(ceiling cw 4))))))
+         (align (propertize " " 'display `(space :align-to (- right (,(ceiling cw 4))))))
+         (sbar (propertize " " 'face 'corfu-bar 'display `(space :width (,(ceiling cw 4)))))
          (width (min (cdr corfu-width-limits)
                      (/ (frame-width) 2)
                      (apply #'max (car corfu-width-limits)
@@ -251,9 +250,10 @@ Set to nil in order to disable confirmation."
      (mapconcat (lambda (line)
                   (let ((str (concat
                               margin
-                              (truncate-string-to-width line width 0 32)
+                              (truncate-string-to-width line width)
+                              align
                               (if (and lo (<= lo row (+ lo bar)))
-                                  margin-bar margin))))
+                                  sbar margin))))
                     (when (eq row curr)
                       (add-face-text-property
                        0 (length str) 'corfu-current 'append str))
