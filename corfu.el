@@ -72,33 +72,29 @@ Set to nil in order to disable confirmation."
 
 (defface corfu-background
   '((((class color) (min-colors 88) (background dark))
-     :background "#222" :inherit default)
+     :background "#222")
     (((class color) (min-colors 88) (background light))
-     :background "#ffe" :inherit default)
-    (t :background "gray" :foreground "black" :inherit default))
+     :background "#ffe")
+    (t :background "gray"))
   "Face used to for the popup background.")
 
 (defface corfu-current
   '((((class color) (min-colors 88) (background dark))
-     :background "#137" :inherit default)
+     :background "#137" :foreground "white")
     (((class color) (min-colors 88) (background light))
-     :background "#cef" :inherit default)
-    (t :background "blue" :foreground "white" :inherit default))
+     :background "#cef" :foreground "black")
+    (t :background "blue" :foreground "white"))
   "Face used to highlight the currently selected candidate.")
 
 (defface corfu-bar
-  '((((class color) (min-colors 88) (background dark))
-     :background "#444")
-    (((class color) (min-colors 88) (background light))
-     :background "#bbb")
+  '((((class color) (min-colors 88) (background dark)) :background "#444")
+    (((class color) (min-colors 88) (background light)) :background "#bbb")
     (t :background "gray"))
   "The background color is used for the scrollbar indicator.")
 
 (defface corfu-border
-  '((((class color) (min-colors 88) (background dark))
-     :background "#444")
-    (((class color) (min-colors 88) (background light))
-     :background "#bbb")
+  '((((class color) (min-colors 88) (background dark)) :background "#444")
+    (((class color) (min-colors 88) (background light)) :background "#bbb")
     (t :background "gray"))
   "The background color used for the thin border.")
 
