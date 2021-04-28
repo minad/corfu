@@ -142,17 +142,14 @@ Set to nil in order to disable confirmation."
 (defvar-local corfu--input nil
   "Cons of last prompt contents and point or t.")
 
-(defvar-local corfu--popup-frame nil
-  "Popup frame.")
-
-(defvar-local corfu--popup-buffer nil
-  "Popup buffer.")
-
 (defvar-local corfu--overlay nil
   "Current candidate overlay.")
 
 (defvar-local corfu--extra-properties nil
   "Extra completion properties.")
+
+(defvar corfu--frame nil
+  "Popup frame.")
 
 (defvar corfu--keep-alive
   ;; nil is undefined command
@@ -166,8 +163,6 @@ Set to nil in order to disable confirmation."
     corfu--index
     corfu--input
     corfu--total
-    corfu--popup-frame
-    corfu--popup-buffer
     corfu--overlay
     corfu--extra-properties)
   "Buffer-local state variables used by Corfu.")
@@ -198,9 +193,9 @@ Set to nil in order to disable confirmation."
          (y (+ (cadr edge) y))
 	 (y (if (> (+ y height (* 3 lh)) (frame-pixel-height))
 		(- y height)
-              (+ y lh))))
-    (setq corfu--popup-buffer (or corfu--popup-buffer (generate-new-buffer " *corfu*")))
-    (with-current-buffer corfu--popup-buffer
+              (+ y lh)))
+         (buffer (get-buffer-create " *corfu*")))
+    (with-current-buffer buffer
       (setq-local mode-line-format nil
                   header-line-format nil
                   frame-title-format ""
@@ -217,8 +212,11 @@ Set to nil in order to disable confirmation."
       (let (inhibit-modification-hooks)
         (erase-buffer)
         (insert content)))
-    (unless corfu--popup-frame
-      (setq corfu--popup-frame
+    (unless (and (frame-live-p corfu--frame)
+                 (eq (frame-parent corfu--frame) (window-frame)))
+      (when corfu--frame
+        (delete-frame corfu--frame))
+      (setq corfu--frame
             (make-frame
              `((parent-frame . ,(window-frame))
                (background-color . ,(face-attribute 'corfu-background :background))
@@ -242,10 +240,12 @@ Set to nil in order to disable confirmation."
                (undecorated . t)
                (cursor-type . nil)
                (minibuffer . nil)
+               (visibility . nil)
                (no-special-glyphs . t))))
-      (set-window-buffer (frame-root-window corfu--popup-frame) corfu--popup-buffer))
-    (set-frame-position corfu--popup-frame x y)
-    (set-frame-size corfu--popup-frame width height t)))
+      (set-window-buffer (frame-root-window corfu--frame) buffer))
+    (set-frame-position corfu--frame x y)
+    (set-frame-size corfu--frame width height t)
+    (make-frame-visible corfu--frame)))
 
 (defun corfu--popup (pos lines &optional curr lo bar)
   "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
@@ -654,8 +654,7 @@ Set to nil in order to disable confirmation."
   (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
   (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
   (when corfu--overlay (delete-overlay corfu--overlay))
-  (when corfu--popup-frame (delete-frame corfu--popup-frame))
-  (when corfu--popup-buffer (kill-buffer corfu--popup-buffer))
+  (when (frame-live-p corfu--frame) (make-frame-invisible corfu--frame))
   (mapc #'kill-local-variable corfu--state-vars))
 
 (defun corfu--mode-hook ()
