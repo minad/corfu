@@ -120,28 +120,28 @@ Set to nil in order to disable confirmation."
     map)
   "Corfu keymap used when popup is shown.")
 
-(defvar-local corfu--candidates nil
+(defvar corfu--candidates nil
   "List of candidates.")
 
-(defvar-local corfu--base 0
+(defvar corfu--base 0
   "Size of the base string, which is concatenated with the candidate.")
 
-(defvar-local corfu--total 0
+(defvar corfu--total 0
   "Length of the candidate list `corfu--candidates'.")
 
-(defvar-local corfu--highlight #'identity
+(defvar corfu--highlight #'identity
   "Deferred candidate highlighting function.")
 
-(defvar-local corfu--index -1
+(defvar corfu--index -1
   "Index of current candidate or negative for prompt selection.")
 
-(defvar-local corfu--input nil
+(defvar corfu--input nil
   "Cons of last prompt contents and point or t.")
 
-(defvar-local corfu--overlay nil
+(defvar corfu--overlay nil
   "Current candidate overlay.")
 
-(defvar-local corfu--extra-properties nil
+(defvar corfu--extra-properties nil
   "Extra completion properties.")
 
 (defvar corfu--frame nil
@@ -151,17 +151,6 @@ Set to nil in order to disable confirmation."
   ;; nil is undefined command
   "\\`\\(nil\\|completion-at-point\\|corfu-.*\\|scroll-other-window.*\\)\\'"
   "Keep Corfu popup alive during commands matching this regexp.")
-
-(defconst corfu--state-vars
-  '(corfu--base
-    corfu--candidates
-    corfu--highlight
-    corfu--index
-    corfu--input
-    corfu--total
-    corfu--overlay
-    corfu--extra-properties)
-  "Buffer-local state variables used by Corfu.")
 
 ;; Function adapted from posframe.el by tumashu
 (defun corfu--child-frame (x y width height content)
@@ -407,6 +396,8 @@ Set to nil in order to disable confirmation."
          (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
          (ann-cands (mapcar #'corfu--format-candidate (corfu--annotate metadata cands))))
     (when (>= curr 0)
+      (when corfu--overlay
+        (delete-overlay corfu--overlay))
       (setq corfu--overlay (make-overlay beg end nil t t))
       (overlay-put corfu--overlay 'priority 1000)
       (overlay-put corfu--overlay 'window (selected-window))
@@ -458,29 +449,18 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--pre-command-hook ()
   "Insert selected candidate unless keep alive command."
-  (add-hook 'window-configuration-change-hook #'corfu--hide)
-  (when corfu--overlay
-    (delete-overlay corfu--overlay)
-    (setq corfu--overlay nil))
+  (add-hook 'window-configuration-change-hook #'corfu-abort)
   (unless (or (< corfu--index 0) (corfu--keep-alive-p))
     (corfu--insert 'exact)))
 
-(defun corfu--hide ()
-  "Hide Corfu popup."
-  (when (frame-live-p corfu--frame)
-    (make-frame-invisible corfu--frame)
-    (with-current-buffer (window-buffer (frame-root-window corfu--frame))
-      (erase-buffer)))
-  (remove-hook 'window-configuration-change-hook #'corfu--hide))
-
 (defun corfu--post-command-hook ()
   "Refresh Corfu after last command."
-  (remove-hook 'window-configuration-change-hook #'corfu--hide)
+  (remove-hook 'window-configuration-change-hook #'corfu-abort)
   (or (pcase completion-in-region--data
         (`(,beg ,end ,_table ,_pred)
          (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
            (corfu--update))))
-      (completion-in-region-mode -1)))
+      (corfu-abort)))
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
@@ -611,29 +591,40 @@ Set to nil in order to disable confirmation."
   ;; XXX Is the :exit-function handling sufficient?
   (when-let (exit (plist-get corfu--extra-properties :exit-function))
     (funcall exit str status))
-  (completion-in-region-mode -1))
+  (corfu-abort))
 
 (defun corfu-insert ()
   "Insert current candidate."
   (interactive)
   (if (> corfu--total 0)
       (corfu--insert 'finished)
-    (completion-in-region-mode -1)))
+    (corfu-abort)))
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
   (setq corfu--extra-properties completion-extra-properties)
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
-  (add-hook 'pre-command-hook #'corfu--pre-command-hook nil 'local)
-  (add-hook 'post-command-hook #'corfu--post-command-hook nil 'local))
+  (add-hook 'pre-command-hook #'corfu--pre-command-hook)
+  (add-hook 'post-command-hook #'corfu--post-command-hook))
 
 (defun corfu--teardown ()
   "Teardown Corfu."
-  (corfu--hide)
-  (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
-  (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
+  (when (frame-live-p corfu--frame)
+    (make-frame-invisible corfu--frame)
+    (with-current-buffer (window-buffer (frame-root-window corfu--frame))
+      (erase-buffer)))
+  (remove-hook 'window-configuration-change-hook #'corfu-abort)
+  (remove-hook 'pre-command-hook #'corfu--pre-command-hook)
+  (remove-hook 'post-command-hook #'corfu--post-command-hook)
   (when corfu--overlay (delete-overlay corfu--overlay))
-  (mapc #'kill-local-variable corfu--state-vars))
+  (setq corfu--candidates nil
+        corfu--base 0
+        corfu--total 0
+        corfu--highlight #'identity
+        corfu--index -1
+        corfu--input nil
+        corfu--overlay nil
+        corfu--extra-properties nil))
 
 (defun corfu--mode-hook ()
   "Corfu mode hook."
@@ -655,10 +646,10 @@ Set to nil in order to disable confirmation."
 (define-minor-mode corfu-mode
   "Completion Overlay Region FUnction"
   :global nil
-  (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook 'local)
+  (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook)
   (kill-local-variable 'completion-in-region-function)
   (when corfu-mode
-    (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
+    (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook)
     (setq-local completion-in-region-function #'corfu--completion-in-region)))
 
 ;;;###autoload
