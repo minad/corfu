@@ -56,7 +56,7 @@
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
-(defcustom corfu-confirm (propertize "No match" 'face 'italic)
+(defcustom corfu-no-match (propertize "No match" 'face 'italic)
   "Show this confirmation string if there is no match.
 Set to nil in order to disable confirmation."
   :type '(choice (const nil) string))
@@ -455,8 +455,8 @@ Set to nil in order to disable confirmation."
       (corfu--done str 'finished)
       nil)
      ((and (not corfu--candidates)                    ;; 4) There are no candidates
-           corfu-confirm)                             ;; &  Confirmation is enabled
-      (corfu--popup beg (list corfu-confirm))         ;; => Show confirmation popup
+           corfu-no-match)                            ;; &  Confirmation is enabled
+      (corfu--popup beg (list corfu-no-match))        ;; => Show confirmation popup
       t))))
 
 (defun corfu--pre-command-hook ()
