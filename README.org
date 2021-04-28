@@ -9,9 +9,9 @@
 * Introduction
 
 Corfu enhances the default completion in region function with a completion
-overlay. The current candidates are shown in a popup overlay below or above the
-point. Corfu can be considered the minimalistic completion-in-region counterpart
-of the [[https://github.com/minad/vertico][Vertico]] minibuffer UI.
+overlay. The current candidates are shown in a popup below or above the point.
+Corfu can be considered the minimalistic completion-in-region counterpart of the
+[[https://github.com/minad/vertico][Vertico]] minibuffer UI.
 
 Icomplete implements both completion-in-region and minibuffer completion in a
 single package. While Corfu and Vertico are technically similar to Icomplete,
@@ -135,14 +135,13 @@ counterpart of Corfu.
 This package is experimental and new. I am not yet claiming that this package
 works correctly. There are a few known technical caveats.
 
-- The overlay popup is brittle (Alternatives to consider: Posframe, Postip)
-- The thin popup borders are only drawn if =line-spacing=nil=.
+- The package does not work in text mode since it uses child frames.
 - The abort handling could be improved, for example the input could be undone.
 - The ~completion-in-region-mode-predicate~ is ignored in order to
   give the completion style full control. The predicate asks the backend if
   the starting point of the completion has changed.
 - Company kind icons and metadata are not supported (~company-kind~, ~company-docsig~)
-- No support for multi-backends like Company (Implement a multi-capf?)
+- No support for multi-backends like Company (Implement a multi-capf?).
 - No sorting by history, since ~completion-at-point~ does not
   maintain a history (See branch =history= for a possible solution).
 
