@@ -641,6 +641,10 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
+  ;; Prevent restarting the completion. This can happen for example if C-M-/
+  ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
+  (when completion-in-region-mode
+    (user-error "Completion is already in progress"))
   (let ((completion-show-inline-help)
         (completion-auto-help)
         ;; XXX Disable original predicate check, keep completion alive when
