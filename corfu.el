@@ -65,6 +65,14 @@ Set to nil in order to disable confirmation."
   "List of modes excluded by `corfu-global-mode'."
   :type '(repeat symbol))
 
+(defcustom corfu-margin-width 0.6
+  "Width of the margin in units of the character width."
+  :type 'float)
+
+(defcustom corfu-bar-width 0.25
+  "Width of the bar in units of the character width."
+  :type 'float)
+
 (defgroup corfu-faces nil
   "Faces used by Corfu."
   :group 'corfu
@@ -235,10 +243,13 @@ Set to nil in order to disable confirmation."
   "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
   (let* ((cw (frame-char-width))
          (ch (frame-char-height))
-         (mw (ceiling cw 1.6))
+         (mw (ceiling (* cw corfu-margin-width)))
+         (bw (ceiling (* cw (min corfu-margin-width corfu-bar-width))))
          (margin (propertize " " 'display `(space :width (,mw))))
-         (align (propertize " " 'display `(space :align-to (- right (,(ceiling cw 4))))))
-         (sbar (propertize " " 'face 'corfu-bar 'display `(space :width (,(ceiling cw 4)))))
+         (align (propertize " " 'display `(space :align-to (- right (,mw)))))
+         (sbar (concat
+                (propertize " " 'display `(space :width (,(- mw bw))))
+                (propertize " " 'face 'corfu-bar 'display `(space :width (,bw)))))
          (width (min (cdr corfu-width-limits)
                      (/ (frame-width) 2)
                      (apply #'max (car corfu-width-limits)
