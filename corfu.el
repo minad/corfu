@@ -418,14 +418,19 @@ Set to nil in order to disable confirmation."
   "Return PROP from METADATA."
   (cdr (assq prop metadata)))
 
-(defun corfu--format-candidate (cand)
-  "Format annotated CAND string."
-  (if (consp cand)
-      (concat (cadr cand) (car cand)
-              (if (text-property-not-all 0 (length (caddr cand)) 'face nil (caddr cand))
-                  (caddr cand)
-                (propertize (caddr cand) 'face 'completions-annotations)))
-    cand))
+(defun corfu--format-candidate ()
+  "Format candidates."
+  (let ((mw (ceiling (* corfu-margin-width (frame-char-width)))))
+    (lambda (c)
+      (if (consp c)
+          (concat
+           (cadr c) (car c)
+           (propertize " " 'display
+                       `(space :align-to (- right ,(length (caddr c)) (,mw))))
+           (if (text-property-not-all 0 (length (caddr c)) 'face nil (caddr c))
+               (caddr c)
+             (propertize (caddr c) 'face 'completions-annotations)))
+        c))))
 
 (defun corfu--show-candidates (beg end str metadata)
   "Update display given BEG, END, STR and METADATA."
@@ -436,7 +441,7 @@ Set to nil in order to disable confirmation."
          (bar (ceiling (* corfu-count corfu-count) corfu--total))
          (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
          (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
-         (ann-cands (mapcar #'corfu--format-candidate (corfu--annotate metadata cands))))
+         (ann-cands (mapcar (corfu--format-candidate) (corfu--annotate metadata cands))))
     (when corfu--overlay
       (delete-overlay corfu--overlay)
       (setq corfu--overlay nil))
