@@ -47,10 +47,13 @@
   "Maximal number of candidates to show."
   :type 'integer)
 
-(defcustom corfu-width-limits
-  (cons 15 80)
-  "Popup width limits."
-  :type '(cons integer integer))
+(defcustom corfu-min-width 15
+  "Popup minimum width in characters."
+  :type 'integer)
+
+(defcustom corfu-max-width 100
+  "Popup maximum width in characters."
+  :type 'integer)
 
 (defcustom corfu-cycle nil
   "Enable cycling for `corfu-next' and `corfu-previous'."
@@ -250,9 +253,9 @@ Set to nil in order to disable confirmation."
          (sbar (concat
                 (propertize " " 'display `(space :width (,(- mw bw))))
                 (propertize " " 'face 'corfu-bar 'display `(space :width (,bw)))))
-         (width (min (cdr corfu-width-limits)
+         (width (min corfu-max-width
                      (/ (frame-width) 2)
-                     (apply #'max (car corfu-width-limits)
+                     (apply #'max corfu-min-width
                             (mapcar #'string-width lines))))
          (row 0)
          (pos (posn-x-y (posn-at-point pos))))
