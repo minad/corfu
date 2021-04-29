@@ -437,8 +437,10 @@ Set to nil in order to disable confirmation."
          (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
          (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
          (ann-cands (mapcar #'corfu--format-candidate (corfu--annotate metadata cands))))
+    (when corfu--overlay
+      (delete-overlay corfu--overlay)
+      (setq corfu--overlay nil))
     (when (>= curr 0)
-      (when corfu--overlay (delete-overlay corfu--overlay))
       (setq corfu--overlay (make-overlay beg end nil t t))
       (overlay-put corfu--overlay 'priority 1000)
       (overlay-put corfu--overlay 'window (selected-window))
