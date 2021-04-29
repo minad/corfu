@@ -656,8 +656,10 @@ Set to nil in order to disable confirmation."
   (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook 'local)
   (kill-local-variable 'completion-in-region-function)
   (when corfu-mode
-    (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
-    (setq-local completion-in-region-function #'corfu--completion-in-region)))
+    (if (or emacs-basic-display (not (display-graphic-p)))
+        (message "Corfu mode is only compatible with the graphics display.")
+      (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
+      (setq-local completion-in-region-function #'corfu--completion-in-region))))
 
 ;;;###autoload
 (define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on)
