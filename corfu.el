@@ -221,6 +221,7 @@ Set to nil in order to disable confirmation."
                (line-spacing . 0)
                (border-width . 0)
                (internal-border-width . 1)
+               (child-frame-border-width . 1)
                (left-fringe . 0)
                (right-fringe . 0)
                (vertical-scroll-bars . nil)
@@ -235,8 +236,12 @@ Set to nil in order to disable confirmation."
                (minibuffer . nil)
                (visibility . nil)
                (no-special-glyphs . t)))))
-    (set-face-background 'internal-border (face-attribute 'corfu-border :background) corfu--frame)
-    (set-frame-parameter corfu--frame 'background-color (face-attribute 'corfu-background :background))
+    (set-face-background
+     (if (facep 'child-frame-border) 'child-frame-border 'internal-border)
+     (face-attribute 'corfu-border :background) corfu--frame)
+    (set-frame-parameter
+     corfu--frame 'background-color
+     (face-attribute 'corfu-background :background))
     (set-window-buffer (frame-root-window corfu--frame) buffer)
     ;; XXX Make the frame invisible before moving the popup from above to below
     ;; the line in order to avoid flicker.
