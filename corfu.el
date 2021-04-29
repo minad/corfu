@@ -183,10 +183,10 @@ Set to nil in order to disable confirmation."
          (edge (window-inside-pixel-edges))
          (lh (line-pixel-height))
          (x (max 0 (min (+ (car edge) x -1) (- (frame-pixel-width) width))))
-         (y (+ (cadr edge) y))
-	 (y (if (> (+ y height (* 3 lh)) (frame-pixel-height))
-		(- y height 1)
-              (+ y lh)))
+         (yb (+ (cadr edge) y lh))
+	 (y (if (> (+ yb height lh lh) (frame-pixel-height))
+		(- yb height lh 1)
+              yb))
          (buffer (get-buffer-create " *corfu*")))
     (with-current-buffer buffer
       (setq-local mode-line-format nil
@@ -238,8 +238,12 @@ Set to nil in order to disable confirmation."
     (set-face-background 'internal-border (face-attribute 'corfu-border :background) corfu--frame)
     (set-frame-parameter corfu--frame 'background-color (face-attribute 'corfu-background :background))
     (set-window-buffer (frame-root-window corfu--frame) buffer)
-    (set-frame-position corfu--frame x y)
+    ;; XXX Make the frame invisible before moving the popup from above to below
+    ;; the line in order to avoid flicker.
+    (unless (eq (< (cdr (frame-position corfu--frame)) yb) (< y yb))
+      (make-frame-invisible corfu--frame))
     (set-frame-size corfu--frame width height t)
+    (set-frame-position corfu--frame x y)
     (make-frame-visible corfu--frame)))
 
 (defun corfu--popup-show (pos lines &optional curr lo bar)
