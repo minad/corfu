@@ -180,13 +180,14 @@ Set to nil in order to disable confirmation."
   (let* ((window-min-height 1)
          (window-min-width 1)
          (x-gtk-resize-child-frames
-          (and
-           ;; XXX Hack to fix resizing on gtk3/gnome taken from posframe.el
-           ;; See https://github.com/minad/corfu/issues/17
-           (string-match-p "gtk3" system-configuration-features)
-           (string-match-p "gnome\\|cinnamon" (or (getenv "XDG_CURRENT_DESKTOP")
-                                                  (getenv "DESKTOP_SESSION") ""))
-           'resize-mode))
+          (let ((case-fold-search t))
+            (and
+             ;; XXX Hack to fix resizing on gtk3/gnome taken from posframe.el
+             ;; See https://github.com/minad/corfu/issues/17
+             (string-match-p "gtk3" system-configuration-features)
+             (string-match-p "gnome\\|cinnamon" (or (getenv "XDG_CURRENT_DESKTOP")
+                                                    (getenv "DESKTOP_SESSION") ""))
+             'resize-mode)))
          (after-make-frame-functions)
          (edge (window-inside-pixel-edges))
          (lh (line-pixel-height))
