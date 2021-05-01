@@ -499,6 +499,9 @@ Set to nil in order to disable confirmation."
      ;; current string is a valid match, exit with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
            (not (stringp (try-completion str table pred)))
+           ;; XXX We should probably use `completion-try-completion' here instead
+           ;; but it does not work as well when completing in `shell-mode'.
+           ;; (not (consp (completion-try-completion str table pred pt metadata)))
            (test-completion str table pred))
       (corfu--done str 'finished)
       nil)
@@ -685,7 +688,7 @@ Set to nil in order to disable confirmation."
   "Corfu completion in region function passing ARGS to `completion--in-region'."
   ;; Prevent restarting the completion. This can happen for example if C-M-/
   ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
-  (when completion-in-region-mode
+  (when (and completion-in-region-mode (not completion-cycling))
     (user-error "Completion is already in progress"))
   (let ((completion-show-inline-help)
         (completion-auto-help)
