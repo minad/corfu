@@ -33,7 +33,7 @@ completions.
 * Features
 
 - Popup display with scrollbar indicator and arrow key navigation
-- The popup must be summoned explicitly by =TAB=
+- The popup must be summoned explicitly by pressing =TAB=
 - The current candidate is inserted with =TAB= and selected with =RET=
 - Candidates sorting by prefix, string length and alphabetically
 - Completion is automatically terminated after candidate selection
@@ -50,9 +50,10 @@ Notable non-feature: Timer-based idle completions are not supported.
 Corfu is available from [[http://elpa.gnu.org/packages/corfu.html][GNU ELPA]], such that it can be installed directly via
 ~package-install~. After installation, the local minor mode can be enabled with
 =M-x corfu-mode=. In order to configure Corfu and other packages in your
-init.el, you may want to use ~use-package~. I recommend to give orderless
+init.el, you may want to use ~use-package~. I recommend to give Orderless
 completion a try, which is different from the familiar prefix TAB completion.
-Here is an example configuration:
+However Corfu works well with the default completion styles, the use of
+Orderless is not a necessity. Here is an example configuration:
 
 #+begin_src emacs-lisp
   ;; Configure corfu
@@ -69,15 +70,15 @@ Here is an example configuration:
 
     :config
 
-    ;; Alternatively enable Corfu globally.
-    ;; This is recommended if Corfu is used with dabbrev.
+    ;; Recommended: Enable Corfu globally.
+    ;; This is recommended since dabbrev can be used globally (M-/).
     (corfu-global-mode)
 
     ;; Optionally enable cycling for `corfu-next' and `corfu-previous'.
     ;; (setq corfu-cycle t)
   )
 
-  ;; Use the `orderless' completion style.
+  ;; Optionally use the `orderless' completion style.
   ;; Enable `partial-completion' for files to allow path expansion.
   ;; You may prefer to use `initials' instead of `partial-completion'.
   (use-package orderless
@@ -99,7 +100,7 @@ Here is an example configuration:
     (setq completion-cycle-threshold 3)
 
     ;; Enable indentation+completion using the TAB key.
-    ;; Completion is often bound to M-TAB.
+    ;; `completion-at-point' is often bound to M-TAB.
     (setq tab-always-indent 'complete))
 #+end_src
 
@@ -132,8 +133,7 @@ counterpart of Corfu.
 
 * Caveats
 
-This package is experimental and new. I am not yet claiming that this package
-works correctly. There are a few known technical caveats.
+This package is experimental and new. There are a few known technical caveats.
 
 - The package does not work in text mode since it uses child frames.
 - The abort handling could be improved, for example the input could be undone.
