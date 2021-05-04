@@ -179,6 +179,7 @@ Set to nil in order to disable confirmation."
   "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT."
   (let* ((window-min-height 1)
          (window-min-width 1)
+         (ls line-spacing)
          (x-gtk-resize-child-frames
           (let ((case-fold-search t))
             (and
@@ -193,7 +194,7 @@ Set to nil in order to disable confirmation."
              'resize-mode)))
          (after-make-frame-functions)
          (edge (window-inside-pixel-edges))
-         (lh (line-pixel-height))
+         (lh (default-line-height))
          (x (max 0 (min (+ (car edge) x -1) (- (frame-pixel-width) width))))
          (yb (+ (cadr edge) y lh))
 	 (y (if (> (+ yb height lh lh) (frame-pixel-height))
@@ -230,7 +231,7 @@ Set to nil in order to disable confirmation."
                (min-height . t)
                (width . 0)
                (height . 0)
-               (line-spacing . 0)
+               (line-spacing . ,ls)
                (border-width . 0)
                (internal-border-width . 1)
                (child-frame-border-width . 1)
@@ -266,7 +267,7 @@ Set to nil in order to disable confirmation."
 (defun corfu--popup-show (pos lines &optional curr lo bar)
   "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
   (let* ((cw (frame-char-width))
-         (ch (frame-char-height))
+         (ch (default-line-height))
          (mw (ceiling (* cw corfu-margin-width)))
          (bw (ceiling (* cw (min corfu-margin-width corfu-bar-width))))
          (margin (propertize " " 'display `(space :width (,mw))))
