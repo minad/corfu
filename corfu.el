@@ -688,29 +688,38 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
-  ;; Prevent restarting the completion. This can happen for example if C-M-/
-  ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
-  (when (and completion-in-region-mode (not completion-cycling))
-    (user-error "Completion is already in progress"))
-  (let ((completion-show-inline-help)
-        (completion-auto-help)
-        ;; XXX Disable original predicate check, keep completion alive when
-        ;; popup is shown. Since the predicate is set always, it is ensured
-        ;; that `completion-in-region-mode' is turned on.
-        (completion-in-region-mode-predicate (lambda () t)))
+  (if (corfu--ensure-display-graphic)
+      (let ((completion-show-inline-help)
+            (completion-auto-help)
+            ;; XXX Disable original predicate check, keep completion alive when
+            ;; popup is shown. Since the predicate is set always, it is ensured
+            ;; that `completion-in-region-mode' is turned on.
+            (completion-in-region-mode-predicate (lambda () t)))
+        ;; Prevent restarting the completion. This can happen for example if C-M-/
+        ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
+        (when (and completion-in-region-mode (not completion-cycling))
+          (user-error "Completion is already in progress"))
+        (apply #'completion--in-region args))
     (apply #'completion--in-region args)))
+
+(defun corfu--ensure-display-graphic ()
+  "Return non-nil if Corfu is running on a graphics display, otherwise self deactivate."
+  (or (and (not emacs-basic-display) (display-graphic-p))
+      (progn
+        (corfu-mode -1)
+        (message "Corfu mode is only compatible with the graphics display.")
+        nil)))
 
 ;;;###autoload
 (define-minor-mode corfu-mode
   "Completion Overlay Region FUnction"
   :global nil
-  (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook 'local)
-  (kill-local-variable 'completion-in-region-function)
-  (when corfu-mode
-    (if (or emacs-basic-display (not (display-graphic-p)))
-        (message "Corfu mode is only compatible with the graphics display.")
-      (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
-      (setq-local completion-in-region-function #'corfu--completion-in-region))))
+  (if corfu-mode
+      (when (or (daemonp) (corfu--ensure-display-graphic))
+        (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
+        (setq-local completion-in-region-function #'corfu--completion-in-region))
+    (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook 'local)
+    (kill-local-variable 'completion-in-region-function)))
 
 ;;;###autoload
 (define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on)
