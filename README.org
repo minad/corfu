@@ -10,14 +10,8 @@
 
 Corfu enhances the default completion in region function with a completion
 overlay. The current candidates are shown in a popup below or above the point.
-Corfu can be considered the minimalistic ~completion-in-region~ counterpart of the
-[[https://github.com/minad/vertico][Vertico]] minibuffer UI.
-
-Icomplete implements both completion-in-region and minibuffer completion in a
-single package. While Corfu and Vertico are technically similar to Icomplete,
-Corfu and Vertico are two separate packages in order to optimize the UI for the
-two distinct use cases, also leading to code bases which are easier to
-understand.
+Corfu can be considered the minimalistic ~completion-in-region~ counterpart of
+the [[https://github.com/minad/vertico][Vertico]] minibuffer UI.
 
 Corfu is a minimal package (~600 lines of code without whitespace and comments).
 In contrast to the featureful and complex Company package, Corfu concentrates on
@@ -27,6 +21,15 @@ backends (~completion-at-point-functions~, Capfs). Many programming language
 major modes implement a Capf. Furthermore the language server packages, [[https://github.com/joaotavora/eglot][Eglot]]
 and [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]], both use Capfs which talk to the LSP server to retrieve the
 completions.
+
+The Emacs builtin Icomplete is technically comparable to Corfu and Vertico.
+Icomplete implements both ~completion-in-region~ and minibuffer completion in a
+single package. Corfu and Vertico are two separate packages in order to optimize
+the UI for the two distinct use cases, also leading to code bases which are
+easier to understand.
+
+*NOTE*: Corfu uses child frames to show the popup; on non-graphical displays it
+will fall back to the default setting of the ~completion-in-region-function~.
 
 [[https://github.com/minad/corfu/blob/main/screenshot.png?raw=true]]
 
@@ -135,12 +138,14 @@ counterpart of Corfu.
 
 This package is experimental and new. There are a few known technical caveats.
 
-- The package does not work in text mode since it uses child frames.
+- Corfu falls back to the default `completion-in-region-function' on
+  non-graphical displays, since is displayed using child frames.
 - The abort handling could be improved, for example the input could be undone.
 - The ~completion-in-region-mode-predicate~ is ignored in order to
   give the completion style full control. The predicate asks the backend if
   the starting point of the completion has changed.
-- Company kind icons, docsig and match data are not supported (~company-kind~, ~company-docsig~, ~company-match~)
+- Company kind icons, docsig and match data are not supported
+  (~company-kind~, ~company-docsig~, ~company-match~).
 - No support for multi-backends like Company (Implement a multi-capf?).
 - No sorting by history, since ~completion-at-point~ does not
   maintain a history (See branch =history= for a possible solution).
