@@ -219,6 +219,7 @@ Set to nil in order to disable confirmation."
              'resize-mode)))
          (after-make-frame-functions)
          (edge (window-inside-pixel-edges))
+         (fr face-remapping-alist)
          (lh (default-line-height))
          (x (max 0 (min (+ (car edge) x -1) (- (frame-pixel-width) width))))
          (yb (+ (cadr edge) y lh))
@@ -239,7 +240,8 @@ Set to nil in order to disable confirmation."
                   right-fringe-width nil
                   left-margin-width nil
                   right-margin-width nil
-                  fringes-outside-margins 0)
+                  fringes-outside-margins 0
+                  face-remapping-alist fr)
       (let (inhibit-modification-hooks)
         (erase-buffer)
         (insert content)
@@ -268,8 +270,8 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--popup-show (pos lines &optional curr lo bar)
   "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
-  (let* ((cw (frame-char-width))
-         (ch (default-line-height))
+  (let* ((ch (default-line-height))
+         (cw (round (* ch (frame-char-width)) (frame-char-height)))
          (mw (ceiling (* cw corfu-margin-width)))
          (bw (ceiling (* cw (min corfu-margin-width corfu-bar-width))))
          (margin (propertize " " 'display `(space :width (,mw))))
