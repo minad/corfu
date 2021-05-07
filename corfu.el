@@ -255,6 +255,7 @@ Set to nil in order to disable confirmation."
     (set-frame-parameter
      corfu--frame 'background-color
      (face-attribute 'corfu-background :background))
+    (set-frame-parameter corfu--frame 'desktop-dont-save t)
     (set-window-buffer (frame-root-window corfu--frame) buffer)
     ;; XXX Make the frame invisible before moving the popup from above to below
     ;; the line in order to avoid flicker.
