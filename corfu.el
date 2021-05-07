@@ -248,7 +248,8 @@ Set to nil in order to disable confirmation."
                (cursor-type . nil)
                (minibuffer . nil)
                (visibility . nil)
-               (no-special-glyphs . t)))))
+               (no-special-glyphs . t)
+               (desktop-dont-save . t)))))
     (set-face-background
      (if (facep 'child-frame-border) 'child-frame-border 'internal-border)
      (face-attribute 'corfu-border :background) corfu--frame)
