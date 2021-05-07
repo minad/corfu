@@ -667,39 +667,39 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
-  (setq corfu--extra-properties completion-extra-properties)
-  (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
-  (add-hook 'pre-command-hook #'corfu--pre-command-hook nil 'local)
-  (add-hook 'post-command-hook #'corfu--post-command-hook nil 'local))
+  (when completion-in-region-mode
+    (setq corfu--extra-properties completion-extra-properties)
+    (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
+    (add-hook 'pre-command-hook #'corfu--pre-command-hook nil 'local)
+    (add-hook 'post-command-hook #'corfu--post-command-hook nil 'local)
+    (add-hook 'completion-in-region-mode-hook #'corfu--teardown nil 'local)))
 
 (defun corfu--teardown ()
   "Teardown Corfu."
-  (corfu--popup-hide)
-  (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
-  (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
-  (when corfu--overlay (delete-overlay corfu--overlay))
-  (mapc #'kill-local-variable corfu--state-vars))
-
-(defun corfu--mode-hook ()
-  "Corfu mode hook."
-  (if completion-in-region-mode
-      (corfu--setup)
-    (corfu--teardown)))
+  (unless completion-in-region-mode
+    (corfu--popup-hide)
+    (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
+    (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
+    (remove-hook 'completion-in-region-mode-hook #'corfu--teardown 'local)
+    (when corfu--overlay (delete-overlay corfu--overlay))
+    (mapc #'kill-local-variable corfu--state-vars)))
 
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
   (if (and (not emacs-basic-display) (display-graphic-p))
-      (let ((completion-show-inline-help)
-            (completion-auto-help)
-            ;; XXX Disable original predicate check, keep completion alive when
-            ;; popup is shown. Since the predicate is set always, it is ensured
-            ;; that `completion-in-region-mode' is turned on.
-            (completion-in-region-mode-predicate (lambda () t)))
-        ;; Prevent restarting the completion. This can happen for example if C-M-/
-        ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
-        (when (and completion-in-region-mode (not completion-cycling))
-          (user-error "Completion is already in progress"))
-        (apply #'completion--in-region args))
+      ;; Prevent restarting the completion. This can happen for example if C-M-/
+      ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
+      (if (and completion-in-region-mode (not completion-cycling))
+          (user-error "Completion is already in progress")
+        (prog1
+            (let ((completion-show-inline-help)
+                  (completion-auto-help)
+                  ;; XXX Disable original predicate check, keep completion alive when
+                  ;; popup is shown. Since the predicate is set always, it is ensured
+                  ;; that `completion-in-region-mode' is turned on.
+                  (completion-in-region-mode-predicate (lambda () t)))
+              (apply #'completion--in-region args))
+          (corfu--setup)))
     ;; XXX Warning this can result in an endless loop when `completion-in-region-function'
     ;; is set *globally* to `corfu--completion-in-region'. This should never happen.
     (apply (default-value 'completion-in-region-function) args)))
@@ -708,11 +708,9 @@ Set to nil in order to disable confirmation."
 (define-minor-mode corfu-mode
   "Completion Overlay Region FUnction"
   :global nil
-  (remove-hook 'completion-in-region-mode-hook #'corfu--mode-hook 'local)
-  (kill-local-variable 'completion-in-region-function)
-  (when corfu-mode
-    (add-hook 'completion-in-region-mode-hook #'corfu--mode-hook nil 'local)
-    (setq-local completion-in-region-function #'corfu--completion-in-region)))
+  (if corfu-mode
+      (setq-local completion-in-region-function #'corfu--completion-in-region)
+    (kill-local-variable 'completion-in-region-function)))
 
 ;;;###autoload
 (define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on)
