@@ -316,6 +316,7 @@ Set to nil in order to disable confirmation."
 ;; bug#47711: Deferred highlighting for `completion-all-completions'
 ;; XXX There is one complication: `completion--twq-all' already adds `completions-common-part'.
 (declare-function orderless-highlight-matches "ext:orderless")
+(declare-function orderless-pattern-compiler "ext:orderless")
 (require 'orderless nil 'noerror)
 (defun corfu--all-completions (&rest args)
   "Compute all completions for ARGS with deferred highlighting."
@@ -339,7 +340,8 @@ Set to nil in order to disable confirmation."
                 cands))
              ((symbol-function #'orderless-highlight-matches)
               (lambda (pattern cands)
-                (setq hl (lambda (x) (orderless-highlight-matches pattern x)))
+                (let ((regexps (orderless-pattern-compiler pattern)))
+                  (setq hl (lambda (x) (orderless-highlight-matches regexps x))))
                 cands)))
     (cons (apply #'completion-all-completions args) hl)))
 
