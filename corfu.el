@@ -243,7 +243,7 @@ Set to nil in order to disable confirmation."
                   right-margin-width nil
                   fringes-outside-margins 0
                   face-remapping-alist fr)
-      (let (inhibit-modification-hooks)
+      (let ((inhibit-modification-hooks t))
         (erase-buffer)
         (insert content)
         (goto-char (point-min))))
