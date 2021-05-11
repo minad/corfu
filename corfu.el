@@ -653,7 +653,7 @@ Set to nil in order to disable confirmation."
       ;; cursor, then the candidate only includes the prefix
       ;; "~/emacs/master/lisp/", but not the suffix "/calc". Default
       ;; completion has the same problem when selecting in the
-      ;; *Completions* buffer.
+      ;; *Completions* buffer. See bug#48356.
       (setq str (concat (substring str 0 corfu--base)
                         (substring-no-properties
                          (nth (max 0 corfu--index) corfu--candidates))))
