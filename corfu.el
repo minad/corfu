@@ -466,20 +466,17 @@ Set to nil in order to disable confirmation."
          (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
          (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
          (ann-cands (mapcar (corfu--format-candidate) (corfu--annotate metadata cands))))
-    (when corfu--overlay
-      (delete-overlay corfu--overlay)
-      (setq corfu--overlay nil))
-    (when (>= curr 0)
-      (setq corfu--overlay (make-overlay beg end nil t t))
-      (overlay-put corfu--overlay 'priority 1000)
-      (overlay-put corfu--overlay 'window (selected-window))
-      (overlay-put corfu--overlay 'display (concat (substring str 0 corfu--base) (nth curr cands))))
     ;; Nonlinearity at the end and the beginning
     (when (/= start 0)
       (setq lo (max 1 lo)))
     (when (/= last corfu--total)
       (setq lo (min (- corfu-count bar 2) lo)))
-    (corfu--popup-show (+ beg corfu--base) ann-cands curr (and (> corfu--total corfu-count) lo) bar)))
+    (corfu--popup-show (+ beg corfu--base) ann-cands curr (and (> corfu--total corfu-count) lo) bar)
+    (when (>= curr 0)
+      (setq corfu--overlay (make-overlay beg end nil t t))
+      (overlay-put corfu--overlay 'priority 1000)
+      (overlay-put corfu--overlay 'window (selected-window))
+      (overlay-put corfu--overlay 'display (concat (substring str 0 corfu--base) (nth curr cands))))))
 
 (defun corfu--update ()
   "Refresh Corfu UI."
@@ -488,6 +485,9 @@ Set to nil in order to disable confirmation."
                (str (buffer-substring-no-properties beg end))
                (metadata (completion-metadata (substring str 0 pt) table pred))
                (initializing (not corfu--input)))
+    (when corfu--overlay
+      (delete-overlay corfu--overlay)
+      (setq corfu--overlay nil))
     (cond
      ;; XXX Guard against errors during candidate generation.
      ;; Turn off completion immediately if there are errors
