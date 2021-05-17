@@ -34,9 +34,8 @@
 ;;; Code:
 
 (require 'seq)
-(eval-when-compile
-  (require 'subr-x)
-  (require 'cl-lib))
+(require 'cl-lib)
+(eval-when-compile (require 'subr-x))
 
 (defgroup corfu nil
   "Completion Overlay Region FUnction."
@@ -359,15 +358,6 @@ Set to nil in order to disable confirmation."
       (and (= (length x) (length y))
            (string< x y))))
 
-(defun corfu--file-predicate (pred)
-  "Filter predicate for files given original predicate PRED."
-  (let ((ignore (concat "\\(?:\\`\\|/\\)\\.?\\./\\'"
-                        (and completion-ignored-extensions
-                             (concat "\\|" (regexp-opt completion-ignored-extensions) "\\'")))))
-    (if pred
-        (lambda (x) (and (not (string-match-p ignore x)) (funcall pred x)))
-      (lambda (x) (not (string-match-p ignore x))))))
-
 (defun corfu--move-prefix-candidates-to-front (field candidates)
   "Move CANDIDATES which match prefix of FIELD to the beginning."
   (let ((word (replace-regexp-in-string " .*" "" field)))
@@ -389,13 +379,17 @@ Set to nil in order to disable confirmation."
                        (t (cons 0 (length after))))))
          (field (substring str (car bounds) (+ pt (cdr bounds))))
          (completing-file (eq (corfu--metadata-get metadata 'category) 'file))
-         (all-hl (corfu--all-completions str table
-                                         (if completing-file
-                                             (corfu--file-predicate pred)
-                                           pred)
-                                         pt metadata))
+         (all-hl (corfu--all-completions str table pred pt metadata))
          (all (car all-hl))
          (base (or (when-let (z (last all)) (prog1 (cdr z) (setcdr z nil))) 0)))
+    ;; Filter the ignored file extensions. We cannot use modified predicate for this filtering,
+    ;; since this breaks the special casing in the `completion-file-name-table' for `file-exists-p'
+    ;; and `file-directory-p'.
+    (when completing-file
+      (let ((ignore (concat "\\(?:\\`\\|/\\)\\.?\\./\\'"
+                            (and completion-ignored-extensions
+                                 (concat "\\|" (regexp-opt completion-ignored-extensions) "\\'")))))
+        (setq all (cl-delete-if (lambda (x) (string-match-p ignore x)) all))))
     (setq all (if-let (sort (corfu--metadata-get metadata 'display-sort-function))
                   (funcall sort all)
                 (sort all #'corfu--sort-predicate)))
