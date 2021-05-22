@@ -425,14 +425,22 @@ Set to nil in order to disable confirmation."
   (interactive)
   (completion-in-region-mode -1))
 
-(defun corfu--annotate (metadata candidates)
+(defun corfu--affixate (metadata candidates)
   "Annotate CANDIDATES with annotation function specified by METADATA."
   (if-let (aff (or (corfu--metadata-get metadata 'affixation-function)
                    (plist-get corfu--extra-properties :affixation-function)))
       (funcall aff candidates)
     (if-let (ann (or (corfu--metadata-get metadata 'annotation-function)
                      (plist-get corfu--extra-properties :annotation-function)))
-        (mapcar (lambda (cand) (list cand "" (or (funcall ann cand) ""))) candidates)
+        (mapcar (lambda (cand)
+                  (let ((suffix (or (funcall ann cand) "")))
+                    (list cand ""
+                          ;; The default completion UI adds the `completions-annotations' face
+                          ;; if no other faces are present.
+                          (if (text-property-not-all 0 (length suffix) 'face nil suffix)
+                              suffix
+                            (propertize suffix 'face 'completions-annotations)))))
+                  candidates)
       candidates)))
 
 ;; XXX Do not use `completion-metadata-get' in order to avoid Marginalia.
@@ -446,10 +454,7 @@ Set to nil in order to disable confirmation."
   (replace-regexp-in-string
    "[ \t]*\n[ \t]*" " "
    (if (consp cand)
-       (concat (cadr cand) (car cand)
-               (if (text-property-not-all 0 (length (caddr cand)) 'face nil (caddr cand))
-                   (caddr cand)
-                 (propertize (caddr cand) 'face 'completions-annotations)))
+       (concat (cadr cand) (car cand) (caddr cand))
      cand)))
 
 (defun corfu--show-candidates (beg end str metadata)
@@ -461,7 +466,7 @@ Set to nil in order to disable confirmation."
          (bar (ceiling (* corfu-count corfu-count) corfu--total))
          (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
          (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
-         (ann-cands (mapcar #'corfu--format-candidate (corfu--annotate metadata cands))))
+         (ann-cands (mapcar #'corfu--format-candidate (corfu--affixate metadata cands))))
     ;; Nonlinearity at the end and the beginning
     (when (/= start 0)
       (setq lo (max 1 lo)))
