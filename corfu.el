@@ -540,7 +540,7 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
-  (setq corfu--index (max -1 (min index (- corfu--total 1)))))
+  (setq corfu--index (max -1 (min index (1- corfu--total)))))
 
 (defun corfu-next ()
   "Go to next candidate."
@@ -555,8 +555,8 @@ Set to nil in order to disable confirmation."
   (interactive)
   (corfu--goto
    (if (and corfu-cycle (< corfu--index 0))
-       (- corfu--total 1)
-     (- corfu--index 1))))
+       (1- corfu--total)
+     (1- corfu--index))))
 
 (defun corfu-scroll-down ()
   "Go back by one page."
@@ -576,7 +576,7 @@ Set to nil in order to disable confirmation."
 (defun corfu-last ()
   "Go to last candidate."
   (interactive)
-  (corfu--goto (- corfu--total 1)))
+  (corfu--goto (1- corfu--total)))
 
 (defun corfu--restore-on-next-command ()
   "Restore window configuration before next command."
