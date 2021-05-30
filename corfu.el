@@ -371,22 +371,21 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--recompute-candidates (str metadata pt table pred)
   "Recompute candidates from STR, METADATA, PT, TABLE and PRED."
-  (let* ((before (substring str 0 pt))
-         (after (substring str pt))
-         ;; bug#47678: `completion-boundaries` fails for `partial-completion`
-         ;; if the cursor is moved between the slashes of "~//".
-         ;; See also vertico.el which has the same issue.
-         (bounds (or (condition-case nil
-                         (completion-boundaries before
-                                                table
-                                                pred
-                                                after)
-                       (t (cons 0 (length after))))))
-         (field (substring str (car bounds) (+ pt (cdr bounds))))
-         (completing-file (eq (corfu--metadata-get metadata 'category) 'file))
-         (all-hl (corfu--all-completions str table pred pt metadata))
-         (all (car all-hl))
-         (base (or (when-let (z (last all)) (prog1 (cdr z) (setcdr z nil))) 0)))
+  (pcase-let* ((before (substring str 0 pt))
+               (after (substring str pt))
+               ;; bug#47678: `completion-boundaries` fails for `partial-completion`
+               ;; if the cursor is moved between the slashes of "~//".
+               ;; See also vertico.el which has the same issue.
+               (bounds (or (condition-case nil
+                               (completion-boundaries before
+                                                      table
+                                                      pred
+                                                      after)
+                             (t (cons 0 (length after))))))
+               (field (substring str (car bounds) (+ pt (cdr bounds))))
+               (completing-file (eq (corfu--metadata-get metadata 'category) 'file))
+               (`(,all . ,hl) (corfu--all-completions str table pred pt metadata))
+               (base (or (when-let (z (last all)) (prog1 (cdr z) (setcdr z nil))) 0)))
     ;; Filter the ignored file extensions. We cannot use modified predicate for this filtering,
     ;; since this breaks the special casing in the `completion-file-name-table' for `file-exists-p'
     ;; and `file-directory-p'.
@@ -402,7 +401,7 @@ Set to nil in order to disable confirmation."
     (when (and completing-file (not (string-suffix-p "/" field)))
       (setq all (corfu--move-to-front (concat field "/") all)))
     (setq all (corfu--move-to-front field all))
-    (list base (length all) all (cdr all-hl))))
+    (list base (length all) all hl)))
 
 (defun corfu--update-candidates (str metadata pt table pred)
   "Update candidates from STR, METADATA, PT, TABLE and PRED."
