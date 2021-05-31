@@ -6,7 +6,8 @@
 #+texinfo_dir_title: Corfu: (corfu).
 #+texinfo_dir_desc: Completion Overlay Region FUnction
 
-#+html: <a href="http://elpa.gnu.org/packages/corfu.html"><img alt="GNU ELPA" src="https://img.shields.io/badge/GNU%20ELPA-corfu-bb3955"/></a>
+#+html: <a href="http://elpa.gnu.org/packages/corfu.html"><img alt="GNU ELPA" src="https://elpa.gnu.org/packages/corfu.svg"/></a>
+#+html: <a href="http://elpa.gnu.org/devel/corfu.html"><img alt="GNU-devel ELPA" src="https://elpa.gnu.org/devel/corfu.svg"/></a>
 
 * Introduction
 
