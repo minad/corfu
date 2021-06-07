@@ -74,11 +74,13 @@ Orderless is not a necessity. Here is an example configuration:
     ;;        (shell-mode . corfu-mode)
     ;;        (eshell-mode . corfu-mode))
 
-    :config
 
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since dabbrev can be used globally (M-/).
+    :init
     (corfu-global-mode)
+
+    :config
 
     ;; Optionally enable cycling for `corfu-next' and `corfu-previous'.
     ;; (setq corfu-cycle t)
