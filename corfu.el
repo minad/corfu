@@ -222,7 +222,7 @@ Set to nil in order to disable confirmation."
          (x (max 0 (min (+ (car edge) x
                            (- (alist-get 'child-frame-border-width corfu--frame-parameters)))
                         (- (frame-pixel-width) width))))
-         (yb (+ (cadr edge) y lh))
+         (yb (+ (cadr edge) (window-tab-line-height) y lh))
 	 (y (if (> (+ yb height lh lh) (frame-pixel-height))
 		(- yb height lh 1)
               yb))
