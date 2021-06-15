@@ -223,8 +223,8 @@ Set to nil in order to disable confirmation."
                            (- (alist-get 'child-frame-border-width corfu--frame-parameters)))
                         (- (frame-pixel-width) width))))
          (yb (+ (cadr edge) (window-tab-line-height) y lh))
-	 (y (if (> (+ yb height lh lh) (frame-pixel-height))
-		(- yb height lh 1)
+         (y (if (> (+ yb height lh lh) (frame-pixel-height))
+                (- yb height lh 1)
               yb))
          (buffer (get-buffer-create " *corfu*")))
     (with-current-buffer buffer
@@ -439,7 +439,7 @@ Set to nil in order to disable confirmation."
                           (if (text-property-not-all 0 (length suffix) 'face nil suffix)
                               suffix
                             (propertize suffix 'face 'completions-annotations)))))
-                  candidates)
+                candidates)
       candidates)))
 
 ;; XXX Do not use `completion-metadata-get' in order to avoid Marginalia.
