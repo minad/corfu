@@ -58,11 +58,10 @@
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
-(defcustom corfu-respect-boundary nil
-  "Respect completion field boundaries.
-If this variable is nil, Orderless filtering is facilitated since a filter
-string with spaces is allowed. Otherwise the completion is terminated at the
-word boundary."
+(defcustom corfu-quit-at-boundary nil
+  "Automatically quit at completion field/word boundary.
+If automatic quitting is disabled, Orderless filtering is facilitated since a
+filter string with spaces is allowed."
   :type 'boolean)
 
 (defcustom corfu-no-match (propertize "No match" 'face 'italic)
@@ -128,8 +127,8 @@ Set to nil in order to disable confirmation."
     (define-key map [remap completion-at-point] #'corfu-complete)
     (define-key map "\en" #'corfu-next)
     (define-key map "\ep" #'corfu-previous)
-    (define-key map "\e\e\e" #'corfu-abort)
-    (define-key map "\C-g" #'corfu-abort)
+    (define-key map "\e\e\e" #'corfu-quit)
+    (define-key map "\C-g" #'corfu-quit)
     (define-key map "\r" #'corfu-insert)
     (define-key map "\t" #'corfu-complete)
     (define-key map "\eg" #'corfu-show-location)
@@ -427,8 +426,8 @@ Set to nil in order to disable confirmation."
   (and (symbolp this-command)
        (string-match-p corfu--continue-commands (symbol-name this-command))))
 
-(defun corfu-abort ()
-  "Abort Corfu completion."
+(defun corfu-quit ()
+  "Quit Corfu completion."
   (interactive)
   (completion-in-region-mode -1))
 
@@ -543,7 +542,7 @@ Set to nil in order to disable confirmation."
         (`(,beg ,end ,_table ,_pred)
          (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
            (corfu--update))))
-      (corfu-abort)))
+      (corfu-quit)))
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
@@ -592,7 +591,7 @@ Set to nil in order to disable confirmation."
         (restore (make-symbol "corfu--restore")))
     (fset restore
           (lambda ()
-            (when (eq this-command #'corfu-abort)
+            (when (eq this-command #'corfu-quit)
               (setq this-command #'ignore))
             (remove-hook 'pre-command-hook restore)
             (setq other-window-scroll-buffer other)
@@ -674,14 +673,14 @@ Set to nil in order to disable confirmation."
   ;; XXX Is the :exit-function handling sufficient?
   (when-let (exit (plist-get corfu--extra-properties :exit-function))
     (funcall exit str status))
-  (corfu-abort))
+  (corfu-quit))
 
 (defun corfu-insert ()
   "Insert current candidate."
   (interactive)
   (if (> corfu--total 0)
       (corfu--insert 'finished)
-    (corfu-abort)))
+    (corfu-quit)))
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
@@ -718,7 +717,7 @@ Set to nil in order to disable confirmation."
           ;; popup is shown. Since the predicate is set always, it is ensured
           ;; that `completion-in-region-mode' is turned on.
           (completion-in-region-mode-predicate
-           (or (and corfu-respect-boundary
+           (or (and corfu-quit-at-boundary
                     completion-in-region-mode-predicate)
                (lambda () t))))
           (prog1 (apply #'completion--in-region args)
