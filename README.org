@@ -38,7 +38,7 @@ will fall back to the default setting of the ~completion-in-region-function~.
 - Candidates sorting by prefix, string length and alphabetically
 - Completion is automatically terminated after candidate selection
 - Filter string can contain arbitrary characters and spaces, if
-  ~corfu-respect-boundary~ is nil. This is needed when filtering with the
+  ~corfu-quit-at-boundary~ is nil. This is needed when filtering with the
   [[https://github.com/oantolin/orderless][Orderless]] completion style.
 - Deferred completion style highlighting for performance
 - Jumping to location/documentation of current candidate (Company extension)
@@ -130,7 +130,7 @@ The keymap defines the following remappings and bindings:
 Corfu works well together with all packages providing code completion via the
 ~completion-at-point-functions~. Furthermore it supports various completion
 styles, including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
-expressions are separated by spaces (see ~corfu-respect-boundary~).
+expressions are separated by spaces (see ~corfu-quit-at-boundary~).
 
 You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the minibuffer
 counterpart of Corfu.
