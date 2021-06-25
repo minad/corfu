@@ -230,6 +230,7 @@ Set to nil in order to disable confirmation."
     (with-current-buffer buffer
       (setq-local mode-line-format nil
                   header-line-format nil
+                  tab-line-format nil
                   frame-title-format ""
                   truncate-lines t
                   cursor-type nil
