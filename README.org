@@ -43,7 +43,8 @@ will fall back to the default setting of the ~completion-in-region-function~.
 - Jumping to location/documentation of current candidate (Company extension)
 - Support for ~annotation-function~ and ~affixation-function~
 
-Notable non-feature: Timer-based idle completions are not supported.
+Notable non-feature: Timer-based auto-completions are not supported. There exists
+an experimental implementation in the branch [[https://github.com/minad/corfu/tree/auto][auto]].
 
 * Configuration
 
@@ -137,7 +138,7 @@ counterpart of Corfu.
 
 Corfu works in most scenarios. However there are a few known technical caveats.
 
-- No support for idle completions.
+- No support for idle completions (See branch =auto= for a possible implementation).
 - Corfu falls back to the default ~completion-in-region-function~ on
   non-graphical displays, since is displayed using child frames.
 - The abort handling could be improved, for example the input could be undone.
