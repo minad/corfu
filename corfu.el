@@ -523,13 +523,13 @@ Set to nil in order to disable confirmation."
       (corfu--popup-show beg (list corfu-no-match))   ;; => Show confirmation popup
       t))))
 
-(defun corfu--pre-command-hook ()
+(defun corfu--pre-command ()
   "Insert selected candidate unless keep alive command."
   (add-hook 'window-configuration-change-hook #'corfu--popup-hide)
   (unless (or (< corfu--index 0) (corfu--keep-alive-p))
     (corfu--insert 'exact)))
 
-(defun corfu--post-command-hook ()
+(defun corfu--post-command ()
   "Refresh Corfu after last command."
   (remove-hook 'window-configuration-change-hook #'corfu--popup-hide)
   (or (pcase completion-in-region--data
@@ -681,16 +681,16 @@ Set to nil in order to disable confirmation."
   (when completion-in-region-mode
     (setq corfu--extra-properties completion-extra-properties)
     (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
-    (add-hook 'pre-command-hook #'corfu--pre-command-hook nil 'local)
-    (add-hook 'post-command-hook #'corfu--post-command-hook nil 'local)
+    (add-hook 'pre-command-hook #'corfu--pre-command nil 'local)
+    (add-hook 'post-command-hook #'corfu--post-command nil 'local)
     (add-hook 'completion-in-region-mode-hook #'corfu--teardown nil 'local)))
 
 (defun corfu--teardown ()
   "Teardown Corfu."
   (unless completion-in-region-mode
     (corfu--popup-hide)
-    (remove-hook 'pre-command-hook #'corfu--pre-command-hook 'local)
-    (remove-hook 'post-command-hook #'corfu--post-command-hook 'local)
+    (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
+    (remove-hook 'post-command-hook #'corfu--post-command 'local)
     (remove-hook 'completion-in-region-mode-hook #'corfu--teardown 'local)
     (when corfu--overlay (delete-overlay corfu--overlay))
     (mapc #'kill-local-variable corfu--state-vars)))
