@@ -16,14 +16,13 @@ overlay. The current candidates are shown in a popup below or above the point.
 Corfu can be considered the minimalistic ~completion-in-region~ counterpart of
 the [[https://github.com/minad/vertico][Vertico]] minibuffer UI.
 
-Corfu is a minimal package (~600 lines of code without whitespace and comments).
-In contrast to the featureful and complex Company package, Corfu concentrates on
-the completion UI and does not include custom completion backends. Completions
-are either provided by commands like ~dabbrev-completion~ or by pluggable
-backends (~completion-at-point-functions~, Capfs). Many programming language
-major modes implement a Capf. Furthermore the language server packages, [[https://github.com/joaotavora/eglot][Eglot]]
-and [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]], both use Capfs which talk to the LSP server to retrieve the
-completions.
+Corfu is a minimal package. In contrast to the featureful and complex Company
+package, Corfu concentrates on the completion UI and does not include custom
+completion backends. Completions are either provided by commands like
+~dabbrev-completion~ or by pluggable backends (~completion-at-point-functions~,
+Capfs). Many programming language major modes implement a Capf. Furthermore the
+language server packages, [[https://github.com/joaotavora/eglot][Eglot]] and [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]], both use Capfs which talk to the
+LSP server to retrieve the completions.
 
 *NOTE*: Corfu uses child frames to show the popup; on non-graphical displays it
 will fall back to the default setting of the ~completion-in-region-function~.
@@ -32,6 +31,7 @@ will fall back to the default setting of the ~completion-in-region-function~.
 
 * Features
 
+- Timer-based auto-completions
 - Popup display with scrollbar indicator and arrow key navigation
 - The popup must be summoned explicitly by pressing =TAB=
 - The current candidate is inserted with =TAB= and selected with =RET=
@@ -43,9 +43,6 @@ will fall back to the default setting of the ~completion-in-region-function~.
 - Deferred completion style highlighting for performance
 - Jumping to location/documentation of current candidate (Company extension)
 - Support for ~annotation-function~ and ~affixation-function~
-
-Notable non-feature: Timer-based auto-completions are not supported. There exists
-an experimental implementation in the branch [[https://github.com/minad/corfu/tree/auto][auto]].
 
 * Configuration
 
@@ -60,6 +57,13 @@ Orderless is not a necessity. Here is an example configuration:
 #+begin_src emacs-lisp
   ;; Configure corfu
   (use-package corfu
+    ;; Optional customizations
+    ;; :custom
+    ;; (corfu-cycle t)            ;; Enable cycling for `corfu-next/previous'
+    ;; (corfu-auto t)             ;; Enable auto completion
+    ;; (corfu-quit-at-boundary t) ;; Automatically quit at word boundary
+    ;; (corfu-quit-no-match t)    ;; Automatically quit if there is no match
+
     ;; Optionally use TAB for cycling, default is `corfu-complete'.
     ;; :bind (:map corfu-map
     ;;        ("TAB" . corfu-next)
@@ -70,17 +74,10 @@ Orderless is not a necessity. Here is an example configuration:
     ;;        (shell-mode . corfu-mode)
     ;;        (eshell-mode . corfu-mode))
 
-
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since dabbrev can be used globally (M-/).
     :init
-    (corfu-global-mode)
-
-    :config
-
-    ;; Optionally enable cycling for `corfu-next' and `corfu-previous'.
-    ;; (setq corfu-cycle t)
-  )
+    (corfu-global-mode))
 
   ;; Optionally use the `orderless' completion style.
   ;; Enable `partial-completion' for files to allow path expansion.
@@ -139,7 +136,6 @@ counterpart of Corfu.
 
 Corfu works in most scenarios. However there are a few known technical caveats.
 
-- No support for idle completions (See branch =auto= for a possible implementation).
 - Corfu falls back to the default ~completion-in-region-function~ on
   non-graphical displays, since is displayed using child frames.
 - The abort handling could be improved, for example the input could be undone.
@@ -151,16 +147,12 @@ Corfu works in most scenarios. However there are a few known technical caveats.
 
 * Alternative packages
 
-The main alternative is the featureful [[https://github.com/company-mode/company-mode][Company]] package. In particular, Company
-supports auto completion as you type. As of now, auto completion is not
-supported by Corfu. Furthermore Company has support for multiple completion
-backends.
-
-The Emacs builtin Icomplete is technically comparable to Corfu and Vertico.
-Icomplete implements both ~completion-in-region~ and minibuffer completion in a
-single package. Corfu and Vertico are two separate packages in order to optimize
-the UI for the two distinct use cases, also leading to code bases which are
-easier to understand.
+The main alternative is the featureful and complex [[https://github.com/company-mode/company-mode][Company]] package. The Emacs
+builtin Icomplete is technically comparable to Corfu and Vertico. Icomplete
+implements both ~completion-in-region~ and minibuffer completion in a single
+package. Corfu and Vertico are two separate packages in order to optimize the UI
+for the two distinct use cases, also leading to code bases which are easier to
+understand.
 
 * Contributions
 

@@ -80,6 +80,18 @@ filter string with spaces is allowed."
   "Width of the bar in units of the character width."
   :type 'float)
 
+(defcustom corfu-auto-prefix 3
+  "Minimum length of prefix for auto completion."
+  :type 'integer)
+
+(defcustom corfu-auto-delay 0.2
+  "Delay for auto completion."
+  :type 'float)
+
+(defcustom corfu-auto nil
+  "Enable auto completion."
+  :type 'boolean)
+
 (defgroup corfu-faces nil
   "Faces used by Corfu."
   :group 'corfu
@@ -135,6 +147,9 @@ filter string with spaces is allowed."
     map)
   "Corfu keymap used when popup is shown.")
 
+(defvar corfu--auto-timer nil
+  "Auto completion timer.")
+
 (defvar-local corfu--candidates nil
   "List of candidates.")
 
@@ -161,6 +176,10 @@ filter string with spaces is allowed."
 
 (defvar corfu--frame nil
   "Popup frame.")
+
+(defvar corfu--auto-commands
+  "\\`\\(.*self-insert-command\\)\\'"
+  "Commands which initiate auto completion.")
 
 (defvar corfu--continue-commands
   ;; nil is undefined command
@@ -705,10 +724,10 @@ filter string with spaces is allowed."
       ;; XXX Warning this can result in an endless loop when `completion-in-region-function'
       ;; is set *globally* to `corfu--completion-in-region'. This should never happen.
       (apply (default-value 'completion-in-region-function) args)
-    ;; Prevent restarting the completion. This can happen for example if C-M-/
+    ;; Restart the completion. This can happen for example if C-M-/
     ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
     (when (and completion-in-region-mode (not completion-cycling))
-      (user-error "Completion is already in progress"))
+      (corfu-quit))
     (let ((completion-show-inline-help)
           (completion-auto-help)
           ;; XXX Disable original predicate check, keep completion alive when
@@ -721,12 +740,49 @@ filter string with spaces is allowed."
       (prog1 (apply #'completion--in-region args)
         (corfu--setup)))))
 
+(defun corfu--auto-complete (buffer)
+  "Initiate auto completion after delay in BUFFER."
+  (setq corfu--auto-timer nil)
+  (when (and (not completion-in-region-mode)
+             (eq (current-buffer) buffer))
+    (pcase (run-hook-wrapped 'completion-at-point-functions
+                             #'completion--capf-wrapper 'all)
+      ((and `(,fun ,beg ,end ,table . ,plist) (guard (>= (- end beg) corfu-auto-prefix)))
+       (let ((completion-extra-properties plist)
+             (completion-in-region-mode-predicate
+              (if corfu-quit-at-boundary
+                 (lambda ()
+                   (when-let (newbeg (car-safe (funcall fun)))
+                     (= newbeg beg)))
+                (lambda () t))))
+         (setq completion-in-region--data `(,(copy-marker beg) ,(copy-marker end t)
+                                            ,table ,(plist-get plist :predicate)))
+         (completion-in-region-mode 1)
+         (corfu--setup)
+         (corfu--post-command))))))
+
+(defun corfu--auto-post-command ()
+  "Post command hook which initiates auto completion."
+  (when corfu--auto-timer
+    (cancel-timer corfu--auto-timer)
+    (setq corfu--auto-timer nil))
+  (when (and (not completion-in-region-mode)
+             (display-graphic-p)
+             (symbolp this-command)
+             (string-match-p corfu--auto-commands (symbol-name this-command)))
+    (setq corfu--auto-timer (run-with-idle-timer corfu-auto-delay nil
+                                                 #'corfu--auto-complete
+                                                 (current-buffer)))))
+
 ;;;###autoload
 (define-minor-mode corfu-mode
   "Completion Overlay Region FUnction"
   :global nil
   (if corfu-mode
-      (setq-local completion-in-region-function #'corfu--completion-in-region)
+      (progn
+        (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
+        (setq-local completion-in-region-function #'corfu--completion-in-region))
+    (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function)))
 
 ;;;###autoload
