@@ -58,6 +58,13 @@
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
+(defcustom corfu-respect-boundary nil
+  "Respect completion field boundaries.
+If this variable is nil, Orderless filtering is facilitated since a filter
+string with spaces is allowed. Otherwise the completion is terminated at the
+word boundary."
+  :type 'boolean)
+
 (defcustom corfu-no-match (propertize "No match" 'face 'italic)
   "Show this confirmation string if there is no match.
 Set to nil in order to disable confirmation."
@@ -708,7 +715,10 @@ Set to nil in order to disable confirmation."
                   ;; XXX Disable original predicate check, keep completion alive when
                   ;; popup is shown. Since the predicate is set always, it is ensured
                   ;; that `completion-in-region-mode' is turned on.
-                  (completion-in-region-mode-predicate (lambda () t)))
+                  (completion-in-region-mode-predicate
+                   (or (and corfu-respect-boundary
+                            completion-in-region-mode-predicate)
+                       (lambda () t))))
               (apply #'completion--in-region args))
           (corfu--setup)))
     ;; XXX Warning this can result in an endless loop when `completion-in-region-function'
