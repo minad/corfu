@@ -25,12 +25,6 @@ major modes implement a Capf. Furthermore the language server packages, [[https:
 and [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]], both use Capfs which talk to the LSP server to retrieve the
 completions.
 
-The Emacs builtin Icomplete is technically comparable to Corfu and Vertico.
-Icomplete implements both ~completion-in-region~ and minibuffer completion in a
-single package. Corfu and Vertico are two separate packages in order to optimize
-the UI for the two distinct use cases, also leading to code bases which are
-easier to understand.
-
 *NOTE*: Corfu uses child frames to show the popup; on non-graphical displays it
 will fall back to the default setting of the ~completion-in-region-function~.
 
@@ -155,6 +149,19 @@ Corfu works in most scenarios. However there are a few known technical caveats.
 - No support for multi-backends like Company (Implement a multi-capf?).
 - No sorting by history, since ~completion-at-point~ does not
   maintain a history (See branch =history= for a possible solution).
+
+* Alternative packages
+
+The main alternative is the featureful [[https://github.com/company-mode/company-mode][Company]] package. In particular, Company
+supports auto completion as you type. As of now, auto completion is not
+supported by Corfu. Furthermore Company has support for multiple completion
+backends.
+
+The Emacs builtin Icomplete is technically comparable to Corfu and Vertico.
+Icomplete implements both ~completion-in-region~ and minibuffer completion in a
+single package. Corfu and Vertico are two separate packages in order to optimize
+the UI for the two distinct use cases, also leading to code bases which are
+easier to understand.
 
 * Contributions
 
