@@ -164,10 +164,10 @@ Set to nil in order to disable confirmation."
 (defvar corfu--frame nil
   "Popup frame.")
 
-(defvar corfu--keep-alive
+(defvar corfu--continue-commands
   ;; nil is undefined command
   "\\`\\(nil\\|completion-at-point\\|corfu-.*\\|scroll-other-window.*\\)\\'"
-  "Keep Corfu popup alive during commands matching this regexp.")
+  "Continue Corfu completion after executing commands matching this regexp.")
 
 (defconst corfu--state-vars
   '(corfu--base
@@ -422,10 +422,10 @@ Set to nil in order to disable confirmation."
            corfu--total total
            corfu--highlight hl))))
 
-(defun corfu--keep-alive-p ()
+(defun corfu--continue-p ()
   "Return t if the Corfu popup should stay alive."
   (and (symbolp this-command)
-       (string-match-p corfu--keep-alive (symbol-name this-command))))
+       (string-match-p corfu--continue-commands (symbol-name this-command))))
 
 (defun corfu-abort ()
   "Abort Corfu completion."
@@ -512,7 +512,7 @@ Set to nil in order to disable confirmation."
       nil)
      ((and corfu--candidates                          ;; 2) There exist candidates
            (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
-           (or (/= beg end) (corfu--keep-alive-p)))   ;; &  Input is non-empty or keep-alive command
+           (or (/= beg end) (corfu--continue-p)))     ;; &  Input is non-empty or keep-alive command
       (corfu--show-candidates beg end str metadata)   ;; => Show candidates popup
       t)
      ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
@@ -531,9 +531,9 @@ Set to nil in order to disable confirmation."
       t))))
 
 (defun corfu--pre-command ()
-  "Insert selected candidate unless keep alive command."
+  "Insert selected candidate unless command is marked to continue completion."
   (add-hook 'window-configuration-change-hook #'corfu--popup-hide)
-  (unless (or (< corfu--index 0) (corfu--keep-alive-p))
+  (unless (or (< corfu--index 0) (corfu--continue-p))
     (corfu--insert 'exact)))
 
 (defun corfu--post-command ()
