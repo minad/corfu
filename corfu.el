@@ -64,10 +64,9 @@ If automatic quitting is disabled, Orderless filtering is facilitated since a
 filter string with spaces is allowed."
   :type 'boolean)
 
-(defcustom corfu-no-match (propertize "No match" 'face 'italic)
-  "Show this confirmation string if there is no match.
-Set to nil in order to disable confirmation."
-  :type '(choice (const nil) string))
+(defcustom corfu-quit-no-match nil
+  "Automatically quit if no matching candidate is found."
+  :type 'boolean)
 
 (defcustom corfu-excluded-modes nil
   "List of modes excluded by `corfu-global-mode'."
@@ -524,9 +523,8 @@ Set to nil in order to disable confirmation."
            (test-completion str table pred))
       (corfu--done str 'finished)
       nil)
-     ((and (not corfu--candidates)                    ;; 4) There are no candidates
-           corfu-no-match)                            ;; &  Confirmation is enabled
-      (corfu--popup-show beg (list corfu-no-match))   ;; => Show confirmation popup
+     ((not (or corfu--candidates corfu-quit-no-match))           ;; 4) There are no candidates
+      (corfu--popup-show beg '(#("No match" 0 8 (face italic)))) ;; => Show confirmation popup
       t))))
 
 (defun corfu--pre-command ()
