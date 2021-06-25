@@ -697,7 +697,7 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
-  (if (and (not emacs-basic-display) (display-graphic-p))
+  (if (display-graphic-p)
       ;; Prevent restarting the completion. This can happen for example if C-M-/
       ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
       (if (and completion-in-region-mode (not completion-cycling))
