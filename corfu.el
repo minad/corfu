@@ -704,26 +704,25 @@ Set to nil in order to disable confirmation."
 
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
-  (if (display-graphic-p)
-      ;; Prevent restarting the completion. This can happen for example if C-M-/
-      ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
-      (if (and completion-in-region-mode (not completion-cycling))
-          (user-error "Completion is already in progress")
-        (prog1
-            (let ((completion-show-inline-help)
-                  (completion-auto-help)
-                  ;; XXX Disable original predicate check, keep completion alive when
-                  ;; popup is shown. Since the predicate is set always, it is ensured
-                  ;; that `completion-in-region-mode' is turned on.
-                  (completion-in-region-mode-predicate
-                   (or (and corfu-respect-boundary
-                            completion-in-region-mode-predicate)
-                       (lambda () t))))
-              (apply #'completion--in-region args))
-          (corfu--setup)))
-    ;; XXX Warning this can result in an endless loop when `completion-in-region-function'
-    ;; is set *globally* to `corfu--completion-in-region'. This should never happen.
-    (apply (default-value 'completion-in-region-function) args)))
+  (if (not (display-graphic-p))
+      ;; XXX Warning this can result in an endless loop when `completion-in-region-function'
+      ;; is set *globally* to `corfu--completion-in-region'. This should never happen.
+      (apply (default-value 'completion-in-region-function) args)
+    ;; Prevent restarting the completion. This can happen for example if C-M-/
+    ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
+    (when (and completion-in-region-mode (not completion-cycling))
+      (user-error "Completion is already in progress"))
+    (let ((completion-show-inline-help)
+          (completion-auto-help)
+          ;; XXX Disable original predicate check, keep completion alive when
+          ;; popup is shown. Since the predicate is set always, it is ensured
+          ;; that `completion-in-region-mode' is turned on.
+          (completion-in-region-mode-predicate
+           (or (and corfu-respect-boundary
+                    completion-in-region-mode-predicate)
+               (lambda () t))))
+          (prog1 (apply #'completion--in-region args)
+            (corfu--setup)))))
 
 ;;;###autoload
 (define-minor-mode corfu-mode
