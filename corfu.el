@@ -505,8 +505,8 @@ filter string with spaces is allowed."
       (overlay-put corfu--overlay 'window (selected-window))
       (overlay-put corfu--overlay 'display (concat (substring str 0 corfu--base) (nth curr cands))))))
 
-(defun corfu--update ()
-  "Refresh Corfu UI."
+(defun corfu--update (msg)
+  "Refresh Corfu UI, possibly printing a message with MSG."
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
@@ -522,12 +522,12 @@ filter string with spaces is allowed."
      ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
      ((condition-case err
           (unless (equal corfu--input (cons str pt))
-            (and (corfu--update-candidates str metadata pt table pred)) nil)
+            (corfu--update-candidates str metadata pt table pred)
+            nil)
         (t (message "%s" (error-message-string err))
            nil)))
-     ((and (not corfu--candidates)                    ;; 1) There are no candidates
-           initializing)                              ;; &  Initializing, first retrieval of candidates.
-      (minibuffer-message "No match")                 ;; => Show error message
+     ((and initializing (not corfu--candidates))      ;; 1) Initializing, no candidates
+      (funcall msg "No match")                        ;; => Show error message
       nil)
      ((and corfu--candidates                          ;; 2) There exist candidates
            (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
@@ -560,7 +560,7 @@ filter string with spaces is allowed."
   (or (pcase completion-in-region--data
         (`(,beg ,end ,_table ,_pred)
          (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
-           (corfu--update))))
+           (corfu--update #'minibuffer-message))))
       (corfu-quit)))
 
 (defun corfu--goto (index)
@@ -761,7 +761,8 @@ filter string with spaces is allowed."
                                             ,table ,(plist-get plist :predicate)))
          (completion-in-region-mode 1)
          (corfu--setup)
-         (corfu--post-command))))))
+         (unless (corfu--update #'ignore)
+           (corfu-quit)))))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
