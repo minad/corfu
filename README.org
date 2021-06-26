@@ -34,7 +34,7 @@ will fall back to the default setting of the ~completion-in-region-function~.
 
 * Features
 
-- Timer-based auto-completions
+- Timer-based auto-completions (off by default, set ~corfu-auto~)
 - Popup display with scrollbar indicator and arrow key navigation
 - The popup must be summoned explicitly by pressing =TAB=
 - The current candidate is inserted with =TAB= and selected with =RET=
@@ -140,12 +140,13 @@ counterpart of Corfu.
 
 Corfu works in most scenarios. However there are a few known technical caveats.
 
-- Corfu falls back to the default ~completion-in-region-function~ on
-  non-graphical displays, since is displayed using child frames.
+- Corfu falls back to the default Completion buffer on non-graphical displays,
+  since Corfu requires child frames.
 - The abort handling could be improved, for example the input could be undone.
 - Company kind icons, docsig and match data are not supported
   (~company-kind~, ~company-docsig~, ~company-match~).
-- No support for multi-backends like Company (Implement a multi-capf?).
+- No support for multi-backends like Company. A possible multi-capf backend
+  could be implemented.
 - No sorting by history, since ~completion-at-point~ does not
   maintain a history (See branch =history= for a possible solution).
 
