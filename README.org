@@ -58,7 +58,6 @@ However Corfu works well with the default completion styles, the use of
 Orderless is not a necessity. Here is an example configuration:
 
 #+begin_src emacs-lisp
-  ;; Configure corfu
   (use-package corfu
     ;; Optional customizations
     ;; :custom
@@ -70,7 +69,9 @@ Orderless is not a necessity. Here is an example configuration:
     ;; Optionally use TAB for cycling, default is `corfu-complete'.
     ;; :bind (:map corfu-map
     ;;        ("TAB" . corfu-next)
-    ;;        ("S-TAB" . corfu-previous))
+    ;;        ([tab] . corfu-next)
+    ;;        ("S-TAB" . corfu-previous)
+    ;;        ([backtab] . corfu-previous))
 
     ;; You may want to enable Corfu only for certain modes.
     ;; :hook ((prog-mode . corfu-mode)
