@@ -501,31 +501,39 @@ filter string with spaces is allowed."
      ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
      ((condition-case err
           (unless (equal corfu--input (cons str pt))
-            (and (corfu--update-candidates str metadata pt table pred)) nil)
+            (corfu--update-candidates str metadata pt table pred)
+            nil)
         (t (message "%s" (error-message-string err))
-           nil)))
-     ((and (not corfu--candidates)                    ;; 1) There are no candidates
-           initializing)                              ;; &  Initializing, first retrieval of candidates.
-      (minibuffer-message "No match")                 ;; => Show error message
-      nil)
-     ((and corfu--candidates                          ;; 2) There exist candidates
-           (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
-           (or (/= beg end) (corfu--continue-p)))     ;; &  Input is non-empty or continue command
-      (corfu--show-candidates beg end str metadata)   ;; => Show candidates popup
-      t)
-     ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
-     ;; current string is a valid match, exit with status 'finished.
+           (corfu-quit)
+           t)))
+     ;; 1) Initializing and there are no candidates
+     ;; => Quit with error message
+     ((and (not corfu--candidates) initializing)
+      (minibuffer-message "No match")
+      (corfu-quit))
+     ;; 2) There are no candidates
+     ;; => Show confirmation popup
+     ((not (or corfu--candidates corfu-quit-no-match))
+      (corfu--popup-show beg '(#("No match" 0 8 (face italic)))))
+     ;; 3) There exist candidates
+     ;; &  Not a sole exactly matching candidate
+     ;; &  Input is non-empty or continue command
+     ;; => Show candidates popup
+     ((and corfu--candidates
+           (not (equal corfu--candidates (list str)))
+           (or (/= beg end) (corfu--continue-p)))
+      (corfu--show-candidates beg end str metadata))
+     ;; 4) When after `completion-at-point/corfu-complete', no further completion is possible and
+     ;; the current string is a valid match, exit with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
            (not (stringp (try-completion str table pred)))
            ;; XXX We should probably use `completion-try-completion' here instead
            ;; but it does not work as well when completing in `shell-mode'.
            ;; (not (consp (completion-try-completion str table pred pt metadata)))
            (test-completion str table pred))
-      (corfu--done str 'finished)
-      nil)
-     ((not (or corfu--candidates corfu-quit-no-match))           ;; 4) There are no candidates
-      (corfu--popup-show beg '(#("No match" 0 8 (face italic)))) ;; => Show confirmation popup
-      t))))
+      (corfu--done str 'finished))
+     ;; Otherwise quit
+     (t (corfu-quit)))))
 
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
@@ -536,11 +544,10 @@ filter string with spaces is allowed."
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
   (remove-hook 'window-configuration-change-hook #'corfu--popup-hide)
-  (or (pcase completion-in-region--data
-        (`(,beg ,end ,_table ,_pred)
-         (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
-           (corfu--update))))
-      (corfu-quit)))
+  (pcase completion-in-region--data
+    (`(,beg ,end ,_table ,_pred)
+     (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
+       (corfu--update)))))
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
