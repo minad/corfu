@@ -16,13 +16,16 @@ overlay. The current candidates are shown in a popup below or above the point.
 Corfu can be considered the minimalistic ~completion-in-region~ counterpart of
 the [[https://github.com/minad/vertico][Vertico]] minibuffer UI.
 
-Corfu is a minimal package. In contrast to the featureful and complex Company
-package, Corfu concentrates on the completion UI and does not include custom
-completion backends. Completions are either provided by commands like
-~dabbrev-completion~ or by pluggable backends (~completion-at-point-functions~,
-Capfs). Many programming language major modes implement a Capf. Furthermore the
-language server packages, [[https://github.com/joaotavora/eglot][Eglot]] and [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]], both use Capfs which talk to the
-LSP server to retrieve the completions.
+Corfu is a minimal package, which relies on the Emacs completion facilities and
+concentrates on providing a polished completion UI. Completions are either
+provided by commands like ~dabbrev-completion~ or by pluggable backends
+(~completion-at-point-functions~, Capfs). Many programming language major modes
+implement a Capf. Furthermore the language server packages, [[https://github.com/joaotavora/eglot][Eglot]] and [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]],
+both use Capfs which talk to the LSP server to retrieve the completions.
+
+Corfu does not include custom completion backends. In contrast, the complex
+Company package includes custom completion backends, which deviate from the
+Emacs completion infrastructure.
 
 *NOTE*: Corfu uses child frames to show the popup; on non-graphical displays it
 will fall back to the default setting of the ~completion-in-region-function~.
@@ -120,7 +123,7 @@ The keymap defines the following remappings and bindings:
 - =RET= -> ~corfu-insert~
 - =M-g= -> ~corfu-show-location~
 - =M-h= -> ~corfu-show-documentation~
-- =C-g=, =ESC ESC ESC= -> ~corfu-abort~
+- =C-g=, =ESC ESC ESC= -> ~corfu-quit~
 
 * Complementary packages
 
@@ -144,15 +147,6 @@ Corfu works in most scenarios. However there are a few known technical caveats.
 - No support for multi-backends like Company (Implement a multi-capf?).
 - No sorting by history, since ~completion-at-point~ does not
   maintain a history (See branch =history= for a possible solution).
-
-* Alternative packages
-
-The main alternative is the featureful and complex [[https://github.com/company-mode/company-mode][Company]] package. The Emacs
-builtin Icomplete is technically comparable to Corfu and Vertico. Icomplete
-implements both ~completion-in-region~ and minibuffer completion in a single
-package. Corfu and Vertico are two separate packages in order to optimize the UI
-for the two distinct use cases, also leading to code bases which are easier to
-understand.
 
 * Contributions
 
