@@ -510,7 +510,7 @@ filter string with spaces is allowed."
       nil)
      ((and corfu--candidates                          ;; 2) There exist candidates
            (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
-           (or (/= beg end) (corfu--continue-p)))     ;; &  Input is non-empty or keep-alive command
+           (or (/= beg end) (corfu--continue-p)))     ;; &  Input is non-empty or continue command
       (corfu--show-candidates beg end str metadata)   ;; => Show candidates popup
       t)
      ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
@@ -718,8 +718,8 @@ filter string with spaces is allowed."
            (or (and corfu-quit-at-boundary
                     completion-in-region-mode-predicate)
                (lambda () t))))
-          (prog1 (apply #'completion--in-region args)
-            (corfu--setup)))))
+      (prog1 (apply #'completion--in-region args)
+        (corfu--setup)))))
 
 ;;;###autoload
 (define-minor-mode corfu-mode
