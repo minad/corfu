@@ -349,9 +349,6 @@ filter string with spaces is allowed."
 
 ;; bug#47711: Deferred highlighting for `completion-all-completions'
 ;; XXX There is one complication: `completion--twq-all' already adds `completions-common-part'.
-(declare-function orderless-highlight-matches "ext:orderless")
-(declare-function orderless-pattern-compiler "ext:orderless")
-(require 'orderless nil 'noerror)
 (defun corfu--all-completions (&rest args)
   "Compute all completions for ARGS with deferred highlighting."
   (cl-letf* ((orig-pcm (symbol-function #'completion-pcm--hilit-commonality))
@@ -376,13 +373,16 @@ filter string with spaces is allowed."
                            (condition-case nil
                                (completion-pcm--hilit-commonality pattern x)
                              (t x))))
-                cands))
-             ((symbol-function #'orderless-highlight-matches)
-              (lambda (pattern cands)
-                (let ((regexps (orderless-pattern-compiler pattern)))
-                  (setq hl (lambda (x) (orderless-highlight-matches regexps x))))
                 cands)))
-    (cons (apply #'completion-all-completions args) hl)))
+    ;; Only advise orderless after it has been loaded to avoid load order issues
+    (if (and (fboundp 'orderless-highlight-matches) (fboundp 'orderless-pattern-compiler))
+        (cl-letf (((symbol-function 'orderless-highlight-matches)
+                   (lambda (pattern cands)
+                     (let ((regexps (orderless-pattern-compiler pattern)))
+                       (setq hl (lambda (x) (orderless-highlight-matches regexps x))))
+                     cands)))
+          (cons (apply #'completion-all-completions args) hl))
+      (cons (apply #'completion-all-completions args) hl))))
 
 (defun corfu--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
