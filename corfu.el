@@ -136,7 +136,8 @@ filter string with spaces is allowed."
     (define-key map [remap completion-at-point] #'corfu-complete)
     (define-key map [down] #'corfu-next)
     (define-key map [up] #'corfu-previous)
-    (define-key map [return] #'corfu-insert)
+    ;; XXX [tab] is bound because of org-mode
+    ;; The binding should be removed from org-mode-map.
     (define-key map [tab] #'corfu-complete)
     (define-key map "\en" #'corfu-next)
     (define-key map "\ep" #'corfu-previous)
