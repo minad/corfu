@@ -225,6 +225,23 @@ filter string with spaces is allowed."
     (desktop-dont-save . t))
   "Default child frame parameters.")
 
+(defvar corfu--buffer-parameters
+  '((mode-line-format . nil)
+    (header-line-format . nil)
+    (tab-line-format . nil)
+    (frame-title-format . "")
+    (truncate-lines . t)
+    (cursor-in-non-selected-windows . nil)
+    (cursor-type . nil)
+    (show-trailing-whitespace . nil)
+    (display-line-numbers . nil)
+    (left-fringe-width . nil)
+    (right-fringe-width . nil)
+    (left-margin-width . 0)
+    (right-margin-width . 0)
+    (fringes-outside-margins . 0))
+  "Default child frame buffer parameters.")
+
 ;; Function adapted from posframe.el by tumashu
 (defun corfu--make-frame (x y width height content)
   "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT."
@@ -255,21 +272,9 @@ filter string with spaces is allowed."
               yb))
          (buffer (get-buffer-create " *corfu*")))
     (with-current-buffer buffer
-      (setq-local mode-line-format nil
-                  header-line-format nil
-                  tab-line-format nil
-                  frame-title-format ""
-                  truncate-lines t
-                  cursor-type nil
-                  cursor-in-non-selected-windows nil
-                  show-trailing-whitespace nil
-                  display-line-numbers nil
-                  left-fringe-width nil
-                  right-fringe-width nil
-                  left-margin-width nil
-                  right-margin-width nil
-                  fringes-outside-margins 0
-                  face-remapping-alist fr)
+      (dolist (var corfu--buffer-parameters)
+        (set (make-local-variable (car var)) (cdr var)))
+      (setq-local face-remapping-alist fr)
       (let ((inhibit-modification-hooks t))
         (erase-buffer)
         (insert content)
