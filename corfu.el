@@ -239,7 +239,8 @@ filter string with spaces is allowed."
     (right-fringe-width . nil)
     (left-margin-width . 0)
     (right-margin-width . 0)
-    (fringes-outside-margins . 0))
+    (fringes-outside-margins . 0)
+    (buffer-read-only . t))
   "Default child frame buffer parameters.")
 
 ;; Function adapted from posframe.el by tumashu
@@ -275,7 +276,8 @@ filter string with spaces is allowed."
       (dolist (var corfu--buffer-parameters)
         (set (make-local-variable (car var)) (cdr var)))
       (setq-local face-remapping-alist fr)
-      (let ((inhibit-modification-hooks t))
+      (let ((inhibit-modification-hooks t)
+            (inhibit-read-only t))
         (erase-buffer)
         (insert content)
         (goto-char (point-min))))
@@ -343,7 +345,8 @@ filter string with spaces is allowed."
   (when (frame-live-p corfu--frame)
     (make-frame-invisible corfu--frame)
     (with-current-buffer (window-buffer (frame-root-window corfu--frame))
-      (erase-buffer)))
+      (let ((inhibit-read-only t))
+        (erase-buffer))))
   (remove-hook 'window-configuration-change-hook #'corfu--popup-hide))
 
 (defun corfu--move-to-front (elem list)
