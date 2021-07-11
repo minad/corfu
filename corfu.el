@@ -243,6 +243,21 @@ filter string with spaces is allowed."
     (buffer-read-only . t))
   "Default child frame buffer parameters.")
 
+(defun corfu--make-buffer (content)
+  "Create corfu buffer with CONTENT."
+  (let ((fr face-remapping-alist)
+        (buffer (get-buffer-create " *corfu*")))
+    (with-current-buffer buffer
+      (dolist (var corfu--buffer-parameters)
+        (set (make-local-variable (car var)) (cdr var)))
+      (setq-local face-remapping-alist fr)
+      (let ((inhibit-modification-hooks t)
+            (inhibit-read-only t))
+        (erase-buffer)
+        (insert content)
+        (goto-char (point-min))))
+    buffer))
+
 ;; Function adapted from posframe.el by tumashu
 (defun corfu--make-frame (x y width height content)
   "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT."
@@ -262,7 +277,6 @@ filter string with spaces is allowed."
              'resize-mode)))
          (after-make-frame-functions)
          (edge (window-inside-pixel-edges))
-         (fr face-remapping-alist)
          (lh (default-line-height))
          (x (max 0 (min (+ (car edge) x
                            (- (alist-get 'child-frame-border-width corfu--frame-parameters)))
@@ -271,16 +285,7 @@ filter string with spaces is allowed."
          (y (if (> (+ yb height lh lh) (frame-pixel-height))
                 (- yb height lh 1)
               yb))
-         (buffer (get-buffer-create " *corfu*")))
-    (with-current-buffer buffer
-      (dolist (var corfu--buffer-parameters)
-        (set (make-local-variable (car var)) (cdr var)))
-      (setq-local face-remapping-alist fr)
-      (let ((inhibit-modification-hooks t)
-            (inhibit-read-only t))
-        (erase-buffer)
-        (insert content)
-        (goto-char (point-min))))
+         (buffer (corfu--make-buffer content)))
     (unless (and (frame-live-p corfu--frame)
                  (eq (frame-parent corfu--frame) (window-frame)))
       (when corfu--frame (delete-frame corfu--frame))
