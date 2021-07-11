@@ -243,11 +243,19 @@ filter string with spaces is allowed."
     (buffer-read-only . t))
   "Default child frame buffer parameters.")
 
+(defun corfu--popup-hide-on-click ()
+  "Close if mouse events land in the popup."
+  (when (mouse-event-p last-input-event)
+    (select-frame (frame-parent corfu--frame) 'norecord)
+    (corfu--popup-hide)
+    (setq this-command #'ignore)))
+
 (defun corfu--make-buffer (content)
   "Create corfu buffer with CONTENT."
   (let ((fr face-remapping-alist)
         (buffer (get-buffer-create " *corfu*")))
     (with-current-buffer buffer
+      (add-hook 'pre-command-hook #'corfu--popup-hide-on-click nil 'local)
       (dolist (var corfu--buffer-parameters)
         (set (make-local-variable (car var)) (cdr var)))
       (setq-local face-remapping-alist fr)
