@@ -265,7 +265,9 @@ filter string with spaces is allowed."
   (let ((fr face-remapping-alist)
         (buffer (get-buffer-create " *corfu*")))
     (with-current-buffer buffer
+      ;;; XXX HACK install redirect focus hook
       (add-hook 'pre-command-hook #'corfu--popup-redirect-focus nil 'local)
+      ;;; XXX HACK install mouse ignore map
       (use-local-map corfu--mouse-ignore-map)
       (dolist (var corfu--buffer-parameters)
         (set (make-local-variable (car var)) (cdr var)))
@@ -285,7 +287,7 @@ filter string with spaces is allowed."
          (x-gtk-resize-child-frames
           (let ((case-fold-search t))
             (and
-             ;; XXX Hack to fix resizing on gtk3/gnome taken from posframe.el
+             ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
              ;; More information:
              ;; * https://github.com/minad/corfu/issues/17
              ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
@@ -322,8 +324,8 @@ filter string with spaces is allowed."
      corfu--frame 'background-color
      (face-attribute 'corfu-background :background))
     (set-window-buffer (frame-root-window corfu--frame) buffer)
-    ;; XXX Make the frame invisible before moving the popup from above to below
-    ;; the line in order to avoid flicker.
+    ;; XXX HACK Make the frame invisible before moving the popup from above to below the line in
+    ;; order to avoid flicker.
     (unless (eq (< (cdr (frame-position corfu--frame)) yb) (< y yb))
       (make-frame-invisible corfu--frame))
     (set-frame-size corfu--frame width height t)
