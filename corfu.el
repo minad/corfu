@@ -833,5 +833,11 @@ filter string with spaces is allowed."
               (memq major-mode corfu-excluded-modes))
     (corfu-mode 1)))
 
+;; Emacs 28: Do not show Corfu commands with M-X
+(dolist (sym '(corfu-next corfu-previous corfu-first corfu-last corfu-quit
+               corfu-complete corfu-insert corfu-scroll-up corfu-scroll-down
+               corfu-show-location corfu-show-documentation))
+  (put sym 'completion-predicate #'ignore))
+
 (provide 'corfu)
 ;;; corfu.el ends here
