@@ -34,8 +34,9 @@
 ;;; Code:
 
 (require 'seq)
-(require 'cl-lib)
-(eval-when-compile (require 'subr-x))
+(eval-when-compile
+  (require 'cl-lib)
+  (require 'subr-x))
 
 (defgroup corfu nil
   "Completion Overlay Region FUnction."
@@ -431,6 +432,13 @@ filter string with spaces is allowed."
     (nconc (seq-filter (lambda (x) (string-prefix-p word x)) candidates)
            (seq-remove (lambda (x) (string-prefix-p word x)) candidates))))
 
+(defun corfu--filter-files (files)
+  "Filter FILES by `completion-ignored-extensions'."
+  (let ((re (concat "\\(?:\\(?:\\`\\|/\\)\\.\\.?/\\|"
+                    (regexp-opt completion-ignored-extensions)
+                    "\\)\\'")))
+    (or (seq-remove (lambda (x) (string-match-p re x)) files) files)))
+
 (defun corfu--recompute-candidates (str metadata pt table pred)
   "Recompute candidates from STR, METADATA, PT, TABLE and PRED."
   (pcase-let* ((before (substring str 0 pt))
@@ -452,10 +460,7 @@ filter string with spaces is allowed."
     ;; since this breaks the special casing in the `completion-file-name-table' for `file-exists-p'
     ;; and `file-directory-p'.
     (when completing-file
-      (let ((ignore (concat "\\(?:\\`\\|/\\)\\.?\\./\\'"
-                            (and completion-ignored-extensions
-                                 (concat "\\|" (regexp-opt completion-ignored-extensions) "\\'")))))
-        (setq all (cl-delete-if (lambda (x) (string-match-p ignore x)) all))))
+      (setq all (corfu--filter-files all)))
     (setq all (if-let (sort (corfu--metadata-get metadata 'display-sort-function))
                   (funcall sort all)
                 (sort all #'corfu--sort-predicate)))
