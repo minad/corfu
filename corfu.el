@@ -352,10 +352,10 @@ filter string with spaces is allowed."
          ;;; XXX HACK y-coordinate position computation is wrong
          ;;; if there exists a flymake underline overlay at that point.
          ;;; Take the y coordinate from the current point.
-         (x (car (posn-x-y (posn-at-point pos))))
-         (y (cdr (posn-x-y (posn-at-point (point))))))
+         (x (or (car (posn-x-y (posn-at-point pos))) 0))
+         (y (or (cdr (posn-x-y (posn-at-point (point)))) 0)))
     (corfu--make-frame
-     (- (or x 0) mw) (or y 0)
+     (- x mw) y
      (+ (* width cw) mw mw) (* (length lines) ch)
      (mapconcat (lambda (line)
                   (let ((str (concat
