@@ -203,6 +203,7 @@ filter string with spaces is allowed."
 
 (defvar corfu--frame-parameters
   '((no-accept-focus . t)
+    (no-focus-on-map . t)
     (min-width . t)
     (min-height . t)
     (width . 0)
