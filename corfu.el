@@ -349,9 +349,13 @@ filter string with spaces is allowed."
                      (apply #'max corfu-min-width
                             (mapcar #'string-width lines))))
          (row 0)
-         (pos (posn-x-y (posn-at-point pos))))
+         ;;; XXX HACK y-coordinate position computation is wrong
+         ;;; if there exists a flymake underline overlay at that point.
+         ;;; Take the y coordinate from the current point.
+         (x (car (posn-x-y (posn-at-point pos))))
+         (y (cdr (posn-x-y (posn-at-point (point))))))
     (corfu--make-frame
-     (- (or (car pos) 0) mw) (or (cdr pos) 0)
+     (- (or x 0) mw) (or y 0)
      (+ (* width cw) mw mw) (* (length lines) ch)
      (mapconcat (lambda (line)
                   (let ((str (concat
