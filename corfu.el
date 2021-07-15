@@ -350,11 +350,14 @@ filter string with spaces is allowed."
                      (apply #'max corfu-min-width
                             (mapcar #'string-width lines))))
          (row 0)
-         ;;; XXX HACK y-coordinate position computation is wrong
-         ;;; if there exists a flymake underline overlay at that point.
-         ;;; Take the y coordinate from the current point.
+         ;;; XXX HACK On Emacs 28 y-coordinate position computation is wrong if
+         ;;; there exists a flymake underline overlay at that point. Therefore
+         ;;; compute the y-coordinate at the line beginning.
          (x (or (car (posn-x-y (posn-at-point pos))) 0))
-         (y (or (cdr (posn-x-y (posn-at-point (point)))) 0)))
+         (y (save-excursion
+              (goto-char pos)
+              (beginning-of-line)
+              (or (cdr (posn-x-y (posn-at-point))) 0))))
     (corfu--make-frame
      (- x mw) y
      (+ (* width cw) mw mw) (* (length lines) ch)
