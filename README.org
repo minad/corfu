@@ -34,9 +34,9 @@
 
 * Features
 
-  - Timer-based auto-completions (off by default, set ~corfu-auto~)
+  - Timer-based auto-completions (/off/ by default, set ~corfu-auto~)
   - Popup display with scrollbar indicator and arrow key navigation
-  - The popup must be summoned explicitly by pressing =TAB=
+  - In manual mode, the popup must be summoned explicitly by pressing =TAB=
   - The current candidate is inserted with =TAB= and selected with =RET=
   - Candidates sorting by prefix, string length and alphabetically
   - Completion is automatically terminated after candidate selection
@@ -143,15 +143,14 @@
 
 * Caveats
 
-  Corfu works in most scenarios. However there are a few known technical caveats.
+  Corfu works well in most scenarios. However there are a few known technical
+  caveats.
 
   - Corfu falls back to the default Completion buffer on non-graphical displays,
     since Corfu requires child frames.
   - The abort handling could be improved, for example the input could be undone.
   - Company kind icons, docsig and match data are not supported
     (~company-kind~, ~company-docsig~, ~company-match~).
-  - No support for multi-backends like Company. A possible multi-capf backend
-    could be implemented.
   - No sorting by history, since ~completion-at-point~ does not
     maintain a history (See branch =history= for a possible solution).
 
