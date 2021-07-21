@@ -59,6 +59,12 @@
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
+(defcustom corfu-continue-commands
+  ;; nil is undefined command
+  '(nil completion-at-point "corfu-.*" "scroll-other-window.*")
+  "Continue Corfu completion after executing these commands."
+  :type '(repeat (choice regexp symbol)))
+
 (defcustom corfu-commit-predicate t
   "Automatically commit the selected candidate if the predicate returns t."
   :type '(choice (const nil) (const t) 'function))
@@ -92,6 +98,11 @@ filter string with spaces is allowed."
 (defcustom corfu-auto-delay 0.2
   "Delay for auto completion."
   :type 'float)
+
+(defcustom corfu-auto-commands
+  '(".*self-insert-command")
+  "Commands which initiate auto completion."
+  :type '(repeat (choice regexp symbol)))
 
 (defcustom corfu-auto nil
   "Enable auto completion."
@@ -184,15 +195,6 @@ filter string with spaces is allowed."
 
 (defvar corfu--frame nil
   "Popup frame.")
-
-(defvar corfu--auto-commands
-  "\\`\\(.*self-insert-command\\)\\'"
-  "Commands which initiate auto completion.")
-
-(defvar corfu--continue-commands
-  ;; nil is undefined command
-  "\\`\\(nil\\|completion-at-point\\|corfu-.*\\|scroll-other-window.*\\)\\'"
-  "Continue Corfu completion after executing commands matching this regexp.")
 
 (defconst corfu--state-vars
   '(corfu--base
@@ -499,10 +501,14 @@ filter string with spaces is allowed."
            corfu--total total
            corfu--highlight hl))))
 
-(defun corfu--continue-p ()
-  "Return t if the Corfu popup should stay alive."
-  (and (symbolp this-command)
-       (string-match-p corfu--continue-commands (symbol-name this-command))))
+(defun corfu--match-symbol-p (pattern sym)
+  "Return non-nil if SYM is matching an element of the PATTERN list."
+  (and (symbolp sym)
+       (seq-some (lambda (x)
+                   (if (symbolp x)
+                       (eq sym x)
+                     (string-match-p (format "\\`%s\\'" x) (symbol-name sym))))
+                 pattern)))
 
 (defun corfu-quit ()
   "Quit Corfu completion."
@@ -589,7 +595,8 @@ filter string with spaces is allowed."
       nil)
      ((and corfu--candidates                          ;; 2) There exist candidates
            (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
-           (or (/= beg end) (corfu--continue-p)))     ;; &  Input is non-empty or continue command
+           (or (/= beg end)                           ;; &  Input is non-empty or continue command
+               (corfu--match-symbol-p corfu-continue-commands this-command)))
       (corfu--show-candidates beg end str metadata)   ;; => Show candidates popup
       t)
      ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
@@ -609,7 +616,7 @@ filter string with spaces is allowed."
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
   (add-hook 'window-configuration-change-hook #'corfu--popup-hide)
-  (unless (or (< corfu--index 0) (corfu--continue-p))
+  (unless (or (< corfu--index 0) (corfu--match-symbol-p corfu-continue-commands this-command))
     (if (if (functionp corfu-commit-predicate)
             (funcall corfu-commit-predicate)
           corfu-commit-predicate)
@@ -833,8 +840,7 @@ filter string with spaces is allowed."
     (setq corfu--auto-timer nil))
   (when (and (not completion-in-region-mode)
              (display-graphic-p)
-             (symbolp this-command)
-             (string-match-p corfu--auto-commands (symbol-name this-command)))
+             (corfu--match-symbol-p corfu-auto-commands this-command))
     (setq corfu--auto-timer (run-with-idle-timer corfu-auto-delay nil
                                                  #'corfu--auto-complete
                                                  (current-buffer)))))
