@@ -75,9 +75,11 @@ If automatic quitting is disabled, Orderless filtering is facilitated since a
 filter string with spaces is allowed."
   :type 'boolean)
 
-(defcustom corfu-quit-no-match nil
-  "Automatically quit if no matching candidate is found."
-  :type 'boolean)
+(defcustom corfu-quit-no-match 1.0
+  "Automatically quit if no matching candidate is found.
+If a floating point number, quit on no match only if the auto-started
+completion began less than that number of seconds ago."
+  :type '(choice boolean float))
 
 (defcustom corfu-excluded-modes nil
   "List of modes excluded by `corfu-global-mode'."
@@ -193,6 +195,9 @@ filter string with spaces is allowed."
 (defvar-local corfu--extra nil
   "Extra completion properties.")
 
+(defvar-local corfu--auto-start nil
+  "Auto completion start time.")
+
 (defvar corfu--frame nil
   "Popup frame.")
 
@@ -204,7 +209,8 @@ filter string with spaces is allowed."
     corfu--input
     corfu--total
     corfu--overlay
-    corfu--extra)
+    corfu--extra
+    corfu--auto-start)
   "Buffer-local state variables used by Corfu.")
 
 (defvar corfu--frame-parameters
@@ -604,7 +610,10 @@ filter string with spaces is allowed."
            (test-completion str table pred))
       (corfu--done str 'finished)
       nil)
-     ((not (or corfu--candidates corfu-quit-no-match))           ;; 4) There are no candidates
+     ((not (or corfu--candidates                      ;; 4) There are no candidates
+               (if (and corfu--auto-start (numberp corfu-quit-no-match))
+                   (< (- (float-time) corfu--auto-start) corfu-quit-no-match)
+                 (eq t corfu-quit-no-match))))
       (corfu--popup-show beg '(#("No match" 0 8 (face italic)))) ;; => Show confirmation popup
       t))))
 
@@ -822,7 +831,8 @@ filter string with spaces is allowed."
                      (= newbeg beg)))
                 (lambda () t))))
          (setq completion-in-region--data `(,(copy-marker beg) ,(copy-marker end t)
-                                            ,table ,(plist-get plist :predicate)))
+                                            ,table ,(plist-get plist :predicate))
+               corfu--auto-start (float-time))
          (completion-in-region-mode 1)
          (corfu--setup)
          (unless (corfu--update #'ignore)
