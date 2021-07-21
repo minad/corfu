@@ -59,6 +59,10 @@
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
+(defcustom corfu-commit-predicate t
+  "Automatically commit the selected candidate if the predicate returns t."
+  :type '(choice (const nil) (const t) 'function))
+
 (defcustom corfu-quit-at-boundary nil
   "Automatically quit at completion field/word boundary.
 If automatic quitting is disabled, Orderless filtering is facilitated since a
@@ -606,7 +610,11 @@ filter string with spaces is allowed."
   "Insert selected candidate unless command is marked to continue completion."
   (add-hook 'window-configuration-change-hook #'corfu--popup-hide)
   (unless (or (< corfu--index 0) (corfu--continue-p))
-    (corfu--insert 'exact)))
+    (if (if (functionp corfu-commit-predicate)
+            (funcall corfu-commit-predicate)
+          corfu-commit-predicate)
+        (corfu--insert 'exact)
+      (setq corfu--index -1))))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."

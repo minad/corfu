@@ -39,7 +39,8 @@
   - In manual mode, the popup must be summoned explicitly by pressing =TAB=
   - The current candidate is inserted with =TAB= and selected with =RET=
   - Candidates sorting by prefix, string length and alphabetically
-  - Completion is automatically terminated after candidate selection
+  - The selected candidate is automatically committed on the next input by default.
+    This behavior can be configured by adjusting ~corfu-commit-predicate~.
   - Filter string can contain arbitrary characters and spaces, if
     ~corfu-quit-at-boundary~ is nil. This is needed when filtering with the
     [[https://github.com/oantolin/orderless][Orderless]] completion style.
@@ -61,10 +62,11 @@
     (use-package corfu
       ;; Optional customizations
       ;; :custom
-      ;; (corfu-cycle t)            ;; Enable cycling for `corfu-next/previous'
-      ;; (corfu-auto t)             ;; Enable auto completion
-      ;; (corfu-quit-at-boundary t) ;; Automatically quit at word boundary
-      ;; (corfu-quit-no-match t)    ;; Automatically quit if there is no match
+      ;; (corfu-cycle t)              ;; Enable cycling for `corfu-next/previous'
+      ;; (corfu-auto t)               ;; Enable auto completion
+      ;; (corfu-commit-predicate nil) ;; Do not commit selected candidates on next input
+      ;; (corfu-quit-at-boundary t)   ;; Automatically quit at word boundary
+      ;; (corfu-quit-no-match t)      ;; Automatically quit if there is no match
 
       ;; Optionally use TAB for cycling, default is `corfu-complete'.
       ;; :bind (:map corfu-map
