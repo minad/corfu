@@ -190,7 +190,7 @@ filter string with spaces is allowed."
 (defvar-local corfu--overlay nil
   "Current candidate overlay.")
 
-(defvar-local corfu--extra-properties nil
+(defvar-local corfu--extra nil
   "Extra completion properties.")
 
 (defvar corfu--frame nil
@@ -204,7 +204,7 @@ filter string with spaces is allowed."
     corfu--input
     corfu--total
     corfu--overlay
-    corfu--extra-properties)
+    corfu--extra)
   "Buffer-local state variables used by Corfu.")
 
 (defvar corfu--frame-parameters
@@ -253,14 +253,9 @@ filter string with spaces is allowed."
 
 (defvar corfu--mouse-ignore-map
   (let ((map (make-sparse-keymap)))
-    (dolist (k '(mouse-1 down-mouse-1 drag-mouse-1 double-mouse-1 triple-mouse-1
-                 mouse-2 down-mouse-2 drag-mouse-2 double-mouse-2 triple-mouse-2
-                 mouse-3 down-mouse-3 drag-mouse-3 double-mouse-3 triple-mouse-3
-                 mouse-4 down-mouse-4 drag-mouse-4 double-mouse-4 triple-mouse-4
-                 mouse-5 down-mouse-5 drag-mouse-5 double-mouse-5 triple-mouse-5
-                 mouse-6 down-mouse-6 drag-mouse-6 double-mouse-6 triple-mouse-6
-                 mouse-7 down-mouse-7 drag-mouse-7 double-mouse-7 triple-mouse-7))
-      (define-key map (vector k) #'ignore))
+    (dotimes (i 7)
+      (dolist (k '(mouse down-mouse drag-mouse double-mouse triple-mouse))
+        (define-key map (vector (intern (format "%s-%s" k (1+ i)))) #'ignore)))
     map)
   "Ignore all mouse clicks.")
 
@@ -518,10 +513,10 @@ filter string with spaces is allowed."
 (defun corfu--affixate (metadata candidates)
   "Annotate CANDIDATES with annotation function specified by METADATA."
   (if-let (aff (or (corfu--metadata-get metadata 'affixation-function)
-                   (plist-get corfu--extra-properties :affixation-function)))
+                   (plist-get corfu--extra :affixation-function)))
       (funcall aff candidates)
     (if-let (ann (or (corfu--metadata-get metadata 'annotation-function)
-                     (plist-get corfu--extra-properties :annotation-function)))
+                     (plist-get corfu--extra :annotation-function)))
         (mapcar (lambda (cand)
                   (let ((suffix (or (funcall ann cand) "")))
                     (list cand ""
@@ -692,7 +687,7 @@ filter string with spaces is allowed."
   (interactive)
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
-  (if-let* ((fun (plist-get corfu--extra-properties :company-doc-buffer))
+  (if-let* ((fun (plist-get corfu--extra :company-doc-buffer))
             (res (funcall fun (nth corfu--index corfu--candidates))))
       (let ((buf (or (car-safe res) res)))
         (corfu--restore-on-next-command)
@@ -706,7 +701,7 @@ filter string with spaces is allowed."
   (interactive)
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
-  (if-let* ((fun (plist-get corfu--extra-properties :company-location))
+  (if-let* ((fun (plist-get corfu--extra :company-location))
             (loc (funcall fun (nth corfu--index corfu--candidates))))
       (let ((buf (or (and (bufferp (car loc)) (car loc)) (find-file-noselect (car loc) t))))
         (corfu--restore-on-next-command)
@@ -759,7 +754,7 @@ filter string with spaces is allowed."
 (defun corfu--done (str status)
   "Call the `:exit-function' with STR and STATUS and exit completion."
   ;; XXX Is the :exit-function handling sufficient?
-  (when-let (exit (plist-get corfu--extra-properties :exit-function))
+  (when-let (exit (plist-get corfu--extra :exit-function))
     (funcall exit str status))
   (corfu-quit))
 
@@ -773,7 +768,7 @@ filter string with spaces is allowed."
 (defun corfu--setup ()
   "Setup Corfu completion state."
   (when completion-in-region-mode
-    (setq corfu--extra-properties completion-extra-properties)
+    (setq corfu--extra completion-extra-properties)
     (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
     (add-hook 'pre-command-hook #'corfu--pre-command nil 'local)
     (add-hook 'post-command-hook #'corfu--post-command nil 'local)
