@@ -61,7 +61,7 @@
 
 (defcustom corfu-continue-commands
   ;; nil is undefined command
-  '(nil completion-at-point "corfu-.*" "scroll-other-window.*")
+  '(nil completion-at-point "\\`corfu-" "\\`scroll-other-window")
   "Continue Corfu completion after executing these commands."
   :type '(repeat (choice regexp symbol)))
 
@@ -100,7 +100,7 @@ filter string with spaces is allowed."
   :type 'float)
 
 (defcustom corfu-auto-commands
-  '(".*self-insert-command")
+  '("self-insert-command\\'")
   "Commands which initiate auto completion."
   :type '(repeat (choice regexp symbol)))
 
@@ -507,7 +507,7 @@ filter string with spaces is allowed."
        (seq-some (lambda (x)
                    (if (symbolp x)
                        (eq sym x)
-                     (string-match-p (format "\\`%s\\'" x) (symbol-name sym))))
+                     (string-match-p x (symbol-name sym))))
                  pattern)))
 
 (defun corfu-quit ()
