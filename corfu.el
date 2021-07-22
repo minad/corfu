@@ -645,6 +645,8 @@ completion began less than that number of seconds ago."
       (corfu--done str 'finished)
       nil)
      ((not (or corfu--candidates                      ;; 4) There are no candidates
+               ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
+               ;; initiated too long ago, quit directly without showing the "No match" popup.
                (if (and corfu--auto-start (numberp corfu-quit-no-match))
                    (< (- (float-time) corfu--auto-start) corfu-quit-no-match)
                  (eq t corfu-quit-no-match))))
@@ -672,7 +674,9 @@ completion began less than that number of seconds ago."
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
-  (setq corfu--index (max -1 (min index (1- corfu--total)))))
+  (setq corfu--index (max -1 (min index (1- corfu--total)))
+        ;; Reset auto start in order to disable the `corfu-quit-no-match' timer
+        corfu--auto-start nil))
 
 (defun corfu-next ()
   "Go to next candidate."
