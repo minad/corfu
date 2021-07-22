@@ -144,6 +144,9 @@
   ~completion-at-point-functions~ list for programming language modes.
 
   #+begin_src emacs-lisp
+    (defvar comint-completion-addsuffix)
+    (autoload 'comint--match-partial-filename "comint")
+
     (defun file-name-at-point ()
       "File path completion function."
       (when (comint--match-partial-filename)
