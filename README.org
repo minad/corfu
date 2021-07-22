@@ -118,6 +118,36 @@
       (setq tab-always-indent 'complete))
   #+end_src
 
+** File path completion inside strings
+
+   In order to additional complete file paths in string literals, we can reuse
+   the file path completion of the ~comint-mode~. Comit provides the
+   ~comint--complete-file-name-data~ completion-at-point-function (Capf). We write
+   a small wrapper function ~file-name-at-point~ and register it in the
+   ~completion-at-point-functions~ list for programming language modes.
+
+   #+begin_src emacs-lisp
+     (defvar comint-completion-addsuffix)
+     (autoload 'comint--match-partial-filename "comint")
+
+     (defun file-name-at-point ()
+       "File path completion function."
+       (when (comint--match-partial-filename)
+         (let ((comint-completion-addsuffix))
+           (comint--complete-file-name-data))))
+
+     (defun file-name-at-point-setup ()
+       "Setup file path completion at point in string literals."
+       (let ((global (memq t completion-at-point-functions)))
+         (setq-local completion-at-point-functions
+                     (delete-dups
+                      (append completion-at-point-functions
+                              (list #'file-name-at-point)
+                              (and global (list t)))))))
+
+     (add-hook 'prog-mode-hook #'file-name-at-point-setup)
+   #+end_src
+
 * Key bindings
 
   Corfu uses a transient keymap ~corfu-map~ which is active while the popup is shown.
@@ -134,36 +164,6 @@
   - =M-g= -> ~corfu-show-location~
   - =M-h= -> ~corfu-show-documentation~
   - =C-g=, =ESC ESC ESC= -> ~corfu-quit~
-
-* File path completion inside strings
-
-  In order to additional complete file paths in string literals, we can reuse
-  the file path completion of the ~comint-mode~. Comit provides the
-  ~comint--complete-file-name-data~ completion-at-point-function (Capf). We write
-  a small wrapper function ~file-name-at-point~ and register it in the
-  ~completion-at-point-functions~ list for programming language modes.
-
-  #+begin_src emacs-lisp
-    (defvar comint-completion-addsuffix)
-    (autoload 'comint--match-partial-filename "comint")
-
-    (defun file-name-at-point ()
-      "File path completion function."
-      (when (comint--match-partial-filename)
-        (let ((comint-completion-addsuffix))
-          (comint--complete-file-name-data))))
-
-    (defun file-name-at-point-setup ()
-      "Setup file path completion at point in string literals."
-      (let ((global (memq t completion-at-point-functions)))
-        (setq-local completion-at-point-functions
-                    (delete-dups
-                     (append completion-at-point-functions
-                             (list #'file-name-at-point)
-                             (and global (list t)))))))
-
-    (add-hook 'prog-mode-hook #'file-name-at-point-setup)
-  #+end_src
 
 * Complementary packages
 
