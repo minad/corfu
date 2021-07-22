@@ -67,7 +67,7 @@
 
 (defcustom corfu-commit-predicate t
   "Automatically commit the selected candidate if the predicate returns t."
-  :type '(choice (const nil) (const t) 'function))
+  :type '(choice boolean (function :tag "Predicate function")))
 
 (defcustom corfu-quit-at-boundary nil
   "Automatically quit at completion field/word boundary.
