@@ -93,7 +93,7 @@ completion began less than that number of seconds ago."
   "Width of the bar in units of the character width."
   :type 'float)
 
-(defcustom corfu-echo-documentation 0.5
+(defcustom corfu-echo-documentation 0.25
   "Show documentation string in the echo area after that number of seconds."
   :type '(choice boolean float))
 
