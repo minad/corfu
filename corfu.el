@@ -148,7 +148,7 @@ completion began less than that number of seconds ago."
   "The background color used for the thin border.")
 
 (defface corfu-echo
-  '((t :inherit font-lock-comment-face))
+  '((t :inherit completions-annotations))
   "Face used to for echo area messages.")
 
 (defvar corfu-map
@@ -590,7 +590,9 @@ completion began less than that number of seconds ago."
 (defun corfu--echo (msg)
   "Show MSG in echo area."
   (let ((message-log-max nil))
-    (message "%s" (propertize msg 'face 'corfu-echo))))
+    (message "%s" (if (text-property-not-all 0 (length msg) 'face nil msg)
+                      msg
+                    (propertize msg 'face 'corfu-echo)))))
 
 (defun corfu--echo-documentation (cand)
   "Show documentation string for CAND in echo area."
