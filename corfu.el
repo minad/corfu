@@ -93,6 +93,10 @@ completion began less than that number of seconds ago."
   "Width of the bar in units of the character width."
   :type 'float)
 
+(defcustom corfu-echo-documentation 0.5
+  "Show documentation string in the echo area after that number of seconds."
+  :type '(choice boolean float))
+
 (defcustom corfu-auto-prefix 3
   "Minimum length of prefix for auto completion."
   :type 'integer)
@@ -142,6 +146,10 @@ completion began less than that number of seconds ago."
     (((class color) (min-colors 88) (background light)) :background "#bbb")
     (t :background "gray"))
   "The background color used for the thin border.")
+
+(defface corfu-echo
+  '((t :inherit font-lock-comment-face))
+  "Face used to for echo area messages.")
 
 (defvar corfu-map
   (let ((map (make-sparse-keymap)))
@@ -198,6 +206,9 @@ completion began less than that number of seconds ago."
 (defvar-local corfu--auto-start nil
   "Auto completion start time.")
 
+(defvar-local corfu--echo-timer nil
+  "Echo area message timer.")
+
 (defvar corfu--frame nil
   "Popup frame.")
 
@@ -210,7 +221,8 @@ completion began less than that number of seconds ago."
     corfu--total
     corfu--overlay
     corfu--extra
-    corfu--auto-start)
+    corfu--auto-start
+    corfu--echo-timer)
   "Buffer-local state variables used by Corfu.")
 
 (defvar corfu--frame-parameters
@@ -565,10 +577,29 @@ completion began less than that number of seconds ago."
       (setq lo (min (- corfu-count bar 2) lo)))
     (corfu--popup-show (+ beg corfu--base) ann-cands curr (and (> corfu--total corfu-count) lo) bar)
     (when (>= curr 0)
-      (setq corfu--overlay (make-overlay beg end nil t t))
-      (overlay-put corfu--overlay 'priority 1000)
-      (overlay-put corfu--overlay 'window (selected-window))
-      (overlay-put corfu--overlay 'display (concat (substring str 0 corfu--base) (nth curr cands))))))
+      (corfu--echo-documentation (nth corfu--index corfu--candidates))
+      (corfu--show-overlay beg end str (nth curr cands)))))
+
+(defun corfu--show-overlay (beg end str cand)
+  "Show current CAND as overlay given BEG, END and STR."
+  (setq corfu--overlay (make-overlay beg end nil t t))
+  (overlay-put corfu--overlay 'priority 1000)
+  (overlay-put corfu--overlay 'window (selected-window))
+  (overlay-put corfu--overlay 'display (concat (substring str 0 corfu--base) cand)))
+
+(defun corfu--echo (msg)
+  "Show MSG in echo area."
+  (let ((message-log-max nil))
+    (message "%s" (propertize msg 'face 'corfu-echo))))
+
+(defun corfu--echo-documentation (cand)
+  "Show documentation string for CAND in echo area."
+  (when-let* ((fun (and corfu-echo-documentation (plist-get corfu--extra :company-docsig)))
+              (doc (funcall fun cand)))
+    (if (eq corfu-echo-documentation t)
+        (corfu--echo doc)
+      (setq corfu--echo-timer (run-with-idle-timer corfu-echo-documentation
+                                                   nil #'corfu--echo doc)))))
 
 (defun corfu--update (msg)
   "Refresh Corfu UI, possibly printing a message with MSG."
@@ -580,6 +611,9 @@ completion began less than that number of seconds ago."
     (when corfu--overlay
       (delete-overlay corfu--overlay)
       (setq corfu--overlay nil))
+    (when corfu--echo-timer
+      (cancel-timer corfu--echo-timer)
+      (setq corfu--echo-timer nil))
     (cond
      ;; XXX Guard against errors during candidate generation.
      ;; Turn off completion immediately if there are errors
@@ -791,6 +825,7 @@ completion began less than that number of seconds ago."
     (remove-hook 'post-command-hook #'corfu--post-command 'local)
     (remove-hook 'completion-in-region-mode-hook #'corfu--teardown 'local)
     (when corfu--overlay (delete-overlay corfu--overlay))
+    (when corfu--echo-timer (cancel-timer corfu--echo-timer))
     (mapc #'kill-local-variable corfu--state-vars)))
 
 (defun corfu--completion-in-region (&rest args)

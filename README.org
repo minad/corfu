@@ -45,7 +45,8 @@
     ~corfu-quit-at-boundary~ is nil. This is needed when filtering with the
     [[https://github.com/oantolin/orderless][Orderless]] completion style.
   - Deferred completion style highlighting for performance
-  - Jumping to location/documentation of current candidate (Company extension)
+  - Jumping to location/documentation of current candidate
+  - Show candidate documentation string in the echo area
   - Support for ~annotation-function~ and ~affixation-function~
 
 * Configuration
@@ -151,8 +152,7 @@
   - Corfu falls back to the default Completion buffer on non-graphical displays,
     since Corfu requires child frames.
   - The abort handling could be improved, for example the input could be undone.
-  - Company kind icons, docsig and match data are not supported
-    (~company-kind~, ~company-docsig~, ~company-match~).
+  - Company kind icons and match data are not supported (~company-kind~, ~company-match~).
   - No sorting by history, since ~completion-at-point~ does not
     maintain a history (See branch =history= for a possible solution).
 
