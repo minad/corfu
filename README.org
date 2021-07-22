@@ -34,20 +34,20 @@
 
 * Features
 
-  - Timer-based auto-completions (/off/ by default, set ~corfu-auto~)
-  - Popup display with scrollbar indicator and arrow key navigation
-  - In manual mode, the popup must be summoned explicitly by pressing =TAB=
-  - The current candidate is inserted with =TAB= and selected with =RET=
-  - Candidates sorting by prefix, string length and alphabetically
-  - The selected candidate is automatically committed on the next input by default.
+  - Timer-based auto-completions (/off/ by default, set ~corfu-auto~).
+  - Popup display with scrollbar indicator and arrow key navigation.
+  - The popup can be summoned explicitly by pressing =TAB= at any time.
+  - The current candidate is inserted with =TAB= and selected with =RET=.
+  - Candidates sorting by prefix, string length and alphabetically.
+  - The selected candidate is automatically committed on any further input by default.
     This behavior can be configured by adjusting ~corfu-commit-predicate~.
   - Filter string can contain arbitrary characters and spaces, if
     ~corfu-quit-at-boundary~ is nil. This is needed when filtering with the
     [[https://github.com/oantolin/orderless][Orderless]] completion style.
-  - Deferred completion style highlighting for performance
-  - Jumping to location/documentation of current candidate
-  - Show candidate documentation string in the echo area
-  - Support for ~annotation-function~ and ~affixation-function~
+  - Deferred completion style highlighting for performance.
+  - Jumping to location/documentation of current candidate.
+  - Show candidate documentation/signature string in the echo area.
+  - Support for ~annotation-function~ and ~affixation-function~.
 
 * Configuration
 
