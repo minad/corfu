@@ -120,11 +120,13 @@
 
 ** File path completion inside strings
 
-   In order to additional complete file paths in string literals, we can reuse
+   In order to additionally complete file paths in string literals, we can reuse
    the file path completion of the ~comint-mode~. Comit provides the
    ~comint--complete-file-name-data~ completion-at-point-function (Capf). We write
    a small wrapper function ~file-name-at-point~ and register it in the
-   ~completion-at-point-functions~ list for programming language modes.
+   ~completion-at-point-functions~ list for programming language modes. The file
+   path Capf will be tried only when the mode-specific Capf did not return
+   results.
 
    #+begin_src emacs-lisp
      (defvar comint-completion-addsuffix)
