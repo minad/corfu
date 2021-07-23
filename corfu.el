@@ -507,6 +507,7 @@ completion began less than that number of seconds ago."
   "Update candidates from STR, METADATA, PT, TABLE and PRED."
   (pcase (let ((while-no-input-ignore-events '(selection-request)))
            (while-no-input (corfu--recompute-candidates str metadata pt table pred)))
+    ('nil (keyboard-quit))
     (`(,base ,total ,candidates ,hl)
      (setq corfu--input (cons str pt)
            corfu--candidates candidates
