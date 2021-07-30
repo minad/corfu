@@ -381,7 +381,7 @@ completion began less than that number of seconds ago."
          (x (or (car (posn-x-y (posn-at-point pos))) 0))
          (y (save-excursion
               (goto-char pos)
-              (beginning-of-line)
+              (beginning-of-visual-line)
               (or (cdr (posn-x-y (posn-at-point))) 0))))
     (corfu--make-frame
      (- x mw) y
