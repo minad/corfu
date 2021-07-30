@@ -255,6 +255,7 @@ completion began less than that number of seconds ago."
   '((mode-line-format . nil)
     (header-line-format . nil)
     (tab-line-format . nil)
+    (tab-bar-format . nil) ;; Emacs 28 tab-bar-format
     (frame-title-format . "")
     (truncate-lines . t)
     (cursor-in-non-selected-windows . nil)
