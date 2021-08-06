@@ -770,16 +770,17 @@ completion began less than that number of seconds ago."
 (defun corfu-complete ()
   "Try to complete current input."
   (interactive)
-  (if (>= corfu--index 0)
-      (corfu--insert nil) ;; Continue completion
-    (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
-                 (pt (max 0 (- (point) beg)))
-                 (str (buffer-substring-no-properties beg end))
-                 (metadata (completion-metadata (substring str 0 pt) table pred)))
-      (pcase (completion-try-completion str table pred pt metadata)
-        ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
-         (completion--replace beg end newstr)
-         (goto-char (+ beg newpt)))))))
+  (cond
+   (completion-cycling (completion-at-point)) ;; Proceed with cycling
+   ((>= corfu--index 0) (corfu--insert nil)) ;; Continue completion
+   (t (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
+                   (pt (max 0 (- (point) beg)))
+                   (str (buffer-substring-no-properties beg end))
+                   (metadata (completion-metadata (substring str 0 pt) table pred)))
+        (pcase (completion-try-completion str table pred pt metadata)
+          ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
+           (completion--replace beg end newstr)
+           (goto-char (+ beg newpt))))))))
 
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
