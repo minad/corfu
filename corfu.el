@@ -401,13 +401,16 @@ completion began less than that number of seconds ago."
                     str))
                 lines "\n"))))
 
-(defun corfu--popup-hide ()
-  "Hide Corfu popup."
+(defun corfu--popup-deferred-hide ()
   (when (frame-live-p corfu--frame)
     (make-frame-invisible corfu--frame)
     (with-current-buffer (window-buffer (frame-root-window corfu--frame))
       (let ((inhibit-read-only t))
-        (erase-buffer))))
+        (erase-buffer)))))
+
+(defun corfu--popup-hide ()
+  "Hide Corfu popup."
+  (run-at-time 0 nil #'corfu--popup-deferred-hide)
   (remove-hook 'window-configuration-change-hook #'corfu--popup-hide))
 
 (defun corfu--move-to-front (elem list)
