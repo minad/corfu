@@ -460,11 +460,35 @@ completion began less than that number of seconds ago."
       (and (= (length x) (length y))
            (string< x y))))
 
+(defmacro corfu--partition! (list form)
+  "Evaluate FORM for every element and partition LIST."
+  (let ((head1 (make-symbol "head1"))
+        (head2 (make-symbol "head2"))
+        (tail1 (make-symbol "tail1"))
+        (tail2 (make-symbol "tail2")))
+    `(let* ((,head1 (cons nil nil))
+            (,head2 (cons nil nil))
+            (,tail1 ,head1)
+            (,tail2 ,head2))
+       (while ,list
+         (if (let ((it (car ,list))) ,form)
+             (progn
+               (setcdr ,tail1 ,list)
+               (pop ,tail1))
+           (setcdr ,tail2 ,list)
+           (pop ,tail2))
+         (pop ,list))
+       (setcdr ,tail1 (cdr ,head2))
+       (setcdr ,tail2 nil)
+       (setq ,list (cdr ,head1)))))
+
 (defun corfu--move-prefix-candidates-to-front (field candidates)
   "Move CANDIDATES which match prefix of FIELD to the beginning."
-  (let ((word (replace-regexp-in-string " .*" "" field)))
-    (nconc (seq-filter (lambda (x) (string-prefix-p word x)) candidates)
-           (seq-remove (lambda (x) (string-prefix-p word x)) candidates))))
+  (let* ((word (replace-regexp-in-string " .*" "" field))
+         (len (length word)))
+    (corfu--partition! candidates
+                       (and (>= (length it) len)
+                            (eq t (compare-strings word 0 len it 0 len))))))
 
 (defun corfu--filter-files (files)
   "Filter FILES by `completion-ignored-extensions'."
