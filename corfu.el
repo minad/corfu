@@ -61,7 +61,8 @@
 
 (defcustom corfu-continue-commands
   ;; nil is undefined command
-  '(nil completion-at-point "\\`corfu-" "\\`scroll-other-window")
+  '(nil completion-at-point "\\`corfu-" "\\`scroll-other-window"
+        universal-argument universal-argument-more digit-argument)
   "Continue Corfu completion after executing these commands."
   :type '(repeat (choice regexp symbol)))
 
@@ -725,16 +726,15 @@ completion began less than that number of seconds ago."
        (1- corfu--total)
      (1- corfu--index))))
 
-(defun corfu-scroll-down ()
-  "Go back by one page, or to the prompt when the first candidate is selected."
-  (interactive)
-  (corfu--goto
-   (if (> corfu--index 0) (max 0 (- corfu--index corfu-count)) -1)))
+(defun corfu-scroll-down (&optional n)
+  "Go back by N pages, or to the prompt when the first candidate is selected."
+  (interactive "p")
+  (corfu--goto (max 0 (- corfu--index (* (or n 1) corfu-count)))))
 
-(defun corfu-scroll-up ()
-  "Go forward by one page."
-  (interactive)
-  (corfu--goto (+ corfu--index corfu-count)))
+(defun corfu-scroll-up (&optional n)
+  "Go forward by N pages."
+  (interactive "p")
+  (corfu-scroll-down (- (or n 1))))
 
 (defun corfu-first ()
   "Go to first candidate, or to the prompt when the first candidate is selected."
