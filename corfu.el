@@ -160,18 +160,18 @@ completion began less than that number of seconds ago."
     (define-key map [remap scroll-up-command] #'corfu-scroll-up)
     (define-key map [remap next-line] #'corfu-next)
     (define-key map [remap previous-line] #'corfu-previous)
-    (define-key map [remap completion-at-point] #'corfu-complete)
+    (define-key map [remap completion-at-point] #'corfu-insert)
     (define-key map [down] #'corfu-next)
     (define-key map [up] #'corfu-previous)
     ;; XXX [tab] is bound because of org-mode
     ;; The binding should be removed from org-mode-map.
-    (define-key map [tab] #'corfu-complete)
+    (define-key map [tab] #'corfu-insert)
     (define-key map "\en" #'corfu-next)
     (define-key map "\ep" #'corfu-previous)
     (define-key map "\e\e\e" #'corfu-quit)
     (define-key map "\C-g" #'corfu-quit)
-    (define-key map "\r" #'corfu-insert)
-    (define-key map "\t" #'corfu-complete)
+    (define-key map "\r" #'corfu-exit)
+    (define-key map "\t" #'corfu-insert)
     (define-key map "\eg" #'corfu-show-location)
     (define-key map "\eh" #'corfu-show-documentation)
     map)
@@ -625,6 +625,7 @@ completion began less than that number of seconds ago."
                       msg
                     (propertize msg 'face 'corfu-echo)))))
 
+;; TODO not properly with the echo!
 (defun corfu--echo-documentation (cand)
   "Show documentation string for CAND in echo area."
   (when-let* ((fun (and corfu-echo-documentation (plist-get corfu--extra :company-docsig)))
@@ -670,9 +671,12 @@ completion began less than that number of seconds ago."
            continue)                                  ;; &  Input is non-empty or continue command
       (corfu--show-candidates beg end str metadata)   ;; => Show candidates popup
       t)
-     ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
-     ;; current string is a valid match, exit with status 'finished.
-     ((and (memq this-command '(corfu-complete completion-at-point))
+     ;; 3) When after `completion-at-point/corfu-insert/corfu-complete', no
+     ;; further completion is possible and the current string is a valid match,
+     ;; exit with status 'finished.
+     ;; TODO This condition here is a trick which allows to reconcile TAB completion
+     ;; with candidate insertion.
+     ((and (memq this-command '(corfu-insert corfu-complete completion-at-point))
            (not (stringp (try-completion str table pred)))
            ;; XXX We should probably use `completion-try-completion' here instead
            ;; but it does not work as well when completing in `shell-mode'.
@@ -796,20 +800,27 @@ completion began less than that number of seconds ago."
             (set-window-start nil (point)))))
     (user-error "No candidate location available")))
 
+(defun corfu-insert ()
+  "Insert current candidate and continue completion."
+  (interactive)
+  (if completion-cycling
+      (completion-at-point)
+    (corfu--insert nil)))
+
 (defun corfu-complete ()
   "Try to complete current input."
   (interactive)
-  (cond
-   (completion-cycling (completion-at-point)) ;; Proceed with cycling
-   ((> corfu--index 0) (corfu--insert nil)) ;; Continue completion TODO
-   (t (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
-                   (pt (max 0 (- (point) beg)))
-                   (str (buffer-substring-no-properties beg end))
-                   (metadata (completion-metadata (substring str 0 pt) table pred)))
-        (pcase (completion-try-completion str table pred pt metadata)
-          ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
-           (completion--replace beg end newstr)
-           (goto-char (+ beg newpt))))))))
+  ;; TODO: Problem insertion of the first candidate is not possible!
+  (if (or completion-cycling (> corfu--index 0))
+      (corfu-insert)
+    (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
+                 (pt (max 0 (- (point) beg)))
+                 (str (buffer-substring-no-properties beg end))
+                 (metadata (completion-metadata (substring str 0 pt) table pred)))
+      (pcase (completion-try-completion str table pred pt metadata)
+        ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
+         (completion--replace beg end newstr)
+         (goto-char (+ beg newpt)))))))
 
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
@@ -838,8 +849,8 @@ completion began less than that number of seconds ago."
     (funcall exit str status))
   (corfu-quit))
 
-(defun corfu-insert ()
-  "Insert current candidate."
+(defun corfu-exit ()
+  "Exit with current candidate."
   (interactive)
   (if corfu--candidates
       (corfu--insert 'finished)
@@ -955,7 +966,7 @@ completion began less than that number of seconds ago."
 
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-next corfu-previous corfu-first corfu-last corfu-quit
-               corfu-complete corfu-insert corfu-scroll-up corfu-scroll-down
+               corfu-complete corfu-insert corfu-exit corfu-scroll-up corfu-scroll-down
                corfu-show-location corfu-show-documentation))
   (put sym 'completion-predicate #'ignore))
 
