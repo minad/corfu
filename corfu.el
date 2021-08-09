@@ -726,9 +726,10 @@ completion began less than that number of seconds ago."
      (1- corfu--index))))
 
 (defun corfu-scroll-down ()
-  "Go back by one page."
+  "Go back by one page, or to the prompt when the first candidate is selected."
   (interactive)
-  (corfu--goto (max 0 (- corfu--index corfu-count))))
+  (corfu--goto
+   (if (> corfu--index 0) (max 0 (- corfu--index corfu-count)) -1)))
 
 (defun corfu-scroll-up ()
   "Go forward by one page."
