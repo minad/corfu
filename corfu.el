@@ -638,7 +638,10 @@ completion began less than that number of seconds ago."
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
                (metadata (completion-metadata (substring str 0 pt) table pred))
-               (initializing (not corfu--input)))
+               (initializing (not corfu--input))
+               (continue (or (/= beg end)
+                             (corfu--match-symbol-p corfu-continue-commands
+                                                    this-command))))
     (when corfu--overlay
       (delete-overlay corfu--overlay)
       (setq corfu--overlay nil))
@@ -651,7 +654,8 @@ completion began less than that number of seconds ago."
      ;; For example dabbrev throws error "No dynamic expansion ... found".
      ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
      ((condition-case err
-          (unless (equal corfu--input (cons str pt))
+          ;; Only recompute when input changed and when input is non-empty
+          (when (and continue (not (equal corfu--input (cons str pt))))
             (corfu--update-candidates str metadata pt table pred)
             nil)
         (t (message "%s" (error-message-string err))
@@ -661,8 +665,7 @@ completion began less than that number of seconds ago."
       nil)
      ((and corfu--candidates                          ;; 2) There exist candidates
            (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
-           (or (/= beg end)                           ;; &  Input is non-empty or continue command
-               (corfu--match-symbol-p corfu-continue-commands this-command)))
+           continue)                                  ;; &  Input is non-empty or continue command
       (corfu--show-candidates beg end str metadata)   ;; => Show candidates popup
       t)
      ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
