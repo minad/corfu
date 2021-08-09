@@ -193,7 +193,7 @@ completion began less than that number of seconds ago."
   "Deferred candidate highlighting function.")
 
 (defvar-local corfu--index -1
-  "Index of current candidate or negative for prompt selection.")
+  "Index of current candidate or negative if there are no candidates.")
 
 (defvar-local corfu--input nil
   "Cons of last prompt contents and point or t.")
@@ -540,6 +540,7 @@ completion began less than that number of seconds ago."
     (`(,base ,total ,candidates ,hl)
      (setq corfu--input (cons str pt)
            corfu--candidates candidates
+           corfu--index (if candidates 0 -1)
            corfu--base base
            corfu--total total
            corfu--highlight hl))))
@@ -606,8 +607,8 @@ completion began less than that number of seconds ago."
     (when (/= last corfu--total)
       (setq lo (min (- corfu-count bar 2) lo)))
     (corfu--popup-show (+ beg corfu--base) ann-cands curr (and (> corfu--total corfu-count) lo) bar)
-    (when (>= curr 0)
-      (corfu--echo-documentation (nth corfu--index corfu--candidates))
+    (corfu--echo-documentation (nth corfu--index corfu--candidates))
+    (when (> curr 0)
       (corfu--show-overlay beg end str (nth curr cands)))))
 
 (defun corfu--show-overlay (beg end str cand)
@@ -691,12 +692,12 @@ completion began less than that number of seconds ago."
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
   (add-hook 'window-configuration-change-hook #'corfu-quit)
-  (unless (or (< corfu--index 0) (corfu--match-symbol-p corfu-continue-commands this-command))
+  (unless (or (<= corfu--index 0) (corfu--match-symbol-p corfu-continue-commands this-command))
     (if (if (functionp corfu-commit-predicate)
             (funcall corfu-commit-predicate)
           corfu-commit-predicate)
         (corfu--insert 'exact)
-      (setq corfu--index -1))))
+      (setq corfu--index 0))))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
@@ -709,7 +710,7 @@ completion began less than that number of seconds ago."
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
-  (setq corfu--index (max -1 (min index (1- corfu--total)))
+  (setq corfu--index (min (max 0 index) (1- corfu--total))
         ;; Reset auto start in order to disable the `corfu-quit-no-match' timer
         corfu--auto-start nil))
 
@@ -727,7 +728,7 @@ completion began less than that number of seconds ago."
   (corfu-next (- (or n 1))))
 
 (defun corfu-scroll-down (&optional n)
-  "Go back by N pages, or to the prompt when the first candidate is selected."
+  "Go back by N pages."
   (interactive "p")
   (corfu--goto (max 0 (- corfu--index (* (or n 1) corfu-count)))))
 
@@ -737,9 +738,9 @@ completion began less than that number of seconds ago."
   (corfu-scroll-down (- (or n 1))))
 
 (defun corfu-first ()
-  "Go to first candidate, or to the prompt when the first candidate is selected."
+  "Go to first candidate."
   (interactive)
-  (corfu--goto (if (> corfu--index 0) 0 -1)))
+  (corfu--goto 0))
 
 (defun corfu-last ()
   "Go to last candidate."
@@ -764,8 +765,8 @@ completion began less than that number of seconds ago."
 (defun corfu-show-documentation ()
   "Show documentation of current candidate."
   (interactive)
-  (when (< corfu--index 0)
-    (user-error "No candidate selected"))
+  (unless corfu--candidates
+    (user-error "No match"))
   (if-let* ((fun (plist-get corfu--extra :company-doc-buffer))
             (res (funcall fun (nth corfu--index corfu--candidates))))
       (let ((buf (or (car-safe res) res)))
@@ -778,8 +779,8 @@ completion began less than that number of seconds ago."
 (defun corfu-show-location ()
   "Show location of current candidate."
   (interactive)
-  (when (< corfu--index 0)
-    (user-error "No candidate selected"))
+  (unless corfu--candidates
+    (user-error "No match"))
   (if-let* ((fun (plist-get corfu--extra :company-location))
             (loc (funcall fun (nth corfu--index corfu--candidates))))
       (let ((buf (or (and (bufferp (car loc)) (car loc)) (find-file-noselect (car loc) t))))
@@ -800,7 +801,7 @@ completion began less than that number of seconds ago."
   (interactive)
   (cond
    (completion-cycling (completion-at-point)) ;; Proceed with cycling
-   ((>= corfu--index 0) (corfu--insert nil)) ;; Continue completion
+   ((> corfu--index 0) (corfu--insert nil)) ;; Continue completion TODO
    (t (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                    (pt (max 0 (- (point) beg)))
                    (str (buffer-substring-no-properties beg end))
@@ -816,8 +817,7 @@ completion began less than that number of seconds ago."
                (str (buffer-substring-no-properties beg end)))
     ;; Replace if candidate is selected or if current input is not valid completion.
     ;; For example str can be a valid path, e.g., ~/dir/.
-    (when (or (>= corfu--index 0) (equal str "")
-              (not (test-completion str table pred)))
+    (when (or (equal str "") (not (test-completion str table pred)))
       ;; XXX There is a small bug here, depending on interpretation.
       ;; When completing "~/emacs/master/li|/calc" where "|" is the
       ;; cursor, then the candidate only includes the prefix
@@ -828,7 +828,7 @@ completion began less than that number of seconds ago."
                         (substring-no-properties
                          (nth (max 0 corfu--index) corfu--candidates))))
       (completion--replace beg end str)
-      (setq corfu--index -1)) ;; Reset selection, but continue completion.
+      (setq corfu--index 0)) ;; Reset selection, but continue completion.
     (when status (corfu--done str status)))) ;; Exit with status
 
 (defun corfu--done (str status)
@@ -841,7 +841,7 @@ completion began less than that number of seconds ago."
 (defun corfu-insert ()
   "Insert current candidate."
   (interactive)
-  (if (> corfu--total 0)
+  (if corfu--candidates
       (corfu--insert 'finished)
     (corfu-quit)))
 
