@@ -727,7 +727,7 @@ completion began less than that number of seconds ago."
   (corfu-next (- (or n 1))))
 
 (defun corfu-scroll-down (&optional n)
-  "Go back by N pages, or to the prompt when the first candidate is selected."
+  "Go back by N pages."
   (interactive "p")
   (corfu--goto (max 0 (- corfu--index (* (or n 1) corfu-count)))))
 
