@@ -717,11 +717,9 @@ completion began less than that number of seconds ago."
   "Go forward N candidates."
   (interactive "p")
   (let ((index (+ corfu--index (or n 1))))
-    (corfu--goto
-     (cond
-      ((not corfu-cycle) index)
-      ((= corfu--total 0) -1)
-      (t (1- (mod (1+ index) (1+ corfu--total))))))))
+    (corfu--goto (if corfu-cycle
+                     (1- (mod (1+ index) (1+ corfu--total)))
+                   index))))
 
 (defun corfu-previous (&optional n)
   "Go backward N candidates."
