@@ -686,7 +686,7 @@ completion began less than that number of seconds ago."
 
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
-  (add-hook 'window-configuration-change-hook #'corfu--quit)
+  (add-hook 'window-configuration-change-hook #'corfu-quit)
   (unless (or (< corfu--index 0) (corfu--match-symbol-p corfu-continue-commands this-command))
     (if (if (functionp corfu-commit-predicate)
             (funcall corfu-commit-predicate)
@@ -696,7 +696,7 @@ completion began less than that number of seconds ago."
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
-  (remove-hook 'window-configuration-change-hook #'corfu--quit)
+  (remove-hook 'window-configuration-change-hook #'corfu-quit)
   (or (pcase completion-in-region--data
         (`(,beg ,end ,_table ,_pred)
          (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
@@ -867,7 +867,7 @@ completion began less than that number of seconds ago."
   ;; hiding, which is slow (Issue #48). See also corresponding vertico#89.
   (redisplay)
   (corfu--popup-hide)
-  (remove-hook 'window-configuration-change-hook #'corfu--quit)
+  (remove-hook 'window-configuration-change-hook #'corfu-quit)
   (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
   (remove-hook 'post-command-hook #'corfu--post-command 'local)
   (when corfu--overlay (delete-overlay corfu--overlay))
