@@ -498,6 +498,10 @@ completion began less than that number of seconds ago."
 
 (defun corfu--recompute-candidates (str metadata pt table pred)
   "Recompute candidates from STR, METADATA, PT, TABLE and PRED."
+  ;; Redisplay such that the input becomes immediately visible before the
+  ;; expensive candidate recomputation is performed (Issue #48). See also
+  ;; corresponding vertico#89.
+  (redisplay)
   (pcase-let* ((before (substring str 0 pt))
                (after (substring str pt))
                ;; bug#47678: `completion-boundaries` fails for `partial-completion`
@@ -859,6 +863,9 @@ completion began less than that number of seconds ago."
 
 (defun corfu--teardown ()
   "Teardown Corfu."
+  ;; Redisplay such that the input becomes immediately visible before the popup
+  ;; teardown (Issue #48). See also corresponding vertico#89.
+  (redisplay)
   (corfu--popup-hide)
   (remove-hook 'window-configuration-change-hook #'corfu--quit)
   (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
