@@ -135,6 +135,14 @@ completion began less than that number of seconds ago."
     (t :background "blue" :foreground "white"))
   "Face used to highlight the currently selected candidate.")
 
+(defface corfu-implicit
+  '((((class color) (min-colors 88) (background dark))
+     :background "#1C283E" :foreground "white")
+    (((class color) (min-colors 88) (background light))
+     :background "#DDF4F9" :foreground "black")
+    (t :background "blue" :foreground "white"))
+  "Face used to highlight the first candidate if none are selected.")
+
 (defface corfu-bar
   '((((class color) (min-colors 88) (background dark)) :background "#444")
     (((class color) (min-colors 88) (background light)) :background "#bbb")
@@ -394,9 +402,12 @@ completion began less than that number of seconds ago."
                               align
                               (if (and lo (<= lo row (+ lo bar)))
                                   sbar margin))))
-                    (when (eq row curr)
+                    (if (eq row curr)
                       (add-face-text-property
-                       0 (length str) 'corfu-current 'append str))
+                       0 (length str) 'corfu-current 'append str)
+		      (if (and (< curr 0) (eq row 0))
+			  (add-face-text-property
+			   0 (length str) 'corfu-implicit 'append str)))
                     (setq row (1+ row))
                     str))
                 lines "\n"))))
