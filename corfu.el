@@ -864,7 +864,7 @@ completion began less than that number of seconds ago."
 (defun corfu--teardown ()
   "Teardown Corfu."
   ;; Redisplay such that the input becomes immediately visible before the popup
-  ;; teardown (Issue #48). See also corresponding vertico#89.
+  ;; hiding, which is slow (Issue #48). See also corresponding vertico#89.
   (redisplay)
   (corfu--popup-hide)
   (remove-hook 'window-configuration-change-hook #'corfu--quit)
