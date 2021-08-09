@@ -407,8 +407,7 @@ completion began less than that number of seconds ago."
     (make-frame-invisible corfu--frame)
     (with-current-buffer (window-buffer (frame-root-window corfu--frame))
       (let ((inhibit-read-only t))
-        (erase-buffer))))
-  (remove-hook 'window-configuration-change-hook #'corfu--popup-hide))
+        (erase-buffer)))))
 
 (defun corfu--move-to-front (elem list)
   "Move ELEM to front of LIST."
@@ -683,7 +682,7 @@ completion began less than that number of seconds ago."
 
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
-  (add-hook 'window-configuration-change-hook #'corfu--popup-hide)
+  (add-hook 'window-configuration-change-hook #'corfu--quit)
   (unless (or (< corfu--index 0) (corfu--match-symbol-p corfu-continue-commands this-command))
     (if (if (functionp corfu-commit-predicate)
             (funcall corfu-commit-predicate)
@@ -693,7 +692,7 @@ completion began less than that number of seconds ago."
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
-  (remove-hook 'window-configuration-change-hook #'corfu--popup-hide)
+  (remove-hook 'window-configuration-change-hook #'corfu--quit)
   (or (pcase completion-in-region--data
         (`(,beg ,end ,_table ,_pred)
          (when (and (eq (marker-buffer beg) (current-buffer)) (<= beg (point) end))
@@ -848,18 +847,25 @@ completion began less than that number of seconds ago."
     (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
     (add-hook 'pre-command-hook #'corfu--pre-command nil 'local)
     (add-hook 'post-command-hook #'corfu--post-command nil 'local)
-    (add-hook 'completion-in-region-mode-hook #'corfu--teardown nil 'local)))
+    (let ((sym (make-symbol "corfu--teardown"))
+          (buf (current-buffer)))
+      (fset sym (lambda ()
+                  ;; Ensure that the teardown runs in the correct buffer, if still alive.
+                  (unless completion-in-region-mode
+                    (remove-hook 'completion-in-region-mode-hook sym)
+                    (with-current-buffer (if (buffer-live-p buf) buf (current-buffer))
+                      (corfu--teardown)))))
+      (add-hook 'completion-in-region-mode-hook sym))))
 
 (defun corfu--teardown ()
   "Teardown Corfu."
-  (unless completion-in-region-mode
-    (corfu--popup-hide)
-    (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
-    (remove-hook 'post-command-hook #'corfu--post-command 'local)
-    (remove-hook 'completion-in-region-mode-hook #'corfu--teardown 'local)
-    (when corfu--overlay (delete-overlay corfu--overlay))
-    (when corfu--echo-timer (cancel-timer corfu--echo-timer))
-    (mapc #'kill-local-variable corfu--state-vars)))
+  (corfu--popup-hide)
+  (remove-hook 'window-configuration-change-hook #'corfu--quit)
+  (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
+  (remove-hook 'post-command-hook #'corfu--post-command 'local)
+  (when corfu--overlay (delete-overlay corfu--overlay))
+  (when corfu--echo-timer (cancel-timer corfu--echo-timer))
+  (mapc #'kill-local-variable corfu--state-vars))
 
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
