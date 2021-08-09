@@ -710,21 +710,20 @@ completion began less than that number of seconds ago."
         ;; Reset auto start in order to disable the `corfu-quit-no-match' timer
         corfu--auto-start nil))
 
-(defun corfu-next ()
-  "Go to next candidate."
-  (interactive)
-  (corfu--goto
-   (if (and corfu-cycle (= (1+ corfu--index) corfu--total))
-       -1
-     (1+ corfu--index))))
+(defun corfu-next (&optional n)
+  "Go forward N candidates."
+  (interactive "p")
+  (let ((index (+ corfu--index (or n 1))))
+    (corfu--goto
+     (cond
+      ((not corfu-cycle) index)
+      ((= corfu--total 0) -1)
+      (t (1- (mod (1+ index) (1+ corfu--total))))))))
 
-(defun corfu-previous ()
-  "Go to previous candidate."
-  (interactive)
-  (corfu--goto
-   (if (and corfu-cycle (< corfu--index 0))
-       (1- corfu--total)
-     (1- corfu--index))))
+(defun corfu-previous (&optional n)
+  "Go backward N candidates."
+  (interactive "p")
+  (corfu-next (- (or n 1))))
 
 (defun corfu-scroll-down (&optional n)
   "Go back by N pages, or to the prompt when the first candidate is selected."
