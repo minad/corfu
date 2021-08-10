@@ -691,7 +691,8 @@ completion began less than that number of seconds ago."
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
   (add-hook 'window-configuration-change-hook #'corfu-quit)
-  (unless (or (< corfu--index 0) (corfu--match-symbol-p corfu-continue-commands this-command))
+  (unless (or (and (< corfu--index 0) (not (functionp corfu-commit-predicate)))
+	      (corfu--match-symbol-p corfu-continue-commands this-command))
     (if (if (functionp corfu-commit-predicate)
             (funcall corfu-commit-predicate)
           corfu-commit-predicate)
