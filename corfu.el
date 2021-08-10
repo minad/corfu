@@ -813,14 +813,15 @@ completion began less than that number of seconds ago."
           ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
            (completion--replace beg end newstr)
            (goto-char (+ beg newpt)))
-          ;; When the last command was `corfu-complete' and we didn't make progress,
-          ;; insert the first candidate.
-          ((guard (and (eq last-command #'corfu-complete) (> corfu--total 0)))
+          ;; If we didn't make progress, the last command was `corfu-complete'
+          ;; and we are not at completion boundary, continue with the first candidate.
+          ((guard (and (eq last-command #'corfu-complete)
+                       (> (length str) corfu--base)
+                       (> corfu--total 0)))
            (completion--replace beg end
                                 (concat (substring str 0 corfu--base)
                                         (substring-no-properties
                                          (car corfu--candidates))))))))))
-
 
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
