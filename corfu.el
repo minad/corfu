@@ -917,7 +917,9 @@ completion began less than that number of seconds ago."
              (eq (current-buffer) buffer))
     (pcase (run-hook-wrapped 'completion-at-point-functions
                              #'completion--capf-wrapper 'all)
-      ((and `(,fun ,beg ,end ,table . ,plist) (guard (>= (- end beg) corfu-auto-prefix)))
+      ((and `(,fun ,beg ,end ,table . ,plist)
+            (guard (integer-or-marker-p beg))
+            (guard (>= (- end beg) corfu-auto-prefix)))
        (let ((completion-extra-properties plist)
              (completion-in-region-mode-predicate
               (if corfu-quit-at-boundary
