@@ -353,12 +353,11 @@ completion began less than that number of seconds ago."
       (unless (equal (frame-parameter corfu--frame 'background-color) new)
 	(set-frame-parameter corfu--frame 'background-color new)))
     (set-window-buffer (frame-root-window corfu--frame) buffer)
-    ;; XXX HACK Make the frame invisible before moving the popup from above to below the line in
-    ;; order to avoid flicker.
-    (unless (eq (< (cdr (frame-position corfu--frame)) yb) (< y yb))
+    ;; XXX HACK Make the frame invisible before moving the popup in order to avoid flicker.
+    (unless (eq (cdr (frame-position corfu--frame)) y)
       (make-frame-invisible corfu--frame))
-    (set-frame-size corfu--frame width height t)
     (set-frame-position corfu--frame x y)
+    (set-frame-size corfu--frame width height t)
     (make-frame-visible corfu--frame)))
 
 (defun corfu--popup-show (pos lines &optional curr lo bar)
