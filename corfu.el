@@ -352,7 +352,10 @@ completion began less than that number of seconds ago."
     (let ((new (face-attribute 'corfu-background :background)))
       (unless (equal (frame-parameter corfu--frame 'background-color) new)
 	(set-frame-parameter corfu--frame 'background-color new)))
-    (set-window-buffer (frame-root-window corfu--frame) buffer)
+    (let ((win (frame-root-window corfu--frame)))
+      (set-window-buffer win buffer)
+      ;; Mark window as dedicated to prevent frame reuse (#60)
+      (set-window-dedicated-p win t))
     ;; XXX HACK Make the frame invisible before moving the popup in order to avoid flicker.
     (unless (eq (cdr (frame-position corfu--frame)) y)
       (make-frame-invisible corfu--frame))
