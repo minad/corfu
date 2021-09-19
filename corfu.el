@@ -924,7 +924,8 @@ completion began less than that number of seconds ago."
                              #'completion--capf-wrapper 'all)
       ((and `(,fun ,beg ,end ,table . ,plist)
             (guard (integer-or-marker-p beg))
-            (guard (>= (- end beg) corfu-auto-prefix)))
+            (guard (<= beg (point) end))
+            (guard (>= (- (point) beg) corfu-auto-prefix)))
        (let ((completion-extra-properties plist)
              (completion-in-region-mode-predicate
               (if corfu-quit-at-boundary
