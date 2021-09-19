@@ -355,7 +355,10 @@ completion began less than that number of seconds ago."
     (let ((win (frame-root-window corfu--frame)))
       (set-window-buffer win buffer)
       ;; Mark window as dedicated to prevent frame reuse (#60)
-      (set-window-dedicated-p win t))
+      (set-window-dedicated-p win t)
+      ;; Disallow selection of root window (#63)
+      (set-window-parameter win 'no-delete-other-windows t)
+      (set-window-parameter win 'no-other-window t))
     ;; XXX HACK Make the frame invisible before moving the popup in order to avoid flicker.
     (unless (eq (cdr (frame-position corfu--frame)) y)
       (make-frame-invisible corfu--frame))
