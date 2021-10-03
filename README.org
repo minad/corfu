@@ -87,7 +87,8 @@
       :init
       (corfu-global-mode))
 
-    ;; Optionally use the `orderless' completion style.
+    ;; Optionally use the `orderless' completion style. See `+orderless-dispatch'
+    ;; in the Consult wiki for an advanced Orderless style dispatcher.
     ;; Enable `partial-completion' for files to allow path expansion.
     ;; You may prefer to use `initials' instead of `partial-completion'.
     (use-package orderless
