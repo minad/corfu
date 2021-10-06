@@ -13,13 +13,13 @@
 
   Corfu enhances the default completion in region function with a completion
   overlay. The current candidates are shown in a popup below or above the point.
-  Corfu can be considered the minimalistic ~completion-in-region~ counterpart of
-  the [[https://github.com/minad/vertico][Vertico]] minibuffer UI.
+  Corfu is the minimalistic ~completion-in-region~ counterpart of the [[https://github.com/minad/vertico][Vertico]]
+  minibuffer UI.
 
   Corfu is a minimal package, which relies on the Emacs completion facilities and
   concentrates on providing a polished completion UI. Completions are either
   provided by commands like ~dabbrev-completion~ or by pluggable backends
-  (~completion-at-point-functions~, Capfs). Many programming language major modes
+  (~completion-at-point-functions~, Capfs). Most programming language major modes
   implement a Capf. Furthermore the language server packages, [[https://github.com/joaotavora/eglot][Eglot]] and [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]],
   both use Capfs which talk to the LSP server to retrieve the completions.
 
@@ -93,6 +93,8 @@
     ;; You may prefer to use `initials' instead of `partial-completion'.
     (use-package orderless
       :init
+      ;; Configure a custom style dispatcher (see the Consult wiki)
+      ;; (setq orderless-style-dispatchers '(+orderless-dispatch))
       (setq completion-styles '(orderless)
             completion-category-defaults nil
             completion-category-overrides '((file (styles . (partial-completion))))))
@@ -139,8 +141,8 @@
 * Complementary packages
 
   Corfu works well together with all packages providing code completion via the
-  ~completion-at-point-functions~. Furthermore it supports various completion
-  styles, including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
+  ~completion-at-point-functions~. Furthermore it supports completion styles,
+  including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
   expressions are separated by spaces (see ~corfu-quit-at-boundary~).
 
   You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the minibuffer
