@@ -923,7 +923,7 @@ completion began less than that number of seconds ago."
 ;;;###autoload
 (define-minor-mode corfu-mode
   "Completion Overlay Region FUnction"
-  :global nil
+  :global nil :group 'corfu
   (if corfu-mode
       (progn
         (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
@@ -932,7 +932,7 @@ completion began less than that number of seconds ago."
     (kill-local-variable 'completion-in-region-function)))
 
 ;;;###autoload
-(define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on)
+(define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on :group 'corfu)
 
 (defun corfu--on ()
   "Turn `corfu-mode' on."
