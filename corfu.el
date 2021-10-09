@@ -90,7 +90,7 @@ completion began less than that number of seconds ago."
   "Width of the margin in units of the character width."
   :type 'float)
 
-(defcustom corfu-bar-width 0.25
+(defcustom corfu-bar-width 0.2
   "Width of the bar in units of the character width."
   :type 'float)
 
@@ -121,30 +121,28 @@ completion began less than that number of seconds ago."
   :group 'faces)
 
 (defface corfu-background
-  '((((class color) (min-colors 88) (background dark))
-     :background "#222")
-    (((class color) (min-colors 88) (background light))
-     :background "#ffe")
+  '((((class color) (min-colors 88) (background dark)) :background "#191a1b")
+    (((class color) (min-colors 88) (background light)) :background "#f0f0f0")
     (t :background "gray"))
-  "Face used to for the popup background.")
+  "Face used for the popup background.")
 
 (defface corfu-current
   '((((class color) (min-colors 88) (background dark))
-     :background "#137" :foreground "white")
+     :background "#00415e" :foreground "white")
     (((class color) (min-colors 88) (background light))
-     :background "#cef" :foreground "black")
+     :background "#c0efff" :foreground "black")
     (t :background "blue" :foreground "white"))
   "Face used to highlight the currently selected candidate.")
 
 (defface corfu-bar
-  '((((class color) (min-colors 88) (background dark)) :background "#444")
-    (((class color) (min-colors 88) (background light)) :background "#bbb")
+  '((((class color) (min-colors 88) (background dark)) :background "#a8a8a8")
+    (((class color) (min-colors 88) (background light)) :background "#505050")
     (t :background "gray"))
   "The background color is used for the scrollbar indicator.")
 
 (defface corfu-border
-  '((((class color) (min-colors 88) (background dark)) :background "#444")
-    (((class color) (min-colors 88) (background light)) :background "#bbb")
+  '((((class color) (min-colors 88) (background dark)) :background "#323232")
+    (((class color) (min-colors 88) (background light)) :background "#d7d7d7")
     (t :background "gray"))
   "The background color used for the thin border.")
 
@@ -346,10 +344,10 @@ completion began less than that number of seconds ago."
     ;; XXX HACK We have to apply the face background before adjusting the frame parameter,
     ;; otherwise the border is not updated (BUG!).
     (let* ((face (if (facep 'child-frame-border) 'child-frame-border 'internal-border))
-	   (new (face-attribute 'corfu-border :background)))
-      (unless (equal (face-attribute face :background corfu--frame) new)
+	   (new (face-attribute 'corfu-border :background nil 'default)))
+      (unless (equal (face-attribute face :background corfu--frame 'default) new)
 	(set-face-background face new corfu--frame)))
-    (let ((new (face-attribute 'corfu-background :background)))
+    (let ((new (face-attribute 'corfu-background :background nil 'default)))
       (unless (equal (frame-parameter corfu--frame 'background-color) new)
 	(set-frame-parameter corfu--frame 'background-color new)))
     (let ((win (frame-root-window corfu--frame)))
