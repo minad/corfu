@@ -663,7 +663,7 @@ completion began less than that number of seconds ago."
           (when (and continue (not (equal corfu--input (cons str pt))))
             (corfu--update-candidates str metadata pt table pred)
             nil)
-        (t (message "%s" (error-message-string err))
+        (t (message "Corfu completion error: %s" (error-message-string err))
            nil)))
      ((and initializing (not corfu--candidates))      ;; 1) Initializing, no candidates
       (funcall msg "No match")                        ;; => Show error message
