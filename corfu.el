@@ -244,7 +244,6 @@ completion began less than that number of seconds ago."
     (unsplittable . t)
     (undecorated . t)
     (cursor-type . nil)
-    (minibuffer . nil)
     (visibility . nil)
     (no-special-glyphs . t)
     (desktop-dont-save . t))
@@ -333,6 +332,7 @@ completion began less than that number of seconds ago."
       (when corfu--frame (delete-frame corfu--frame))
       (setq corfu--frame (make-frame
                           `((parent-frame . ,(window-frame))
+                            (minibuffer . ,(minibuffer-window (window-frame)))
                             (line-spacing . ,line-spacing)
                             ;; Set `internal-border-width' for Emacs 27
                             (internal-border-width
