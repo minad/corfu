@@ -66,9 +66,9 @@
   "Continue Corfu completion after executing these commands."
   :type '(repeat (choice regexp symbol)))
 
-(defcustom corfu-commit-predicate t
-  "Automatically commit the selected candidate if the predicate returns t."
-  :type '(choice boolean (function :tag "Predicate function")))
+(defcustom corfu-commit-predicate #'corfu-candidate-selected-p
+  "Automatically commit if the predicate returns t."
+  :type 'function)
 
 (defcustom corfu-quit-at-boundary nil
   "Automatically quit at completion field/word boundary.
@@ -695,12 +695,14 @@ completion began less than that number of seconds ago."
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
   (add-hook 'window-configuration-change-hook #'corfu-quit)
-  (unless (or (< corfu--index 0) (corfu--match-symbol-p corfu-continue-commands this-command))
-    (if (if (functionp corfu-commit-predicate)
-            (funcall corfu-commit-predicate)
-          corfu-commit-predicate)
+  (unless (corfu--match-symbol-p corfu-continue-commands this-command)
+    (if (funcall corfu-commit-predicate)
         (corfu--insert 'exact)
       (setq corfu--index -1))))
+
+(defun corfu-candidate-selected-p ()
+  "Return t if a candidate is selected."
+  (>= corfu--index 0))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
