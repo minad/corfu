@@ -76,7 +76,7 @@ If automatic quitting is disabled, Orderless filtering is facilitated since a
 filter string with spaces is allowed."
   :type 'boolean)
 
-(defcustom corfu-quit-no-match 1.0
+(defcustom corfu-quit-predicate (list #'corfu-quit-no-match-p 1.0)
   "Automatically quit if no matching candidate is found.
 If a floating point number, quit on no match only if the auto-started
 completion began less than that number of seconds ago."
@@ -668,12 +668,14 @@ completion began less than that number of seconds ago."
      ((and initializing (not corfu--candidates))      ;; 1) Initializing, no candidates
       (funcall msg "No match")                        ;; => Show error message
       nil)
-     ((and corfu--candidates                          ;; 2) There exist candidates
+     ((funcall corfu-quit-predicate)                  ;; 2) Quit predicate returns non-nil.
+      nil)
+     ((and corfu--candidates                          ;; 3) There exist candidates
            (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
            continue)                                  ;; &  Input is non-empty or continue command
       (corfu--show-candidates beg end str metadata)   ;; => Show candidates popup
       t)
-     ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
+     ;; 4) When after `completion-at-point/corfu-complete', no further completion is possible and the
      ;; current string is a valid match, exit with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
            (not (stringp (try-completion str table pred)))
@@ -683,13 +685,8 @@ completion began less than that number of seconds ago."
            (test-completion str table pred))
       (corfu--done str 'finished)
       nil)
-     ((not (or corfu--candidates                      ;; 4) There are no candidates
-               ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
-               ;; initiated too long ago, quit directly without showing the "No match" popup.
-               (if (and corfu--auto-start (numberp corfu-quit-no-match))
-                   (< (- (float-time) corfu--auto-start) corfu-quit-no-match)
-                 (eq t corfu-quit-no-match))))
-      (corfu--popup-show beg '(#("No match" 0 8 (face italic)))) ;; => Show confirmation popup
+     ((not corfu--candidates)                         ;; 5) There are no candidates => confirmation popup
+      (corfu--popup-show beg '(#("No match" 0 8 (face italic))))
       t))))
 
 (defun corfu--pre-command ()
