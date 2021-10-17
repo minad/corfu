@@ -956,12 +956,37 @@ completion began less than that number of seconds ago."
 (define-minor-mode corfu-mode
   "Completion Overlay Region FUnction"
   :global nil :group 'corfu
-  (if corfu-mode
-      (progn
-        (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
-        (setq-local completion-in-region-function #'corfu--completion-in-region))
+  (cond
+   (corfu-mode
+    ;; FIXME: Install advice which fixes `completion--capf-wrapper', such that
+    ;; it respects the completion styles for non-exclusive capfs. See FIXME in
+    ;; the `completion--capf-wrapper' function in minibuffer.el, where the
+    ;; issue has been mentioned. We never uninstall this advice since the
+    ;; advice is active *globally*.
+    (advice-add #'completion--capf-wrapper :around #'corfu--capf-wrapper-advice)
+    (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
+    (setq-local completion-in-region-function #'corfu--completion-in-region))
+   (t
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
-    (kill-local-variable 'completion-in-region-function)))
+    (kill-local-variable 'completion-in-region-function))))
+
+(defun corfu--capf-wrapper-advice (orig fun which)
+  "Around advice for `completion--capf-wrapper'.
+The ORIG function takes the FUN and WHICH arguments."
+  (if corfu-mode ;; Only enable the advice when Corfu is active
+      (let ((res (funcall fun)))
+        (when (and (consp res) (integer-or-marker-p (car res)) ;; Valid capf result
+                   (pcase-let ((`(,beg ,end ,table . ,plist) res))
+                     (and (<= beg (point) end) ;; Sanity checking
+                          ;; For non-exclusive capfs, check for valid completion.
+                          (or (not (eq 'no (plist-get plist :exclusive)))
+                              (let* ((str (buffer-substring-no-properties beg end))
+                                     (pt (- (point) beg))
+                                     (pred (plist-get plist :predicate))
+                                     (md (completion-metadata (substring str 0 pt) table pred)))
+                                (completion-try-completion str table pred pt md))))))
+          (cons fun res)))
+    (funcall orig fun which)))
 
 ;;;###autoload
 (define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on :group 'corfu)
