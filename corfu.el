@@ -68,7 +68,7 @@
 
 (defcustom corfu-commit-predicate #'corfu-candidate-selected-p
   "Automatically commit if the predicate returns t."
-  :type 'function)
+  :type '(choice (const nil) function))
 
 (defcustom corfu-quit-at-boundary nil
   "Automatically quit at completion field/word boundary.
@@ -696,7 +696,7 @@ completion began less than that number of seconds ago."
   "Insert selected candidate unless command is marked to continue completion."
   (add-hook 'window-configuration-change-hook #'corfu-quit)
   (unless (corfu--match-symbol-p corfu-continue-commands this-command)
-    (if (funcall corfu-commit-predicate)
+    (if (and corfu-commit-predicate (funcall corfu-commit-predicate))
         (corfu--insert 'exact)
       (setq corfu--index -1))))
 
