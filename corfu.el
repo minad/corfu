@@ -181,6 +181,9 @@ completion began less than that number of seconds ago."
 (defvar-local corfu--candidates nil
   "List of candidates.")
 
+(defvar-local corfu--metadata nil
+  "Completion metadata.")
+
 (defvar-local corfu--base 0
   "Size of the base string, which is concatenated with the candidate.")
 
@@ -221,7 +224,8 @@ completion began less than that number of seconds ago."
     corfu--overlay
     corfu--extra
     corfu--auto-start
-    corfu--echo-timer)
+    corfu--echo-timer
+    corfu--metadata)
   "Buffer-local state variables used by Corfu.")
 
 (defvar corfu--frame-parameters
@@ -500,14 +504,15 @@ completion began less than that number of seconds ago."
                     "\\)\\'")))
     (or (seq-remove (lambda (x) (string-match-p re x)) files) files)))
 
-(defun corfu--recompute-candidates (str metadata pt table pred)
-  "Recompute candidates from STR, METADATA, PT, TABLE and PRED."
+(defun corfu--recompute-candidates (str pt table pred)
+  "Recompute candidates from STR, PT, TABLE and PRED."
   ;; Redisplay such that the input becomes immediately visible before the
   ;; expensive candidate recomputation is performed (Issue #48). See also
   ;; corresponding vertico#89.
   (redisplay)
   (pcase-let* ((before (substring str 0 pt))
                (after (substring str pt))
+               (metadata (completion-metadata before table pred))
                ;; bug#47678: `completion-boundaries` fails for `partial-completion`
                ;; if the cursor is moved between the slashes of "~//".
                ;; See also vertico.el which has the same issue.
@@ -534,19 +539,20 @@ completion began less than that number of seconds ago."
       (when (and completing-file (not (string-suffix-p "/" field)))
         (setq all (corfu--move-to-front (concat field "/") all)))
       (setq all (corfu--move-to-front field all)))
-    (list base (length all) all hl)))
+    (list base (length all) all hl metadata)))
 
-(defun corfu--update-candidates (str metadata pt table pred)
-  "Update candidates from STR, METADATA, PT, TABLE and PRED."
+(defun corfu--update-candidates (str pt table pred)
+  "Update candidates from STR, PT, TABLE and PRED."
   (pcase (let ((while-no-input-ignore-events '(selection-request)))
-           (while-no-input (corfu--recompute-candidates str metadata pt table pred)))
+           (while-no-input (corfu--recompute-candidates str pt table pred)))
     ('nil (keyboard-quit))
-    (`(,base ,total ,candidates ,hl)
+    (`(,base ,total ,candidates ,hl ,metadata)
      (setq corfu--input (cons str pt)
            corfu--candidates candidates
            corfu--base base
            corfu--total total
-           corfu--highlight hl))))
+           corfu--highlight hl
+           corfu--metadata metadata))))
 
 (defun corfu--match-symbol-p (pattern sym)
   "Return non-nil if SYM is matching an element of the PATTERN list."
@@ -562,12 +568,12 @@ completion began less than that number of seconds ago."
   (interactive)
   (completion-in-region-mode -1))
 
-(defun corfu--affixate (metadata candidates)
-  "Annotate CANDIDATES with annotation function specified by METADATA."
-  (if-let (aff (or (corfu--metadata-get metadata 'affixation-function)
+(defun corfu--affixate (candidates)
+  "Annotate CANDIDATES with annotation function."
+  (if-let (aff (or (corfu--metadata-get corfu--metadata 'affixation-function)
                    (plist-get corfu--extra :affixation-function)))
       (funcall aff candidates)
-    (if-let (ann (or (corfu--metadata-get metadata 'annotation-function)
+    (if-let (ann (or (corfu--metadata-get corfu--metadata 'annotation-function)
                      (plist-get corfu--extra :annotation-function)))
         (mapcar (lambda (cand)
                   (let ((suffix (or (funcall ann cand) "")))
@@ -594,8 +600,8 @@ completion began less than that number of seconds ago."
        (concat (cadr cand) (car cand) (caddr cand))
      cand)))
 
-(defun corfu--show-candidates (beg end str metadata)
-  "Update display given BEG, END, STR and METADATA."
+(defun corfu--show-candidates (beg end str)
+  "Update display given BEG, END and STR."
   (let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
                      (max 0 (- corfu--total corfu-count))))
          (curr (- corfu--index start))
@@ -603,7 +609,7 @@ completion began less than that number of seconds ago."
          (bar (ceiling (* corfu-count corfu-count) corfu--total))
          (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
          (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
-         (ann-cands (mapcar #'corfu--format-candidate (corfu--affixate metadata cands))))
+         (ann-cands (mapcar #'corfu--format-candidate (corfu--affixate cands))))
     ;; Nonlinearity at the end and the beginning
     (when (/= start 0)
       (setq lo (max 1 lo)))
@@ -642,7 +648,6 @@ completion began less than that number of seconds ago."
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
-               (metadata (completion-metadata (substring str 0 pt) table pred))
                (initializing (not corfu--input))
                (continue (or (/= beg end)
                              (corfu--match-symbol-p corfu-continue-commands
@@ -661,7 +666,7 @@ completion began less than that number of seconds ago."
      ((condition-case err
           ;; Only recompute when input changed and when input is non-empty
           (when (and continue (not (equal corfu--input (cons str pt))))
-            (corfu--update-candidates str metadata pt table pred)
+            (corfu--update-candidates str pt table pred)
             nil)
         (t (message "Corfu completion error: %s" (error-message-string err))
            nil)))
@@ -671,7 +676,7 @@ completion began less than that number of seconds ago."
      ((and corfu--candidates                          ;; 2) There exist candidates
            (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
            continue)                                  ;; &  Input is non-empty or continue command
-      (corfu--show-candidates beg end str metadata)   ;; => Show candidates popup
+      (corfu--show-candidates beg end str)            ;; => Show candidates popup
       t)
      ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
      ;; current string is a valid match, exit with status 'finished.
