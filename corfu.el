@@ -384,14 +384,9 @@ completion began less than that number of seconds ago."
                      (apply #'max corfu-min-width
                             (mapcar #'string-width lines))))
          (row 0)
-         ;;; XXX HACK On Emacs 28 y-coordinate position computation is wrong if
-         ;;; there exists a flymake underline overlay at that point. Therefore
-         ;;; compute the y-coordinate at the line beginning.
-         (x (or (car (posn-x-y (posn-at-point pos))) 0))
-         (y (save-excursion
-              (goto-char pos)
-              (beginning-of-visual-line)
-              (or (cdr (posn-x-y (posn-at-point))) 0))))
+         (pos (posn-x-y (posn-at-point pos)))
+         (x (or (car pos) 0))
+         (y (or (cdr pos) 0)))
     (corfu--make-frame
      (- x mw) y
      (+ (* width cw) mw mw) (* (length lines) ch)
