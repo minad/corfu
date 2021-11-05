@@ -148,7 +148,11 @@ completion began less than that number of seconds ago."
 
 (defface corfu-echo
   '((t :inherit completions-annotations))
-  "Face used to for echo area messages.")
+  "Face used for echo area messages.")
+
+(defface corfu-annotations
+  '((t :inherit completions-annotations))
+  "Face used for annotations.")
 
 (defvar corfu-map
   (let ((map (make-sparse-keymap)))
@@ -572,10 +576,11 @@ completion began less than that number of seconds ago."
                   (let ((suffix (or (funcall ann cand) "")))
                     (list cand ""
                           ;; The default completion UI adds the `completions-annotations' face
-                          ;; if no other faces are present.
+                          ;; if no other faces are present. We use a custom `corfu-annotations'
+                          ;; face to allow further styling which fits better for popups.
                           (if (text-property-not-all 0 (length suffix) 'face nil suffix)
                               suffix
-                            (propertize suffix 'face 'completions-annotations)))))
+                            (propertize suffix 'face 'corfu-annotations)))))
                 candidates)
       candidates)))
 
