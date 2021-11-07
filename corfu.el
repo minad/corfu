@@ -86,7 +86,7 @@ completion began less than that number of seconds ago."
   "List of modes excluded by `corfu-global-mode'."
   :type '(repeat symbol))
 
-(defcustom corfu-margin-width 0.6
+(defcustom corfu-margin-width 0.4
   "Width of the margin in units of the character width."
   :type 'float)
 
@@ -383,10 +383,7 @@ completion began less than that number of seconds ago."
          (sbar (concat
                 (propertize " " 'display `(space :width (,(- mw bw))))
                 (propertize " " 'face 'corfu-bar 'display `(space :width (,bw)))))
-         (width (min corfu-max-width
-                     (- (frame-width) 4) ;; margins, some grace space
-                     (apply #'max corfu-min-width
-                            (mapcar #'string-width lines))))
+         (width (cl-loop for x in lines maximize (string-width x)))
          (row 0)
          (pos (posn-x-y (posn-at-point pos)))
          (x (or (car pos) 0))
@@ -395,12 +392,9 @@ completion began less than that number of seconds ago."
      (- x mw) y
      (+ (* width cw) mw mw) (* (length lines) ch)
      (mapconcat (lambda (line)
-                  (let ((str (concat
-                              margin
-                              (truncate-string-to-width line width)
-                              align
-                              (if (and lo (<= lo row (+ lo bar)))
-                                  sbar margin))))
+                  (let ((str (concat margin line align
+                                     (if (and lo (<= lo row (+ lo bar)))
+                                         sbar margin))))
                     (when (eq row curr)
                       (add-face-text-property
                        0 (length str) 'corfu-current 'append str))
@@ -590,11 +584,31 @@ completion began less than that number of seconds ago."
   "Return PROP from METADATA."
   (cdr (assq prop metadata)))
 
-(defun corfu--format-candidate (cand)
-  "Format annotated CAND string."
-  (replace-regexp-in-string
-   "[ \t]*\n[ \t]*" " "
-   (concat (cadr cand) (car cand) (caddr cand))))
+(defun corfu--format-candidates (cands)
+  "Format annotated CANDS."
+  (setq cands
+        (cl-loop for c in cands collect
+                 (cl-loop for s in c collect
+                          (string-trim (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s)))))
+  (let* ((cw (1+ (cl-loop for x in cands maximize (string-width (car x)))))
+         (pw (cl-loop for x in cands maximize (string-width (cadr x))))
+         (pw (if (> pw 0) (1+ pw) 0))
+         (sw (cl-loop for x in cands maximize (string-width (caddr x))))
+         (width (+ pw cw sw)))
+    (when (< width corfu-min-width)
+      (setq cw (+ cw (- corfu-min-width width))
+            width corfu-min-width))
+    ;; -4 because of margins and some additional safety
+    (setq width (min width corfu-max-width (- (frame-width) 4)))
+    (mapcar (pcase-lambda (`(,cand ,prefix ,suffix))
+              (truncate-string-to-width
+               (concat prefix
+                       (make-string (- pw (string-width prefix)) ?\s)
+                       cand
+                       (unless (eq suffix "") (make-string (- cw (string-width cand)) ?\s))
+                       suffix)
+               width))
+            cands)))
 
 (defun corfu--show-candidates (beg end str)
   "Update display given BEG, END and STR."
@@ -605,7 +619,7 @@ completion began less than that number of seconds ago."
          (bar (ceiling (* corfu-count corfu-count) corfu--total))
          (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
          (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
-         (ann-cands (mapcar #'corfu--format-candidate (corfu--affixate cands))))
+         (ann-cands (corfu--format-candidates (corfu--affixate cands))))
     ;; Nonlinearity at the end and the beginning
     (when (/= start 0)
       (setq lo (max 1 lo)))
