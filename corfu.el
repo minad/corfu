@@ -597,10 +597,10 @@ CAND is either a string or 3 part list of (cand prefix suffix).
 If `corfu-align-annotations' is non-nil, Pad prefix to a total
 width of PREF-WIDTH and right-align the suffix for a total width
 of WIDTH characters (not including prefix), truncating the
-suffix (only) if necessary.  If CURRENT is non-nil, apply the
-face `corfu-current' to the full string.  Insert string MARGIN on
-left and between prefix & candidate, and include RIGHT-MARGIN (if
-non-nil)."
+candidate + suffix if necessary.  If CURRENT is non-nil, apply
+the face `corfu-current' to the full string.  Insert string
+MARGIN on left and between prefix & candidate, and include
+RIGHT-MARGIN (if non-nil)."
   (let ((str
 	 (pcase cand
 	   (`(,cand ,prefix ,suffix)
@@ -609,10 +609,7 @@ non-nil)."
 		  (cw (string-width cand))
 		  (sw (string-width suffix))
 		  (prefix-margin margin)
-		  prefix-pad suffix-pad)
-	      (if (> (+ cw sw) width)
-		  (setq suffix (truncate-string-to-width
-				suffix sw (- (+ sw cw) width))))
+		  prefix-pad suffix-pad candsuff)
 	      (add-face-text-property
 	       0 (length suffix) 'corfu-annotations 'append suffix)
 	      (when corfu-align-annotations
@@ -623,9 +620,13 @@ non-nil)."
 		     0 (length prefix-pad) face 'append prefix-pad)
 		    (setq prefix-margin (copy-sequence prefix-margin))
 		    (add-face-text-property 0 1 face nil prefix-margin)))
+	      (setq candsuff (concat cand suffix-pad suffix))
+	      (if (> (length candsuff) width)
+		  (setq candsuff (truncate-string-to-width candsuff width)))
 	      (apply #'concat
-		     prefix-margin prefix-pad prefix (if (> pref-width 0) prefix-margin)
-		     cand suffix-pad suffix right-margin)))
+		     prefix-margin prefix-pad prefix
+		     (if (> pref-width 0) prefix-margin)
+		     candsuff right-margin)))
 	   (_ (apply #'concat margin cand right-margin)))))
     (if current (add-face-text-property
 		 0 (length str) 'corfu-current 'append str))
