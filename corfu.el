@@ -582,7 +582,7 @@ completion began less than that number of seconds ago."
                               suffix
                             (propertize suffix 'face 'corfu-annotations)))))
                 candidates)
-      candidates)))
+      (mapcar (lambda (cand) (list cand "" "")) candidates))))
 
 ;; XXX Do not use `completion-metadata-get' in order to avoid Marginalia.
 ;; The Marginalia annotators are way to heavy for the Corfu popup!
@@ -594,9 +594,7 @@ completion began less than that number of seconds ago."
   "Format annotated CAND string."
   (replace-regexp-in-string
    "[ \t]*\n[ \t]*" " "
-   (if (consp cand)
-       (concat (cadr cand) (car cand) (caddr cand))
-     cand)))
+   (concat (cadr cand) (car cand) (caddr cand))))
 
 (defun corfu--show-candidates (beg end str)
   "Update display given BEG, END and STR."
