@@ -94,6 +94,10 @@ completion began less than that number of seconds ago."
   "Width of the bar in units of the character width."
   :type 'float)
 
+(defcustom corfu-align-annotations t
+  "Whether to align annotations."
+  :type 'boolean)
+
 (defcustom corfu-echo-documentation 0.25
   "Show documentation string in the echo area after that number of seconds."
   :type '(choice boolean float))
@@ -372,8 +376,8 @@ completion began less than that number of seconds ago."
     (set-frame-size corfu--frame width height t)
     (make-frame-visible corfu--frame)))
 
-(defun corfu--popup-show (pos lines &optional curr lo bar)
-  "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
+(defun corfu--popup-show (pos cands &optional curr lo bar)
+  "Show CANDS as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
   (let* ((ch (default-line-height))
          (cw (round (* ch (frame-char-width)) (frame-char-height)))
          (mw (ceiling (* cw corfu-margin-width)))
@@ -383,30 +387,33 @@ completion began less than that number of seconds ago."
          (sbar (concat
                 (propertize " " 'display `(space :width (,(- mw bw))))
                 (propertize " " 'face 'corfu-bar 'display `(space :width (,bw)))))
-         (width (min corfu-max-width
+	 (mcw (corfu--max-cand-widths cands))
+	 (max-pref-width (car mcw))
+	 (max-cand-width (cdr mcw))
+	 (width (min corfu-max-width
                      (frame-width)
-                     (apply #'max corfu-min-width
-                            (mapcar #'string-width lines))))
-         (row 0)
+		     (max corfu-min-width
+			  max-cand-width)))
          (pos (posn-x-y (posn-at-point pos)))
          (x (or (car pos) 0))
-         (y (or (cdr pos) 0)))
+         (y (or (cdr pos) 0))
+	 (bar-end (if lo (+ lo bar)))
+	 (x-offset (+ (* mw (if (> max-pref-width 0) 2 1))
+		      (* max-pref-width cw)))
+	 (lines
+	  (cl-loop for cand in cands and row from 0
+		   for right-margin = (if (and lo (<= lo row bar-end))
+					  sbar margin)
+		   collect (corfu--format-candidate
+			    cand max-pref-width width (eq row curr)
+			    margin align right-margin))))
+    ;; per-line layout: M(ppPPM)?CCCCCCC(pppp)?SSSSS(M|B)
+    ;; M=margin, p=padding, P=prefix, C=candidate, S=suffix, B=bar
     (corfu--make-frame
-     (- x mw) y
-     (+ (* width cw) mw mw) (* (length lines) ch)
-     (mapconcat (lambda (line)
-                  (let ((str (concat
-                              margin
-                              (truncate-string-to-width line width)
-                              align
-                              (if (and lo (<= lo row (+ lo bar)))
-                                  sbar margin))))
-                    (when (eq row curr)
-                      (add-face-text-property
-                       0 (length str) 'corfu-current 'append str))
-                    (setq row (1+ row))
-                    str))
-                lines "\n"))))
+     (- x x-offset) y
+     (+ (* (+ max-pref-width width) cw) (* mw (if (> max-pref-width 0) 3 2)))
+     (* (length lines) ch)
+     (string-join lines "\n"))))
 
 (defun corfu--popup-hide ()
   "Hide Corfu popup."
@@ -566,21 +573,14 @@ completion began less than that number of seconds ago."
   (completion-in-region-mode -1))
 
 (defun corfu--affixate (candidates)
-  "Annotate CANDIDATES with annotation function."
+  "Annotate CANDIDATES with affixation or annotation function."
   (if-let (aff (or (corfu--metadata-get corfu--metadata 'affixation-function)
                    (plist-get corfu--extra :affixation-function)))
       (funcall aff candidates)
     (if-let (ann (or (corfu--metadata-get corfu--metadata 'annotation-function)
                      (plist-get corfu--extra :annotation-function)))
-        (mapcar (lambda (cand)
-                  (let ((suffix (or (funcall ann cand) "")))
-                    (list cand ""
-                          ;; The default completion UI adds the `completions-annotations' face
-                          ;; if no other faces are present. We use a custom `corfu-annotations'
-                          ;; face to allow further styling which fits better for popups.
-                          (if (text-property-not-all 0 (length suffix) 'face nil suffix)
-                              suffix
-                            (propertize suffix 'face 'corfu-annotations)))))
+        (mapcar (lambda (cand) ; suffix only
+                  (list cand "" (or (funcall ann cand) "")))
                 candidates)
       candidates)))
 
@@ -590,14 +590,66 @@ completion began less than that number of seconds ago."
   "Return PROP from METADATA."
   (cdr (assq prop metadata)))
 
-(defun corfu--format-candidate (cand)
-  "Format annotated CAND string."
-  (replace-regexp-in-string
-   "[ \t]*\n[ \t]*" " "
-   (if (consp cand)
-       (concat (cadr cand) (car cand) (caddr cand))
-     cand)))
+(defun corfu--format-candidate (cand pref-width width &optional current margin
+				     &rest right-margin)
+  "Format candidate, returning a string with styling and alignment.
+CAND is either a string or 3 part list of (cand prefix suffix).
+If `corfu-align-annotations' is non-nil, Pad prefix to a total
+width of PREF-WIDTH and right-align the suffix for a total width
+of WIDTH characters (not including prefix), truncating the
+suffix (only) if necessary.  If CURRENT is non-nil, apply the
+face `corfu-current' to the full string.  Insert string MARGIN on
+left and between prefix & candidate, and include RIGHT-MARGIN (if
+non-nil)."
+  (let ((str
+	 (pcase cand
+	   (`(,cand ,prefix ,suffix)
+	    (setq cand (replace-regexp-in-string "[ \t]*\n[ \t]*" " " cand))
+	    (let ((pw (string-width prefix))
+		  (cw (string-width cand))
+		  (sw (string-width suffix))
+		  (prefix-margin margin)
+		  prefix-pad suffix-pad)
+	      (if (> (+ cw sw) width)
+		  (setq suffix (truncate-string-to-width
+				suffix sw (- (+ sw cw) width))))
+	      (add-face-text-property
+	       0 (length suffix) 'corfu-annotations 'append suffix)
+	      (when corfu-align-annotations
+		  (setq prefix-pad (make-string (max 0 (- pref-width pw)) ? )
+			suffix-pad (make-string (max 0 (- width cw sw)) ? ))
+		  (when-let ((face (get-text-property 0 'face prefix)))
+		    (add-face-text-property
+		     0 (length prefix-pad) face 'append prefix-pad)
+		    (setq prefix-margin (copy-sequence prefix-margin))
+		    (add-face-text-property 0 1 face nil prefix-margin)))
+	      (apply #'concat
+		     prefix-margin prefix-pad prefix (if (> pref-width 0) prefix-margin)
+		     cand suffix-pad suffix right-margin)))
+	   (_ (apply #'concat margin cand right-margin)))))
+    (if current (add-face-text-property
+		 0 (length str) 'corfu-current 'append str))
+    str))
 
+(defsubst corfu--max-cand-widths (cands)
+  "Return maximum string widths for the given candidates CANDS.
+CANDS is a list of strings, or of lists with elements (candidate
+prefix suffix).  Returns a cons cell 
+
+   (max(prefix) . max(cand+suffix)) 
+
+containing the maximum prefix width and maximum of candiate +
+suffix width, in this order."
+  (let ((widths (mapcar (lambda (cand)
+			  (if (consp cand)
+			      (cons (string-width (cadr cand)) ; prefix
+				    (+ (string-width (car cand))
+				       (string-width (caddr cand))))
+			    (cons 0 (string-width cand)))) ; only candidate
+			cands)))
+    (cons (apply #'max (mapcar 'car widths))
+	  (apply #'max (mapcar 'cdr widths)))))
+		     
 (defun corfu--show-candidates (beg end str)
   "Update display given BEG, END and STR."
   (let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
@@ -607,7 +659,7 @@ completion began less than that number of seconds ago."
          (bar (ceiling (* corfu-count corfu-count) corfu--total))
          (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
          (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
-         (ann-cands (mapcar #'corfu--format-candidate (corfu--affixate cands))))
+         (ann-cands (corfu--affixate cands)))
     ;; Nonlinearity at the end and the beginning
     (when (/= start 0)
       (setq lo (max 1 lo)))
