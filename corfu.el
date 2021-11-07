@@ -384,7 +384,7 @@ completion began less than that number of seconds ago."
                 (propertize " " 'display `(space :width (,(- mw bw))))
                 (propertize " " 'face 'corfu-bar 'display `(space :width (,bw)))))
          (width (min corfu-max-width
-                     (frame-width)
+                     (- (frame-width) 4) ;; margins, some grace space
                      (apply #'max corfu-min-width
                             (mapcar #'string-width lines))))
          (row 0)
