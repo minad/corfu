@@ -605,7 +605,10 @@ completion began less than that number of seconds ago."
                (concat prefix
                        (make-string (- pw (string-width prefix)) ?\s)
                        cand
-                       (unless (eq suffix "") (make-string (- cw (string-width cand)) ?\s))
+                       (unless (eq suffix "")
+                         (make-string (+ (- cw (string-width cand))
+                                         (- sw (string-width suffix)))
+                                      ?\s))
                        suffix)
                width))
             cands)))
