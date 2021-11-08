@@ -155,7 +155,7 @@ completion began less than that number of seconds ago."
   "Face used for annotations.")
 
 (defface corfu-deprecated
-  '((t :strike-through t))
+  '((t :inherit shadow :strike-through t))
   "Face used for deprecated candidates.")
 
 (defvar corfu-map
