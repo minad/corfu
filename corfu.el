@@ -962,8 +962,7 @@ completion began less than that number of seconds ago."
       ((and `(,fun ,beg ,end ,table . ,plist)
             (guard (integer-or-marker-p beg))
             (guard (<= beg (point) end))
-            (let len (or (plist-get plist :company-prefix-length) corfu-auto-prefix))
-            (guard (or (eq len t) (>= (- (point) beg) len))))
+            (guard (>= (- (point) beg) corfu-auto-prefix)))
        (let ((completion-extra-properties plist)
              (completion-in-region-mode-predicate
               (lambda () (eq beg (car-safe (funcall fun))))))
