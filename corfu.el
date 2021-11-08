@@ -86,7 +86,7 @@ completion began less than that number of seconds ago."
   "List of modes excluded by `corfu-global-mode'."
   :type '(repeat symbol))
 
-(defcustom corfu-margin-width 0.4
+(defcustom corfu-margin-width 0.6
   "Width of the margin in units of the character width."
   :type 'float)
 
@@ -375,7 +375,7 @@ completion began less than that number of seconds ago."
 (defun corfu--popup-show (pos lines &optional curr lo bar)
   "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
   (let* ((ch (default-line-height))
-         (cw (round (* ch (frame-char-width)) (frame-char-height)))
+         (cw (default-font-width))
          (mw (ceiling (* cw corfu-margin-width)))
          (bw (ceiling (* cw (min corfu-margin-width corfu-bar-width))))
          (margin (propertize " " 'display `(space :width (,mw))))
