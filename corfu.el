@@ -590,10 +590,11 @@ completion began less than that number of seconds ago."
         (cl-loop for c in cands collect
                  (cl-loop for s in c collect
                           (string-trim (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s)))))
-  (let* ((cw (1+ (cl-loop for x in cands maximize (string-width (car x)))))
+  (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
          (pw (cl-loop for x in cands maximize (string-width (cadr x))))
          (pw (if (> pw 0) (1+ pw) 0))
          (sw (cl-loop for x in cands maximize (string-width (caddr x))))
+         (sw (if (> sw 0) (1+ sw) 0))
          (width (+ pw cw sw)))
     (when (< width corfu-min-width)
       (setq cw (+ cw (- corfu-min-width width))
