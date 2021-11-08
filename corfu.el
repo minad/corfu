@@ -154,6 +154,10 @@ completion began less than that number of seconds ago."
   '((t :inherit completions-annotations))
   "Face used for annotations.")
 
+(defface corfu-deprecated
+  '((t :strike-through t))
+  "Face used for deprecated candidates.")
+
 (defvar corfu-map
   (let ((map (make-sparse-keymap)))
     (define-key map [remap beginning-of-buffer] #'corfu-first)
@@ -559,24 +563,32 @@ completion began less than that number of seconds ago."
   (interactive)
   (completion-in-region-mode -1))
 
-(defun corfu--affixate (candidates)
-  "Annotate CANDIDATES with annotation function."
-  (if-let (aff (or (corfu--metadata-get corfu--metadata 'affixation-function)
-                   (plist-get corfu--extra :affixation-function)))
-      (funcall aff candidates)
-    (if-let (ann (or (corfu--metadata-get corfu--metadata 'annotation-function)
-                     (plist-get corfu--extra :annotation-function)))
-        (mapcar (lambda (cand)
-                  (let ((suffix (or (funcall ann cand) "")))
-                    (list cand ""
-                          ;; The default completion UI adds the `completions-annotations' face
-                          ;; if no other faces are present. We use a custom `corfu-annotations'
-                          ;; face to allow further styling which fits better for popups.
-                          (if (text-property-not-all 0 (length suffix) 'face nil suffix)
-                              suffix
-                            (propertize suffix 'face 'corfu-annotations)))))
-                candidates)
-      (mapcar (lambda (cand) (list cand "" "")) candidates))))
+(defun corfu--affixate (cands)
+  "Annotate CANDS with annotation function."
+  (setq cands
+        (if-let (aff (or (corfu--metadata-get corfu--metadata 'affixation-function)
+                         (plist-get corfu--extra :affixation-function)))
+            (funcall aff cands)
+          (if-let (ann (or (corfu--metadata-get corfu--metadata 'annotation-function)
+                           (plist-get corfu--extra :annotation-function)))
+              (mapcar (lambda (cand)
+                        (let ((suffix (or (funcall ann cand) "")))
+                          (list cand ""
+                                ;; The default completion UI adds the `completions-annotations' face
+                                ;; if no other faces are present. We use a custom `corfu-annotations'
+                                ;; face to allow further styling which fits better for popups.
+                                (if (text-property-not-all 0 (length suffix) 'face nil suffix)
+                                    suffix
+                                  (propertize suffix 'face 'corfu-annotations)))))
+                      cands)
+            (mapcar (lambda (cand) (list cand "" "")) cands))))
+  (when-let (dep (plist-get corfu--extra :company-deprecated))
+    (mapc (pcase-lambda ((and x `(,c . ,_)))
+            (when (funcall dep c)
+              (setcar x (setq c (substring c)))
+              (add-face-text-property 0 (length c) 'corfu-deprecated 'append c)))
+          cands))
+  cands)
 
 ;; XXX Do not use `completion-metadata-get' in order to avoid Marginalia.
 ;; The Marginalia annotators are way to heavy for the Corfu popup!

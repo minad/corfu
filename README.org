@@ -47,7 +47,8 @@
   - Deferred completion style highlighting for performance.
   - Jumping to location/documentation of current candidate.
   - Show candidate documentation/signature string in the echo area.
-  - Support for ~annotation-function~ and ~affixation-function~.
+  - Deprecated candidates are crossed out in the display.
+  - Support for annotations (~annotation-function~, ~affixation-function~).
 
 * Configuration
 
@@ -157,7 +158,7 @@
   - Corfu falls back to the default Completion buffer on non-graphical displays,
     since Corfu requires child frames.
   - The abort handling could be improved, for example the input could be undone.
-  - Some Company metadata extensions are not supported (~company-deprecated~, ~company-kind~, ~company-match~).
+  - Some Company metadata extensions are not supported (~company-kind~, ~company-match~).
   - No sorting by history, since ~completion-at-point~ does not
     maintain a history (See branch =history= for a possible solution).
 
