@@ -376,6 +376,25 @@ completion began less than that number of seconds ago."
     (set-frame-size corfu--frame width height t)
     (make-frame-visible corfu--frame)))
 
+(defsubst corfu--max-cand-widths (cands)
+  "Return maximum string widths for the given candidates CANDS.
+CANDS is a list of strings, or of lists with elements (candidate
+prefix suffix).  Returns a cons cell 
+
+   (max(prefix) . max(cand+suffix)) 
+
+containing the maximum prefix width and maximum of candiate +
+suffix width, in this order."
+  (let ((widths (mapcar (lambda (cand)
+			  (if (consp cand)
+			      (cons (string-width (cadr cand)) ; prefix
+				    (+ (string-width (car cand))
+				       (string-width (caddr cand))))
+			    (cons 0 (string-width cand)))) ; only candidate
+			cands)))
+    (cons (apply #'max (mapcar 'car widths))
+	  (apply #'max (mapcar 'cdr widths)))))
+
 (defun corfu--popup-show (pos cands &optional curr lo bar)
   "Show CANDS as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
   (let* ((ch (default-line-height))
@@ -632,25 +651,6 @@ RIGHT-MARGIN (if non-nil)."
 		 0 (length str) 'corfu-current 'append str))
     str))
 
-(defsubst corfu--max-cand-widths (cands)
-  "Return maximum string widths for the given candidates CANDS.
-CANDS is a list of strings, or of lists with elements (candidate
-prefix suffix).  Returns a cons cell 
-
-   (max(prefix) . max(cand+suffix)) 
-
-containing the maximum prefix width and maximum of candiate +
-suffix width, in this order."
-  (let ((widths (mapcar (lambda (cand)
-			  (if (consp cand)
-			      (cons (string-width (cadr cand)) ; prefix
-				    (+ (string-width (car cand))
-				       (string-width (caddr cand))))
-			    (cons 0 (string-width cand)))) ; only candidate
-			cands)))
-    (cons (apply #'max (mapcar 'car widths))
-	  (apply #'max (mapcar 'cdr widths)))))
-		     
 (defun corfu--show-candidates (beg end str)
   "Update display given BEG, END and STR."
   (let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
