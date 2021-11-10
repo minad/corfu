@@ -376,8 +376,9 @@ completion began less than that number of seconds ago."
     (set-frame-size corfu--frame width height t)
     (make-frame-visible corfu--frame)))
 
-(defun corfu--popup-show (pos off lines &optional curr lo bar)
+(defun corfu--popup-show (pos off width lines &optional curr lo bar)
   "Show LINES as popup at POS - OFF.
+WIDTH is the width of the popup.
 The current candidate CURR is highlighted.
 A scroll bar is displayed from LO to LO+BAR."
   (let* ((ch (default-line-height))
@@ -389,7 +390,6 @@ A scroll bar is displayed from LO to LO+BAR."
          (sbar (concat
                 (propertize " " 'display `(space :width (,(- mw bw))))
                 (propertize " " 'face 'corfu-bar 'display `(space :width (,bw)))))
-         (width (cl-loop for x in lines maximize (string-width x)))
          (row 0)
          (pos (posn-x-y (posn-at-point pos)))
          (x (or (car pos) 0))
@@ -611,16 +611,17 @@ A scroll bar is displayed from LO to LO+BAR."
             width corfu-min-width))
     ;; -4 because of margins and some additional safety
     (setq width (min width corfu-max-width (- (frame-width) 4)))
-    (cons pw (cl-loop for (cand prefix suffix) in cands collect
-                      (truncate-string-to-width
-                       (concat prefix
-                               (make-string (- pw (string-width prefix)) ?\s)
-                               cand
-                               (make-string (+ (- cw (string-width cand))
-                                               (- sw (string-width suffix)))
-                                            ?\s)
-                               suffix)
-                       width)))))
+    (list pw width
+          (cl-loop for (cand prefix suffix) in cands collect
+                   (truncate-string-to-width
+                    (concat prefix
+                            (make-string (- pw (string-width prefix)) ?\s)
+                            cand
+                            (make-string (+ (- cw (string-width cand))
+                                            (- sw (string-width suffix)))
+                                         ?\s)
+                            suffix)
+                    width)))))
 
 (defun corfu--show-candidates (beg end str)
   "Update display given BEG, END and STR."
@@ -631,13 +632,13 @@ A scroll bar is displayed from LO to LO+BAR."
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
                (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
                (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
-               (`(,pw . ,fcands) (corfu--format-candidates (corfu--affixate cands))))
+               (`(,pw ,width ,fcands) (corfu--format-candidates (corfu--affixate cands))))
     ;; Nonlinearity at the end and the beginning
     (when (/= start 0)
       (setq lo (max 1 lo)))
     (when (/= last corfu--total)
       (setq lo (min (- corfu-count bar 2) lo)))
-    (corfu--popup-show (+ beg corfu--base) pw fcands curr
+    (corfu--popup-show (+ beg corfu--base) pw width fcands curr
                        (and (> corfu--total corfu-count) lo) bar)
     (when (>= curr 0)
       (corfu--echo-documentation (nth corfu--index corfu--candidates))
@@ -717,7 +718,7 @@ A scroll bar is displayed from LO to LO+BAR."
                (if (and corfu--auto-start (numberp corfu-quit-no-match))
                    (< (- (float-time) corfu--auto-start) corfu-quit-no-match)
                  (eq t corfu-quit-no-match))))
-      (corfu--popup-show beg 0 '(#("No match" 0 8 (face italic)))) ;; => Show confirmation popup
+      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic)))) ;; => Confirmation popup
       t))))
 
 (defun corfu--pre-command ()
