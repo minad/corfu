@@ -390,7 +390,8 @@ A scroll bar is displayed from LO to LO+BAR."
          (lm (ceiling (* cw corfu-left-margin-width)))
          (rm (ceiling (* cw corfu-right-margin-width)))
          (bw (ceiling (min rm (* cw corfu-bar-width))))
-         (margin (and (> lm 0) (propertize " " 'display `(space :width (,lm)))))
+         (lmargin (and (> lm 0) (propertize " " 'display `(space :width (,lm)))))
+         (rmargin (and (> rm 0) (propertize " " 'display `(space :width (,rm)))))
          (sbar (when (> bw 0)
                  (concat (propertize " " 'display `(space :align-to (- right (,rm))))
                          (propertize " " 'display `(space :width (,(- rm bw))))
@@ -403,7 +404,8 @@ A scroll bar is displayed from LO to LO+BAR."
      (- x lm (* cw off)) y
      (+ (* width cw) lm rm) (* (length lines) ch)
      (mapconcat (lambda (line)
-                  (let ((str (concat margin line (and lo (<= lo row (+ lo bar)) sbar))))
+                  (let ((str (concat lmargin line
+                                     (if (and lo (<= lo row (+ lo bar))) sbar rmargin))))
                     (when (eq row curr)
                       (add-face-text-property
                        0 (length str) 'corfu-current 'append str))
