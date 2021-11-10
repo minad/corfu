@@ -377,7 +377,9 @@ completion began less than that number of seconds ago."
     (make-frame-visible corfu--frame)))
 
 (defun corfu--popup-show (pos off lines &optional curr lo bar)
-  "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
+  "Show LINES as popup at POS - OFF.
+The current candidate CURR is highlighted.
+A scroll bar is displayed from LO to LO+BAR."
   (let* ((ch (default-line-height))
          (cw (default-font-width))
          (mw (ceiling (* cw corfu-margin-width)))
@@ -509,7 +511,7 @@ completion began less than that number of seconds ago."
   (redisplay)
   (pcase-let* ((before (substring str 0 pt))
                (after (substring str pt))
-               (metadata (completion-metadata before table pred))
+               (corfu--metadata (completion-metadata before table pred))
                ;; bug#47678: `completion-boundaries` fails for `partial-completion`
                ;; if the cursor is moved between the slashes of "~//".
                ;; See also vertico.el which has the same issue.
@@ -520,15 +522,15 @@ completion began less than that number of seconds ago."
                                                       after)
                              (t (cons 0 (length after))))))
                (field (substring str (car bounds) (+ pt (cdr bounds))))
-               (completing-file (eq (corfu--metadata-get metadata 'category) 'file))
-               (`(,all . ,hl) (corfu--all-completions str table pred pt metadata))
+               (completing-file (eq (corfu--metadata-get 'category) 'file))
+               (`(,all . ,hl) (corfu--all-completions str table pred pt corfu--metadata))
                (base (or (when-let (z (last all)) (prog1 (cdr z) (setcdr z nil))) 0)))
     ;; Filter the ignored file extensions. We cannot use modified predicate for this filtering,
     ;; since this breaks the special casing in the `completion-file-name-table' for `file-exists-p'
     ;; and `file-directory-p'.
     (when completing-file
       (setq all (corfu--filter-files all)))
-    (setq all (if-let (sort (corfu--metadata-get metadata 'display-sort-function))
+    (setq all (if-let (sort (corfu--metadata-get 'display-sort-function))
                   (funcall sort all)
                 (sort all #'corfu--sort-predicate)))
     (unless (equal field "")
@@ -536,7 +538,7 @@ completion began less than that number of seconds ago."
       (when (and completing-file (not (string-suffix-p "/" field)))
         (setq all (corfu--move-to-front (concat field "/") all)))
       (setq all (corfu--move-to-front field all)))
-    (list base (length all) all hl metadata)))
+    (list base (length all) all hl corfu--metadata)))
 
 (defun corfu--update-candidates (str pt table pred)
   "Update candidates from STR, PT, TABLE and PRED."
@@ -566,10 +568,10 @@ completion began less than that number of seconds ago."
 (defun corfu--affixate (cands)
   "Annotate CANDS with annotation function."
   (setq cands
-        (if-let (aff (or (corfu--metadata-get corfu--metadata 'affixation-function)
+        (if-let (aff (or (corfu--metadata-get 'affixation-function)
                          (plist-get corfu--extra :affixation-function)))
             (funcall aff cands)
-          (if-let (ann (or (corfu--metadata-get corfu--metadata 'annotation-function)
+          (if-let (ann (or (corfu--metadata-get 'annotation-function)
                            (plist-get corfu--extra :annotation-function)))
               (mapcar (lambda (cand)
                         (let ((suffix (or (funcall ann cand) "")))
@@ -590,11 +592,11 @@ completion began less than that number of seconds ago."
           cands))
   cands)
 
-;; XXX Do not use `completion-metadata-get' in order to avoid Marginalia.
-;; The Marginalia annotators are way to heavy for the Corfu popup!
-(defun corfu--metadata-get (metadata prop)
-  "Return PROP from METADATA."
-  (cdr (assq prop metadata)))
+(defun corfu--metadata-get (prop)
+  "Return PROP from completion metadata."
+  ;; Note: Do not use `completion-metadata-get' in order to avoid Marginalia.
+  ;; The Marginalia annotators are too heavy for the Corfu popup!
+  (cdr (assq prop corfu--metadata)))
 
 (defun corfu--format-candidates (cands)
   "Format annotated CANDS."
@@ -963,8 +965,9 @@ completion began less than that number of seconds ago."
       ((and `(,fun ,beg ,end ,table . ,plist)
             (guard (integer-or-marker-p beg))
             (guard (<= beg (point) end))
-            (let len (or (plist-get plist :company-prefix-length) (- (point) beg)))
-            (guard (or (eq len t) (>= len corfu-auto-prefix))))
+            (guard
+             (let ((len (or (plist-get plist :company-prefix-length) (- (point) beg))))
+               (or (eq len t) (>= len corfu-auto-prefix)))))
        (let ((completion-extra-properties plist)
              (completion-in-region-mode-predicate
               (lambda () (eq beg (car-safe (funcall fun))))))
