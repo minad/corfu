@@ -86,8 +86,12 @@ completion began less than that number of seconds ago."
   "List of modes excluded by `corfu-global-mode'."
   :type '(repeat symbol))
 
-(defcustom corfu-margin-width 0.6
-  "Width of the margin in units of the character width."
+(defcustom corfu-left-margin-width 0.5
+  "Width of the left margin in units of the character width."
+  :type 'float)
+
+(defcustom corfu-right-margin-width 0.5
+  "Width of the right margin in units of the character width."
   :type 'float)
 
 (defcustom corfu-bar-width 0.2
@@ -383,24 +387,23 @@ The current candidate CURR is highlighted.
 A scroll bar is displayed from LO to LO+BAR."
   (let* ((ch (default-line-height))
          (cw (default-font-width))
-         (mw (ceiling (* cw corfu-margin-width)))
-         (bw (ceiling (* cw (min corfu-margin-width corfu-bar-width))))
-         (margin (propertize " " 'display `(space :width (,mw))))
-         (align (propertize " " 'display `(space :align-to (- right (,mw)))))
-         (sbar (concat
-                (propertize " " 'display `(space :width (,(- mw bw))))
-                (propertize " " 'face 'corfu-bar 'display `(space :width (,bw)))))
+         (lm (ceiling (* cw corfu-left-margin-width)))
+         (rm (ceiling (* cw corfu-right-margin-width)))
+         (bw (ceiling (min rm (* cw corfu-bar-width))))
+         (margin (and (> lm 0) (propertize " " 'display `(space :width (,lm)))))
+         (sbar (when (> bw 0)
+                 (concat (propertize " " 'display `(space :align-to (- right (,rm))))
+                         (propertize " " 'display `(space :width (,(- rm bw))))
+                         (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
          (row 0)
          (pos (posn-x-y (posn-at-point pos)))
          (x (or (car pos) 0))
          (y (or (cdr pos) 0)))
     (corfu--make-frame
-     (- x mw (* cw off)) y
-     (+ (* width cw) mw mw) (* (length lines) ch)
+     (- x lm (* cw off)) y
+     (+ (* width cw) lm rm) (* (length lines) ch)
      (mapconcat (lambda (line)
-                  (let ((str (concat margin line align
-                                     (if (and lo (<= lo row (+ lo bar)))
-                                         sbar margin))))
+                  (let ((str (concat margin line (and lo (<= lo row (+ lo bar)) sbar))))
                     (when (eq row curr)
                       (add-face-text-property
                        0 (length str) 'corfu-current 'append str))
