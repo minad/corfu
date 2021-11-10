@@ -102,6 +102,13 @@ completion began less than that number of seconds ago."
   "Show documentation string in the echo area after that number of seconds."
   :type '(choice boolean float))
 
+(defcustom corfu-kind-formatter nil
+  "Formatting function for candidate kind.
+The function takes a symbol corresponding to the kind of the candidate
+and must return a string. This function can be used to display icons in
+front of the candidates."
+  :type '(choice function (const nil)))
+
 (defcustom corfu-auto-prefix 3
   "Minimum length of prefix for auto completion."
   :type 'integer)
@@ -588,12 +595,15 @@ A scroll bar is displayed from LO to LO+BAR."
                                    suffix
                                  (propertize suffix 'face 'corfu-annotations)))))
             (cl-loop for cand in cands collect (list cand "" "")))))
-  (when-let (dep (plist-get corfu--extra :company-deprecated))
+  (let ((dep (plist-get corfu--extra :company-deprecated))
+        (kind (and corfu-kind-formatter (plist-get corfu--extra :company-kind))))
     (cl-loop for x in cands for (c . _) = x do
-             (when (funcall dep c)
+             (when kind
+               (setf (cadr x) (funcall corfu-kind-formatter (funcall kind c))))
+             (when (and dep (funcall dep c))
                (setcar x (setq c (substring c)))
-               (add-face-text-property 0 (length c) 'corfu-deprecated 'append c))))
-  cands)
+               (add-face-text-property 0 (length c) 'corfu-deprecated 'append c)))
+    (cons kind cands)))
 
 (defun corfu--metadata-get (prop)
   "Return PROP from completion metadata."
@@ -637,7 +647,10 @@ A scroll bar is displayed from LO to LO+BAR."
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
                (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
                (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
-               (`(,pw ,width ,fcands) (corfu--format-candidates (corfu--affixate cands))))
+               (`(,kind . ,acands) (corfu--affixate cands))
+               (`(,pw ,width ,fcands) (corfu--format-candidates acands))
+               ;; Disable the left margin if a kind function is specified.
+               (corfu-left-margin-width (if kind 0 corfu-left-margin-width)))
     ;; Nonlinearity at the end and the beginning
     (when (/= start 0)
       (setq lo (max 1 lo)))
