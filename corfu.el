@@ -573,23 +573,21 @@ A scroll bar is displayed from LO to LO+BAR."
             (funcall aff cands)
           (if-let (ann (or (corfu--metadata-get 'annotation-function)
                            (plist-get corfu--extra :annotation-function)))
-              (mapcar (lambda (cand)
-                        (let ((suffix (or (funcall ann cand) "")))
-                          (list cand ""
-                                ;; The default completion UI adds the `completions-annotations' face
-                                ;; if no other faces are present. We use a custom `corfu-annotations'
-                                ;; face to allow further styling which fits better for popups.
-                                (if (text-property-not-all 0 (length suffix) 'face nil suffix)
-                                    suffix
-                                  (propertize suffix 'face 'corfu-annotations)))))
-                      cands)
-            (mapcar (lambda (cand) (list cand "" "")) cands))))
+              (cl-loop for cand in cands collect
+                       (let ((suffix (or (funcall ann cand) "")))
+                         (list cand ""
+                               ;; The default completion UI adds the `completions-annotations' face
+                               ;; if no other faces are present. We use a custom `corfu-annotations'
+                               ;; face to allow further styling which fits better for popups.
+                               (if (text-property-not-all 0 (length suffix) 'face nil suffix)
+                                   suffix
+                                 (propertize suffix 'face 'corfu-annotations)))))
+            (cl-loop for cand in cands collect (list cand "" "")))))
   (when-let (dep (plist-get corfu--extra :company-deprecated))
-    (mapc (pcase-lambda ((and x `(,c . ,_)))
-            (when (funcall dep c)
-              (setcar x (setq c (substring c)))
-              (add-face-text-property 0 (length c) 'corfu-deprecated 'append c)))
-          cands))
+    (cl-loop for x in cands for (c . _) = x do
+             (when (funcall dep c)
+               (setcar x (setq c (substring c)))
+               (add-face-text-property 0 (length c) 'corfu-deprecated 'append c))))
   cands)
 
 (defun corfu--metadata-get (prop)
@@ -615,17 +613,16 @@ A scroll bar is displayed from LO to LO+BAR."
             width corfu-min-width))
     ;; -4 because of margins and some additional safety
     (setq width (min width corfu-max-width (- (frame-width) 4)))
-    (cons pw (mapcar (pcase-lambda (`(,cand ,prefix ,suffix))
-                       (truncate-string-to-width
-                        (concat prefix
-                                (make-string (- pw (string-width prefix)) ?\s)
-                                cand
-                                (make-string (+ (- cw (string-width cand))
-                                                (- sw (string-width suffix)))
-                                             ?\s)
-                                suffix)
-                        width))
-                     cands))))
+    (cons pw (cl-loop for (cand prefix suffix) in cands collect
+                      (truncate-string-to-width
+                       (concat prefix
+                               (make-string (- pw (string-width prefix)) ?\s)
+                               cand
+                               (make-string (+ (- cw (string-width cand))
+                                               (- sw (string-width suffix)))
+                                            ?\s)
+                               suffix)
+                       width)))))
 
 (defun corfu--show-candidates (beg end str)
   "Update display given BEG, END and STR."
