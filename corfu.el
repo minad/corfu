@@ -408,8 +408,8 @@ A scroll bar is displayed from LO to LO+BAR."
          (x (or (car pos) 0))
          (y (or (cdr pos) 0)))
     (corfu--make-frame
-     (- x lm (* cw off)) y
-     (+ (* width cw) lm rm) (* (length lines) ch)
+     (- x lm (round (* cw off))) y
+     (+ (round (* width cw)) lm rm) (* (length lines) ch)
      (mapconcat (lambda (line)
                   (let ((str (concat lmargin line
                                      (if (and lo (<= lo row (+ lo bar))) sbar rmargin))))
@@ -611,15 +611,20 @@ A scroll bar is displayed from LO to LO+BAR."
   ;; The Marginalia annotators are too heavy for the Corfu popup!
   (cdr (assq prop corfu--metadata)))
 
+(defun corfu--string-width (str)
+  "Return string width of STR."
+  (or (get-text-property 0 'corfu-width str)
+      (string-width str)))
+
 (defun corfu--format-candidates (cands)
   "Format annotated CANDS."
   (setq cands
         (cl-loop for c in cands collect
                  (cl-loop for s in c collect
                           (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s))))
-  (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
-         (pw (cl-loop for x in cands maximize (string-width (cadr x))))
-         (sw (cl-loop for x in cands maximize (string-width (caddr x))))
+  (let* ((cw (cl-loop for x in cands maximize (corfu--string-width (car x))))
+         (pw (cl-loop for x in cands maximize (corfu--string-width (cadr x))))
+         (sw (cl-loop for x in cands maximize (corfu--string-width (caddr x))))
          (width (+ pw cw sw)))
     (when (< width corfu-min-width)
       (setq cw (+ cw (- corfu-min-width width))
@@ -628,15 +633,18 @@ A scroll bar is displayed from LO to LO+BAR."
     (setq width (min width corfu-max-width (- (frame-width) 4)))
     (list pw width
           (cl-loop for (cand prefix suffix) in cands collect
-                   (truncate-string-to-width
-                    (concat prefix
-                            (make-string (- pw (string-width prefix)) ?\s)
-                            cand
-                            (make-string (+ (- cw (string-width cand))
-                                            (- sw (string-width suffix)))
-                                         ?\s)
-                            suffix)
-                    width)))))
+                   ;; TODO truncation does not work yet, it must also understand the corfu-width property!
+                   ;;(truncate-string-to-width
+                   (concat prefix
+                           (let ((w (- pw (corfu--string-width prefix))))
+                             (propertize " " 'display `(space :width ,w) 'corfu-width w))
+                           cand
+                           (let ((w (+ (- cw (corfu--string-width cand))
+                                       (- sw (corfu--string-width suffix)))))
+                             (propertize " " 'display `(space :width ,w) 'corfu-width w))
+                           suffix)
+                   ;;width)
+                   ))))
 
 (defun corfu--show-candidates (beg end str)
   "Update display given BEG, END and STR."
