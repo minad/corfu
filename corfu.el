@@ -398,7 +398,7 @@ A scroll bar is displayed from LO to LO+BAR."
          (rm (ceiling (* cw corfu-right-margin-width)))
          (bw (ceiling (min rm (* cw corfu-bar-width))))
          (lmargin (and (> lm 0) (propertize " " 'display `(space :width (,lm)))))
-         (rmargin (and (> rm 0) (propertize " " 'display `(space :width (,rm)))))
+         (rmargin (and (> rm 0) (propertize " " 'display `(space :align-to right))))
          (sbar (when (> bw 0)
                  (concat (propertize " " 'display `(space :align-to (- right (,rm))))
                          (propertize " " 'display `(space :width (,(- rm bw))))
