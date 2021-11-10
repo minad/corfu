@@ -601,12 +601,10 @@ A scroll bar is displayed from LO to LO+BAR."
   (setq cands
         (cl-loop for c in cands collect
                  (cl-loop for s in c collect
-                          (string-trim (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s)))))
+                          (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s))))
   (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
          (pw (cl-loop for x in cands maximize (string-width (cadr x))))
          (sw (cl-loop for x in cands maximize (string-width (caddr x))))
-         (pw (if (> pw 0) (1+ pw) 0))
-         (sw (if (> sw 0) (1+ sw) 0))
          (width (+ pw cw sw)))
     (when (< width corfu-min-width)
       (setq cw (+ cw (- corfu-min-width width))
