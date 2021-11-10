@@ -370,9 +370,9 @@ completion began less than that number of seconds ago."
       (set-window-parameter win 'no-delete-other-windows t)
       (set-window-parameter win 'no-other-window t))
     ;; XXX HACK Make the frame invisible before moving the popup in order to avoid flicker.
-    (unless (equal (frame-position corfu--frame) (cons x y))
-      (make-frame-invisible corfu--frame)
-      (set-frame-position corfu--frame x y))
+    (unless (eq (cdr (frame-position corfu--frame)) y)
+      (make-frame-invisible corfu--frame))
+    (set-frame-position corfu--frame x y)
     (set-frame-size corfu--frame width height t)
     (make-frame-visible corfu--frame)))
 
@@ -604,8 +604,8 @@ completion began less than that number of seconds ago."
                           (string-trim (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s)))))
   (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
          (pw (cl-loop for x in cands maximize (string-width (cadr x))))
-         (sw (cl-loop for x in cands maximize (string-width (caddr x))))
          (pw (if (> pw 0) (1+ pw) 0))
+         (sw (cl-loop for x in cands maximize (string-width (caddr x))))
          (sw (if (> sw 0) (1+ sw) 0))
          (width (+ pw cw sw)))
     (when (< width corfu-min-width)
