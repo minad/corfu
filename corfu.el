@@ -376,7 +376,7 @@ completion began less than that number of seconds ago."
     (set-frame-size corfu--frame width height t)
     (make-frame-visible corfu--frame)))
 
-(defun corfu--popup-show (pos lines &optional curr lo bar)
+(defun corfu--popup-show (pos off lines &optional curr lo bar)
   "Show LINES as popup at POS, with CURR highlighted and scrollbar from LO to LO+BAR."
   (let* ((ch (default-line-height))
          (cw (default-font-width))
@@ -393,7 +393,7 @@ completion began less than that number of seconds ago."
          (x (or (car pos) 0))
          (y (or (cdr pos) 0)))
     (corfu--make-frame
-     (- x mw) y
+     (- x mw (* cw off)) y
      (+ (* width cw) mw mw) (* (length lines) ch)
      (mapconcat (lambda (line)
                   (let ((str (concat margin line align
@@ -604,8 +604,8 @@ completion began less than that number of seconds ago."
                           (string-trim (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s)))))
   (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
          (pw (cl-loop for x in cands maximize (string-width (cadr x))))
-         (pw (if (> pw 0) (1+ pw) 0))
          (sw (cl-loop for x in cands maximize (string-width (caddr x))))
+         (pw (if (> pw 0) (1+ pw) 0))
          (sw (if (> sw 0) (1+ sw) 0))
          (width (+ pw cw sw)))
     (when (< width corfu-min-width)
@@ -613,34 +613,35 @@ completion began less than that number of seconds ago."
             width corfu-min-width))
     ;; -4 because of margins and some additional safety
     (setq width (min width corfu-max-width (- (frame-width) 4)))
-    (mapcar (pcase-lambda (`(,cand ,prefix ,suffix))
-              (truncate-string-to-width
-               (concat prefix
-                       (make-string (- pw (string-width prefix)) ?\s)
-                       cand
-                       (make-string (+ (- cw (string-width cand))
-                                       (- sw (string-width suffix)))
-                                    ?\s)
-                       suffix)
-               width))
-            cands)))
+    (cons pw (mapcar (pcase-lambda (`(,cand ,prefix ,suffix))
+                       (truncate-string-to-width
+                        (concat prefix
+                                (make-string (- pw (string-width prefix)) ?\s)
+                                cand
+                                (make-string (+ (- cw (string-width cand))
+                                                (- sw (string-width suffix)))
+                                             ?\s)
+                                suffix)
+                        width))
+                     cands))))
 
 (defun corfu--show-candidates (beg end str)
   "Update display given BEG, END and STR."
-  (let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
-                     (max 0 (- corfu--total corfu-count))))
-         (curr (- corfu--index start))
-         (last (min (+ start corfu-count) corfu--total))
-         (bar (ceiling (* corfu-count corfu-count) corfu--total))
-         (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
-         (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
-         (ann-cands (corfu--format-candidates (corfu--affixate cands))))
+  (pcase-let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
+                           (max 0 (- corfu--total corfu-count))))
+               (curr (- corfu--index start))
+               (last (min (+ start corfu-count) corfu--total))
+               (bar (ceiling (* corfu-count corfu-count) corfu--total))
+               (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
+               (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
+               (`(,pw . ,fcands) (corfu--format-candidates (corfu--affixate cands))))
     ;; Nonlinearity at the end and the beginning
     (when (/= start 0)
       (setq lo (max 1 lo)))
     (when (/= last corfu--total)
       (setq lo (min (- corfu-count bar 2) lo)))
-    (corfu--popup-show (+ beg corfu--base) ann-cands curr (and (> corfu--total corfu-count) lo) bar)
+    (corfu--popup-show (+ beg corfu--base) pw fcands curr
+                       (and (> corfu--total corfu-count) lo) bar)
     (when (>= curr 0)
       (corfu--echo-documentation (nth corfu--index corfu--candidates))
       (corfu--show-overlay beg end str (nth curr cands)))))
@@ -719,7 +720,7 @@ completion began less than that number of seconds ago."
                (if (and corfu--auto-start (numberp corfu-quit-no-match))
                    (< (- (float-time) corfu--auto-start) corfu-quit-no-match)
                  (eq t corfu-quit-no-match))))
-      (corfu--popup-show beg '(#("No match" 0 8 (face italic)))) ;; => Show confirmation popup
+      (corfu--popup-show beg 0 '(#("No match" 0 8 (face italic)))) ;; => Show confirmation popup
       t))))
 
 (defun corfu--pre-command ()
