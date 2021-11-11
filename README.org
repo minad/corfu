@@ -49,7 +49,7 @@
   - Show candidate documentation/signature string in the echo area.
   - Deprecated candidates are crossed out in the display.
   - Support for annotations (~annotation-function~, ~affixation-function~).
-  - Icons can be provided by an external package via ~corfu-kind-formatter~.
+  - Icons can be provided by an external package via margin formatter functions.
 
 * Configuration
 
