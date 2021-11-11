@@ -597,13 +597,13 @@ A scroll bar is displayed from LO to LO+BAR."
             (cl-loop for cand in cands collect (list cand "" "")))))
   (let ((dep (plist-get corfu--extra :company-deprecated))
         (kind (and corfu-kind-formatter (plist-get corfu--extra :company-kind))))
-    (cl-loop for x in cands for (c . _) = x do
-             (when kind
-               (setf (cadr x) (funcall corfu-kind-formatter (funcall kind c))))
-             (when (and dep (funcall dep c))
-               (setcar x (setq c (substring c)))
-               (add-face-text-property 0 (length c) 'corfu-deprecated 'append c)))
-    (cons kind cands)))
+    (cons kind
+          (cl-loop for (c p s) in cands do
+                   (when (and dep (funcall dep c))
+                     (setq c (substring c))
+                     (add-face-text-property 0 (length c) 'corfu-deprecated 'append c))
+                   collect
+                   (list (if kind (funcall corfu-kind-formatter (funcall kind c)) "") p c s)))))
 
 (defun corfu--metadata-get (prop)
   "Return PROP from completion metadata."
@@ -617,25 +617,25 @@ A scroll bar is displayed from LO to LO+BAR."
         (cl-loop for c in cands collect
                  (cl-loop for s in c collect
                           (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s))))
-  (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
+  (let* ((kw (cl-loop for x in cands maximize (string-width (car x))))
          (pw (cl-loop for x in cands maximize (string-width (cadr x))))
-         (sw (cl-loop for x in cands maximize (string-width (caddr x))))
-         (width (+ pw cw sw)))
+         (cw (cl-loop for x in cands maximize (string-width (caddr x))))
+         (sw (cl-loop for x in cands maximize (string-width (cadddr x))))
+         (width (+ kw pw cw sw)))
     (when (< width corfu-min-width)
       (setq cw (+ cw (- corfu-min-width width))
             width corfu-min-width))
     ;; -4 because of margins and some additional safety
     (setq width (min width corfu-max-width (- (frame-width) 4)))
     (list pw width
-          (cl-loop for (cand prefix suffix) in cands collect
+          (cl-loop for (k p c s) in cands collect
                    (truncate-string-to-width
-                    (concat prefix
-                            (make-string (- pw (string-width prefix)) ?\s)
-                            cand
-                            (make-string (+ (- cw (string-width cand))
-                                            (- sw (string-width suffix)))
-                                         ?\s)
-                            suffix)
+                    (concat k (make-string (- kw (string-width k)) ?\s)
+                            p (make-string (- pw (string-width p)) ?\s)
+                            c (make-string (+ (- cw (string-width c))
+                                              (- sw (string-width s)))
+                                           ?\s)
+                            s)
                     width)))))
 
 (defun corfu--show-candidates (beg end str)
