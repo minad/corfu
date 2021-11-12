@@ -73,6 +73,7 @@
       ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
       ;; (corfu-quit-no-match t)        ;; Automatically quit if there is no match
       ;; (corfu-echo-documentation nil) ;; Do not show documentation in the echo area
+      ;; (corfu-preview-current nil)    ;; Do not preview current candidate
 
       ;; Optionally use TAB for cycling, default is `corfu-complete'.
       ;; :bind (:map corfu-map
