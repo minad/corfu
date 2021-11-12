@@ -710,16 +710,15 @@ A scroll bar is displayed from LO to LO+BAR."
           (when (and continue (not (equal corfu--input (cons str pt))))
             (corfu--update-candidates str pt table pred)
             nil)
-        (t (message "Corfu completion error: %s" (error-message-string err))
-           nil)))
+        (t (corfu-quit)
+           (message "Corfu completion error: %s" (error-message-string err)))))
      ((and initializing (not corfu--candidates))      ;; 1) Initializing, no candidates
       (funcall msg "No match")                        ;; => Show error message
-      nil)
+      (corfu-quit))
      ((and corfu--candidates                          ;; 2) There exist candidates
            (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
            continue)                                  ;; &  Input is non-empty or continue command
-      (corfu--show-candidates beg end str)            ;; => Show candidates popup
-      t)
+      (corfu--show-candidates beg end str))           ;; => Show candidates popup
      ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
      ;; current string is a valid match, exit with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
@@ -728,16 +727,15 @@ A scroll bar is displayed from LO to LO+BAR."
            ;; but it does not work as well when completing in `shell-mode'.
            ;; (not (consp (completion-try-completion str table pred pt metadata)))
            (test-completion str table pred))
-      (corfu--done str 'finished)
-      nil)
+      (corfu--done str 'finished))
      ((not (or corfu--candidates                      ;; 4) There are no candidates
                ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
                ;; initiated too long ago, quit directly without showing the "No match" popup.
                (if (and corfu--auto-start (numberp corfu-quit-no-match))
                    (< (- (float-time) corfu--auto-start) corfu-quit-no-match)
                  (eq t corfu-quit-no-match))))
-      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic)))) ;; => Confirmation popup
-      t))))
+      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic))))) ;; => Confirmation popup
+     (t (corfu-quit)))))
 
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
@@ -764,7 +762,8 @@ A scroll bar is displayed from LO to LO+BAR."
                         (<= (line-beginning-position) pt (line-end-position)))
                       (or (not corfu-quit-at-boundary)
                           (funcall completion-in-region-mode--predicate))))
-           (corfu--update #'minibuffer-message))))
+           (corfu--update #'minibuffer-message)
+           t)))
       (corfu-quit)))
 
 (defun corfu--goto (index)
@@ -990,8 +989,7 @@ A scroll bar is displayed from LO to LO+BAR."
                corfu--auto-start (float-time))
          (completion-in-region-mode 1)
          (corfu--setup)
-         (unless (corfu--update #'ignore)
-           (corfu-quit)))))))
+         (corfu--update #'ignore))))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
