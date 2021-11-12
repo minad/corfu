@@ -565,6 +565,7 @@ A scroll bar is displayed from LO to LO+BAR."
            corfu--candidates candidates
            corfu--base base
            corfu--total total
+           corfu--index -1
            corfu--highlight hl
            corfu--metadata metadata))))
 
@@ -749,10 +750,10 @@ A scroll bar is displayed from LO to LO+BAR."
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
   (add-hook 'window-configuration-change-hook #'corfu-quit)
-  (unless (corfu--match-symbol-p corfu-continue-commands this-command)
-    (if (and corfu-commit-predicate (funcall corfu-commit-predicate))
-        (corfu--insert 'exact)
-      (setq corfu--index -1))))
+  (when (and corfu-commit-predicate
+             (not (corfu--match-symbol-p corfu-continue-commands this-command))
+             (funcall corfu-commit-predicate))
+    (corfu--insert 'exact)))
 
 ;; TODO rename to corfu-candidate-previewed-p
 (defun corfu-candidate-selected-p ()
