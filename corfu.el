@@ -875,19 +875,9 @@ A scroll bar is displayed from LO to LO+BAR."
                    (str (buffer-substring-no-properties beg end))
                    (metadata (completion-metadata (substring str 0 pt) table pred)))
         (pcase (completion-try-completion str table pred pt metadata)
-          ;; Prefix completion made progress.
           ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
            (completion--replace beg end newstr)
-           (goto-char (+ beg newpt)))
-          ;; If we didn't make progress, the last command was `corfu-complete'
-          ;; and we are not at completion boundary, continue with the first candidate.
-          ((guard (and (eq last-command #'corfu-complete)
-                       (> (length str) corfu--base)
-                       (> corfu--total 0)))
-           (completion--replace beg end
-                                (concat (substring str 0 corfu--base)
-                                        (substring-no-properties
-                                         (car corfu--candidates))))))))))
+           (goto-char (+ beg newpt))))))))
 
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
