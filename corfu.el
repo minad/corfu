@@ -729,6 +729,10 @@ A scroll bar is displayed from LO to LO+BAR."
      ((and corfu--candidates
            (not (equal corfu--candidates (list str)))
            continue)
+      ;; Automatically select first candidate!
+      (unless (or corfu-preview-current (>= corfu--index 0)
+                  (test-completion str table pred))
+        (setq corfu--index 0))
       (corfu--show-candidates beg end str))
      ;; 3) When after `completion-at-point/corfu-complete', no further
      ;; completion is possible and the current string is a valid match, exit
