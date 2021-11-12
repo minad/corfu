@@ -712,29 +712,36 @@ A scroll bar is displayed from LO to LO+BAR."
             nil)
         (t (corfu-quit)
            (message "Corfu completion error: %s" (error-message-string err)))))
-     ((and initializing (not corfu--candidates))      ;; 1) Initializing, no candidates
-      (funcall msg "No match")                        ;; => Show error message
+     ;; 1) Initializing, no candidates => Show error message and quit
+     ((and initializing (not corfu--candidates))
+      (funcall msg "No match")
       (corfu-quit))
-     ((and corfu--candidates                          ;; 2) There exist candidates
-           (not (equal corfu--candidates (list str))) ;; &  Not a sole exactly matching candidate
-           continue)                                  ;; &  Input is non-empty or continue command
-      (corfu--show-candidates beg end str))           ;; => Show candidates popup
-     ;; 3) When after `completion-at-point/corfu-complete', no further completion is possible and the
-     ;; current string is a valid match, exit with status 'finished.
+     ;; 2) There exist candidates
+     ;; &  Not a sole exactly matching candidate
+     ;; &  Input is non-empty or continue command
+     ;; => Show candidates popup
+     ((and corfu--candidates
+           (not (equal corfu--candidates (list str)))
+           continue)
+      (corfu--show-candidates beg end str))
+     ;; 3) When after `completion-at-point/corfu-complete', no further
+     ;; completion is possible and the current string is a valid match, exit
+     ;; with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
-           (not (stringp (try-completion str table pred)))
            ;; XXX We should probably use `completion-try-completion' here instead
            ;; but it does not work as well when completing in `shell-mode'.
            ;; (not (consp (completion-try-completion str table pred pt metadata)))
+           (not (stringp (try-completion str table pred)))
            (test-completion str table pred))
       (corfu--done str 'finished))
-     ((not (or corfu--candidates                      ;; 4) There are no candidates
+     ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
+     ((not (or corfu--candidates
                ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
                ;; initiated too long ago, quit directly without showing the "No match" popup.
                (if (and corfu--auto-start (numberp corfu-quit-no-match))
                    (< (- (float-time) corfu--auto-start) corfu-quit-no-match)
                  (eq t corfu-quit-no-match))))
-      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic))))) ;; => Confirmation popup
+      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic)))))
      (t (corfu-quit)))))
 
 (defun corfu--pre-command ()
