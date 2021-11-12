@@ -632,9 +632,10 @@ A scroll bar is displayed from LO to LO+BAR."
                     (concat prefix
                             (make-string (- pw (string-width prefix)) ?\s)
                             cand
-                            (make-string (+ (- cw (string-width cand))
-                                            (- sw (string-width suffix)))
-                                         ?\s)
+                            (when (/= sw 0)
+                              (make-string (+ (- cw (string-width cand))
+                                              (- sw (string-width suffix)))
+                                           ?\s))
                             suffix)
                     width)))))
 
