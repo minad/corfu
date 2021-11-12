@@ -728,10 +728,7 @@ A scroll bar is displayed from LO to LO+BAR."
      ;; completion is possible and the current string is a valid match, exit
      ;; with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
-           ;; XXX We should probably use `completion-try-completion' here instead
-           ;; but it does not work as well when completing in `shell-mode'.
-           ;; (not (consp (completion-try-completion str table pred pt metadata)))
-           (not (stringp (try-completion str table pred)))
+           (not (consp (completion-try-completion str table pred pt corfu--metadata)))
            (test-completion str table pred))
       (corfu--done str 'finished))
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
