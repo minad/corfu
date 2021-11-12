@@ -30,7 +30,9 @@
   *NOTE*: Corfu uses child frames to show the popup; on non-graphical displays it
   will fall back to the default setting of the ~completion-in-region-function~.
 
-  [[https://github.com/minad/corfu/blob/main/screenshot.png?raw=true]]
+  [[https://github.com/minad/corfu/blob/screenshots/light.png?raw=true]]
+
+  [[https://github.com/minad/corfu/blob/screenshots/dark.png?raw=true]]
 
 * Features
 
