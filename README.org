@@ -74,6 +74,7 @@
       ;; (corfu-quit-no-match t)        ;; Automatically quit if there is no match
       ;; (corfu-echo-documentation nil) ;; Do not show documentation in the echo area
       ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+      ;; (corfu-preview-current nil)    ;; Do not preview current candidate
 
       ;; Optionally use TAB for cycling, default is `corfu-complete'.
       ;; :bind (:map corfu-map
