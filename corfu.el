@@ -710,8 +710,8 @@ A scroll bar is displayed from LO to LO+BAR."
           (when (and continue (not (equal corfu--input (cons str pt))))
             (corfu--update-candidates str pt table pred)
             nil)
-        (t (corfu-quit)
-           (message "Corfu completion error: %s" (error-message-string err)))))
+        (error (corfu-quit)
+               (message "Corfu completion error: %s" (error-message-string err)))))
      ;; 1) Initializing, no candidates => Show error message and quit
      ((and initializing (not corfu--candidates))
       (funcall msg "No match")
