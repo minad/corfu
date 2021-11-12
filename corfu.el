@@ -180,12 +180,12 @@ string and must return a string, possibly an icon."
     (define-key map [remap completion-at-point] #'corfu-complete)
     (define-key map [down] #'corfu-next)
     (define-key map [up] #'corfu-previous)
+    (define-key map [remap keyboard-escape-quit] #'corfu-quit)
     ;; XXX [tab] is bound because of org-mode
     ;; The binding should be removed from org-mode-map.
     (define-key map [tab] #'corfu-complete)
     (define-key map "\en" #'corfu-next)
     (define-key map "\ep" #'corfu-previous)
-    (define-key map "\e\e\e" #'corfu-quit)
     (define-key map "\C-g" #'corfu-quit)
     (define-key map "\r" #'corfu-insert)
     (define-key map "\t" #'corfu-complete)
