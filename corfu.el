@@ -47,7 +47,7 @@
   "Maximal number of candidates to show."
   :type 'integer)
 
-(defcustom corfu-scroll-margin 0
+(defcustom corfu-scroll-margin 2
   "Number of lines at the top and bottom when scrolling.
 The value should lie between 0 and corfu-count/2."
   :type 'integer)
@@ -648,13 +648,17 @@ A scroll bar is displayed from LO to LO+BAR."
                             suffix)
                     width)))))
 
-(defun corfu--show-candidates (beg end str)
-  "Update display given BEG, END and STR."
+(defun corfu--update-scroll ()
+  "Update scroll position."
   (let ((off (max (min corfu-scroll-margin (/ corfu-count 2)) 0))
         (corr (if (= corfu-scroll-margin (/ corfu-count 2)) (1- (mod corfu-count 2)) 0)))
     (setq corfu--scroll (min (max 0 (- corfu--total corfu-count))
                              (max 0 (+ corfu--index off 1 (- corfu-count))
-                                  (min (- corfu--index off corr) corfu--scroll)))))
+                                  (min (- corfu--index off corr) corfu--scroll))))))
+
+(defun corfu--show-candidates (beg end str)
+  "Update display given BEG, END and STR."
+  (corfu--update-scroll)
   (pcase-let* ((curr (- corfu--index corfu--scroll))
                (last (min (+ corfu--scroll corfu-count) corfu--total))
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
