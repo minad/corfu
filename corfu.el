@@ -47,6 +47,11 @@
   "Maximal number of candidates to show."
   :type 'integer)
 
+(defcustom corfu-scroll-margin 0
+  "Number of lines at the top and bottom when scrolling.
+The value should lie between 0 and corfu-count/2."
+  :type 'integer)
+
 (defcustom corfu-min-width 15
   "Popup minimum width in characters."
   :type 'integer)
@@ -215,6 +220,9 @@ string and must return a string, possibly an icon."
 (defvar-local corfu--index -1
   "Index of current candidate or negative for prompt selection.")
 
+(defvar-local corfu--scroll 0
+  "Scroll position.")
+
 (defvar-local corfu--input nil
   "Cons of last prompt contents and point or t.")
 
@@ -238,6 +246,7 @@ string and must return a string, possibly an icon."
     corfu--candidates
     corfu--highlight
     corfu--index
+    corfu--scroll
     corfu--input
     corfu--total
     corfu--overlay
@@ -641,19 +650,22 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--show-candidates (beg end str)
   "Update display given BEG, END and STR."
-  (pcase-let* ((start (min (max 0 (- corfu--index (/ corfu-count 2)))
-                           (max 0 (- corfu--total corfu-count))))
-               (curr (- corfu--index start))
-               (last (min (+ start corfu-count) corfu--total))
+  (let ((off (max (min corfu-scroll-margin (/ corfu-count 2)) 0))
+        (corr (if (= corfu-scroll-margin (/ corfu-count 2)) (1- (mod corfu-count 2)) 0)))
+    (setq corfu--scroll (min (max 0 (- corfu--total corfu-count))
+                             (max 0 (+ corfu--index off 1 (- corfu-count))
+                                  (min (- corfu--index off corr) corfu--scroll)))))
+  (pcase-let* ((curr (- corfu--index corfu--scroll))
+               (last (min (+ corfu--scroll corfu-count) corfu--total))
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
-               (lo (min (- corfu-count bar 1) (floor (* corfu-count start) corfu--total)))
-               (cands (funcall corfu--highlight (seq-subseq corfu--candidates start last)))
+               (lo (min (- corfu-count bar 1) (floor (* corfu-count corfu--scroll) corfu--total)))
+               (cands (funcall corfu--highlight (seq-subseq corfu--candidates corfu--scroll last)))
                (`(,mf . ,acands) (corfu--affixate cands))
                (`(,pw ,width ,fcands) (corfu--format-candidates acands))
                ;; Disable the left margin if a margin formatter is active.
                (corfu-left-margin-width (if mf 0 corfu-left-margin-width)))
     ;; Nonlinearity at the end and the beginning
-    (when (/= start 0)
+    (when (/= corfu--scroll 0)
       (setq lo (max 1 lo)))
     (when (/= last corfu--total)
       (setq lo (min (- corfu-count bar 2) lo)))
