@@ -66,8 +66,8 @@ The value should lie between 0 and corfu-count/2."
 
 (defcustom corfu-continue-commands
   ;; nil is undefined command
-  '(nil completion-at-point "\\`corfu-" "\\`scroll-other-window"
-        universal-argument universal-argument-more digit-argument)
+  '(nil ignore completion-at-point universal-argument universal-argument-more digit-argument
+        "\\`corfu-" "\\`scroll-other-window")
   "Continue Corfu completion after executing these commands."
   :type '(repeat (choice regexp symbol)))
 
