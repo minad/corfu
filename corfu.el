@@ -663,15 +663,14 @@ A scroll bar is displayed from LO to LO+BAR."
                              (max 0 (+ corfu--index off 1 (- corfu-count))
                                   (min (- corfu--index off corr) corfu--scroll))))))
 
-(defun corfu--show-candidates (beg end str)
-  "Update display given BEG, END and STR."
+(defun corfu--candidates-popup (pos)
+  "Show candidates popup at POS."
   (corfu--update-scroll)
-  (pcase-let* ((curr (- corfu--index corfu--scroll))
-               (last (min (+ corfu--scroll corfu-count) corfu--total))
+  (pcase-let* ((last (min (+ corfu--scroll corfu-count) corfu--total))
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
                (lo (min (- corfu-count bar 1) (floor (* corfu-count corfu--scroll) corfu--total)))
-               (cands (funcall corfu--highlight (seq-subseq corfu--candidates corfu--scroll last)))
-               (`(,mf . ,acands) (corfu--affixate cands))
+               (`(,mf . ,acands) (corfu--affixate (funcall corfu--highlight
+                                   (seq-subseq corfu--candidates corfu--scroll last))))
                (`(,pw ,width ,fcands) (corfu--format-candidates acands))
                ;; Disable the left margin if a margin formatter is active.
                (corfu-left-margin-width (if mf 0 corfu-left-margin-width)))
@@ -680,11 +679,8 @@ A scroll bar is displayed from LO to LO+BAR."
       (setq lo (max 1 lo)))
     (when (/= last corfu--total)
       (setq lo (min (- corfu-count bar 2) lo)))
-    (corfu--popup-show (+ beg corfu--base) pw width fcands curr
-                       (and (> corfu--total corfu-count) lo) bar)
-    (when (>= curr 0)
-      (corfu--echo-documentation (nth corfu--index corfu--candidates))
-      (corfu--preview-current beg end str (nth curr cands)))))
+    (corfu--popup-show (+ pos corfu--base) pw width fcands (- corfu--index corfu--scroll)
+                       (and (> corfu--total corfu-count) lo) bar)))
 
 (defun corfu--preview-current (beg end str cand)
   "Show current CAND as overlay given BEG, END and STR."
@@ -748,7 +744,10 @@ A scroll bar is displayed from LO to LO+BAR."
      ((and corfu--candidates
            (not (equal corfu--candidates (list str)))
            continue)
-      (corfu--show-candidates beg end str))
+      (corfu--candidates-popup beg)
+      (when (>= corfu--index 0)
+        (corfu--echo-documentation (nth corfu--index corfu--candidates))
+        (corfu--preview-current beg end str (nth corfu--index corfu--candidates))))
      ;; 3) When after `completion-at-point/corfu-complete', no further
      ;; completion is possible and the current string is a valid match, exit
      ;; with status 'finished.
