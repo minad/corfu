@@ -709,8 +709,7 @@ A scroll bar is displayed from LO to LO+BAR."
 (defun corfu--update (msg)
   "Refresh Corfu UI, possibly printing a message with MSG."
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
-               (pt (- (point) beg))
-               (str (buffer-substring-no-properties beg end))
+               ((and new-input `(,str . ,pt)) (corfu--input-string beg end))
                (initializing (not corfu--input))
                (continue (or (/= beg end)
                              (corfu--match-symbol-p corfu-continue-commands
@@ -728,7 +727,7 @@ A scroll bar is displayed from LO to LO+BAR."
      ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
      ((condition-case err
           ;; Only recompute when input changed and when input is non-empty
-          (when (and continue (not (equal corfu--input (cons str pt))))
+          (when (and continue (not (equal corfu--input new-input)))
             (corfu--update-candidates str pt table pred)
             nil)
         (error (corfu-quit)
@@ -893,8 +892,7 @@ A scroll bar is displayed from LO to LO+BAR."
    ((>= corfu--index 0) (corfu--insert nil))
    ;; Try to complete the current input string
    (t (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
-                   (pt (max 0 (- (point) beg)))
-                   (str (buffer-substring-no-properties beg end))
+                   (`(,str . ,pt) (corfu--input-string beg end))
                    (metadata (completion-metadata (substring str 0 pt) table pred)))
         (pcase (completion-try-completion str table pred pt metadata)
           ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
@@ -904,7 +902,7 @@ A scroll bar is displayed from LO to LO+BAR."
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
-               (str (buffer-substring-no-properties beg end)))
+               (`(,str . ,_) (corfu--input-string beg end)))
     ;; Replace if candidate is selected or if current input is not valid completion.
     ;; For example str can be a valid path, e.g., ~/dir/.
     (when (or (>= corfu--index 0) (equal str "")
@@ -1050,13 +1048,21 @@ The ORIG function takes the FUN and WHICH arguments."
                      (and (<= beg (point) end) ;; Sanity checking
                           ;; For non-exclusive capfs, check for valid completion.
                           (or (not (eq 'no (plist-get plist :exclusive)))
-                              (let* ((str (buffer-substring-no-properties beg end))
-                                     (pt (- (point) beg))
-                                     (pred (plist-get plist :predicate))
-                                     (md (completion-metadata (substring str 0 pt) table pred)))
+                              (pcase-let* ((`(,str . ,pt) (corfu--input-string beg end))
+                                           (pred (plist-get plist :predicate))
+                                           (md (completion-metadata (substring str 0 pt) table pred)))
                                 (completion-try-completion str table pred pt md))))))
           (cons fun res)))
     (funcall orig fun which)))
+
+(defvar corfu-ignore-after-point nil)
+(defun corfu--input-string (beg end)
+  (cons
+   (buffer-substring-no-properties beg
+                                   (if corfu-ignore-after-point
+                                       (max beg (point))
+                                     end))
+     (max 0 (- (point) beg))))
 
 ;;;###autoload
 (define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on :group 'corfu)
