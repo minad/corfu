@@ -136,11 +136,12 @@ string and must return a string, possibly an icon."
   :group 'corfu
   :group 'faces)
 
-(defface corfu-background
+(defface corfu-default
   '((((class color) (min-colors 88) (background dark)) :background "#191a1b")
     (((class color) (min-colors 88) (background light)) :background "#f0f0f0")
     (t :background "gray"))
-  "Face used for the popup background.")
+  "Face used for the default font of the popup.")
+(define-obsolete-face-alias 'corfu-background 'corfu-default "0.14")
 
 (defface corfu-current
   '((((class color) (min-colors 88) (background dark))
@@ -323,7 +324,8 @@ string and must return a string, possibly an icon."
       (use-local-map corfu--mouse-ignore-map)
       (dolist (var corfu--buffer-parameters)
         (set (make-local-variable (car var)) (cdr var)))
-      (setq-local face-remapping-alist fr)
+      (setq-local face-remapping-alist (copy-tree fr))
+      (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
       (let ((inhibit-modification-hooks t)
             (inhibit-read-only t))
         (erase-buffer)
@@ -379,7 +381,7 @@ string and must return a string, possibly an icon."
 	   (new (face-attribute 'corfu-border :background nil 'default)))
       (unless (equal (face-attribute face :background corfu--frame 'default) new)
 	(set-face-background face new corfu--frame)))
-    (let ((new (face-attribute 'corfu-background :background nil 'default)))
+    (let ((new (face-attribute 'corfu-default :background nil 'default)))
       (unless (equal (frame-parameter corfu--frame 'background-color) new)
 	(set-frame-parameter corfu--frame 'background-color new)))
     (let ((win (frame-root-window corfu--frame)))
