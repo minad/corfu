@@ -41,11 +41,11 @@
   - The popup can be summoned explicitly by pressing =TAB= at any time.
   - The current candidate is inserted with =TAB= and selected with =RET=.
   - Candidates sorting by prefix, string length and alphabetically.
-  - The selected candidate is automatically committed on any further input by default.
-    This behavior can be configured by adjusting ~corfu-commit-predicate~.
-  - Filter string can contain arbitrary characters and spaces, if
-    ~corfu-quit-at-boundary~ is nil. This is needed when filtering with the
-    [[https://github.com/oantolin/orderless][Orderless]] completion style.
+  - The selected candidate is previewed (configuable via ~corfu-preview-current~).
+  - The selected candidate automatically committed on further input by default
+    (configurable via ~~corfu-commit-predicate~~).
+  - The [[https://github.com/oantolin/orderless][Orderless]] completion style is supported. The filter string can contain
+    arbitrary characters, including spaces, if ~corfu-quit-at-boundary~ is nil.
   - Deferred completion style highlighting for performance.
   - Jumping to location/documentation of current candidate.
   - Show candidate documentation/signature string in the echo area.
@@ -53,15 +53,16 @@
   - Support for annotations (~annotation-function~, ~affixation-function~).
   - Icons can be provided by an external package via margin formatter functions.
 
-* Configuration
+* Installation and Configuration
 
   Corfu is available from [[http://elpa.gnu.org/packages/corfu.html][GNU ELPA]], such that it can be installed directly via
-  ~package-install~. After installation, the local minor mode can be enabled with
-  =M-x corfu-mode=. In order to configure Corfu and other packages in your
-  init.el, you may want to use ~use-package~. I recommend to give Orderless
-  completion a try, which is different from the familiar prefix TAB completion.
-  However Corfu works well with the default completion styles, the use of
-  Orderless is not a necessity. Here is an example configuration:
+  ~package-install~. After installation, the global minor mode can be enabled with
+  =M-x corfu-global-mode=. In order to configure Corfu and other packages in your
+  init.el, you may want to use ~use-package~. Corfu is highly flexible and
+  customizable via ~corfu-*~ customization variables. For filtering I recommend to
+  give Orderless completion a try, which is different from the familiar prefix
+  TAB completion. However Corfu works well with the default completion styles,
+  the use of Orderless is not a necessity. Here is an example configuration:
 
   #+begin_src emacs-lisp
     (use-package corfu
