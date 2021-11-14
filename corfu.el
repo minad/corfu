@@ -140,7 +140,7 @@ string and must return a string, possibly an icon."
   '((((class color) (min-colors 88) (background dark)) :background "#191a1b")
     (((class color) (min-colors 88) (background light)) :background "#f0f0f0")
     (t :background "gray"))
-  "Face used for the default font of the popup.")
+  "Default face used for the popup, in particular the background and foreground color.")
 (define-obsolete-face-alias 'corfu-background 'corfu-default "0.14")
 
 (defface corfu-current
