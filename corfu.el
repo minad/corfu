@@ -623,13 +623,6 @@ A scroll bar is displayed from LO to LO+BAR."
                (add-face-text-property 0 (length c) 'corfu-deprecated 'append c)))
     (cons mf cands)))
 
-(defun corfu-kind-formatter (fun)
-  "Create a margin formatter from FUN.
-FUN takes a kind symbol as argument and must return a string."
-  (lambda (_metadata)
-    (when-let (kind (plist-get completion-extra-properties :company-kind))
-      (lambda (cand) (funcall fun (funcall kind cand))))))
-
 (defun corfu--metadata-get (prop)
   "Return PROP from completion metadata."
   ;; Note: Do not use `completion-metadata-get' in order to avoid Marginalia.
