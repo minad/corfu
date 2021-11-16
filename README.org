@@ -166,6 +166,12 @@
   - The abort handling could be improved, for example the input could be undone.
   - No sorting by history, since ~completion-at-point~ does not
     maintain a history (See branch =history= for a possible solution).
+  - There is currently no equivalent for =company-quickhelp=. Documentation and source
+    can be opened manually in a separate buffer.
+  - Company has the ability to merge and present the candidates of multiple backends
+    at the same time in some limited scenarios. This feature is currently missing
+    in the Capf backend mechanism, but it should be possible to implement a super Capf,
+    which can merge multiple Capfs.
 
 * Contributions
 
