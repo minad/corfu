@@ -43,7 +43,7 @@
   - Candidates sorting by prefix, string length and alphabetically.
   - The selected candidate is previewed (configuable via ~corfu-preview-current~).
   - The selected candidate automatically committed on further input by default
-    (configurable via ~~corfu-commit-predicate~~).
+    (configurable via ~corfu-commit-predicate~).
   - The [[https://github.com/oantolin/orderless][Orderless]] completion style is supported. The filter string can contain
     arbitrary characters, including spaces, if ~corfu-quit-at-boundary~ is nil.
   - Deferred completion style highlighting for performance.
