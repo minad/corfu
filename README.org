@@ -153,6 +153,10 @@
   including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
   expressions are separated by spaces (see ~corfu-quit-at-boundary~).
 
+  Icons are supported by Corfu via an external package. For example the
+  [[https://github.com/jdtsmith/kind-icon][kind-icon]] package provides beautifully styled SVG icons based on monochromatic
+  icon sets like material design.
+
   You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the minibuffer
   counterpart of Corfu.
 
