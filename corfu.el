@@ -136,6 +136,10 @@ return a string, possibly an icon."
   "Enable auto completion."
   :type 'boolean)
 
+(defcustom corfu-move-prefix-candidates-to-front t
+  "Move candidates whose prefixes match current input to the front."
+  :type 'boolean)
+
 (defgroup corfu-faces nil
   "Faces used by Corfu."
   :group 'corfu
@@ -562,7 +566,8 @@ A scroll bar is displayed from LO to LO+BAR."
                   (funcall sort all)
                 (sort all #'corfu--sort-predicate)))
     (unless (equal field "")
-      (setq all (corfu--move-prefix-candidates-to-front field all))
+      (when corfu-move-prefix-candidates-to-front
+        (setq all (corfu--move-prefix-candidates-to-front field all)))
       (when (and completing-file (not (string-suffix-p "/" field)))
         (setq all (corfu--move-to-front (concat field "/") all)))
       (setq all (corfu--move-to-front field all)))
