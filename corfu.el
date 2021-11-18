@@ -599,14 +599,18 @@ A scroll bar is displayed from LO to LO+BAR."
   (completion-in-region-mode -1))
 
 (defun corfu-reset ()
-  "Reset Corfu completion and quit if reset has been executed twice."
+  "Reset Corfu completion.
+This command can be executed multiple times consecutively by hammering the ESC
+key. If a candidate is selected, unselect the candidate. Otherwise reset the
+input. If there hasn't been any input, then quit."
   (interactive)
-  (setq corfu--index -1)
-  ;; Cancel all changes and start new change group.
-  (cancel-change-group corfu--change-group)
-  (activate-change-group (setq corfu--change-group (prepare-change-group)))
-  (when (eq last-command #'corfu-reset)
-    (corfu-quit)))
+  (if (>= corfu--index 0)
+      (corfu--goto -1)
+    (let ((quit (eq buffer-undo-list (cdar corfu--change-group)))) ;; Change group is empty
+      ;; Cancel all changes and start new change group.
+      (cancel-change-group corfu--change-group)
+      (activate-change-group (setq corfu--change-group (prepare-change-group)))
+      (when quit (corfu-quit)))))
 
 (defun corfu--affixate (cands)
   "Annotate CANDS with annotation function."
