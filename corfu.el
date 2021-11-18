@@ -191,7 +191,7 @@ return a string, possibly an icon."
     (define-key map [remap completion-at-point] #'corfu-complete)
     (define-key map [down] #'corfu-next)
     (define-key map [up] #'corfu-previous)
-    (define-key map [remap keyboard-escape-quit] #'corfu-quit)
+    (define-key map [remap keyboard-escape-quit] #'corfu-reset)
     ;; XXX [tab] is bound because of org-mode
     ;; The binding should be removed from org-mode-map.
     (define-key map [tab] #'corfu-complete)
@@ -238,6 +238,9 @@ return a string, possibly an icon."
 (defvar-local corfu--extra nil
   "Extra completion properties.")
 
+(defvar-local corfu--change-group nil
+  "Undo change group.")
+
 (defvar-local corfu--auto-start nil
   "Auto completion start time.")
 
@@ -259,6 +262,7 @@ return a string, possibly an icon."
     corfu--extra
     corfu--auto-start
     corfu--echo-timer
+    corfu--change-group
     corfu--metadata)
   "Buffer-local state variables used by Corfu.")
 
@@ -594,6 +598,16 @@ A scroll bar is displayed from LO to LO+BAR."
   (interactive)
   (completion-in-region-mode -1))
 
+(defun corfu-reset ()
+  "Reset Corfu completion and quit if reset has been executed twice."
+  (interactive)
+  (setq corfu--index -1)
+  ;; Cancel all changes and start new change group.
+  (cancel-change-group corfu--change-group)
+  (activate-change-group (setq corfu--change-group (prepare-change-group)))
+  (when (eq last-command #'corfu-reset)
+    (corfu-quit)))
+
 (defun corfu--affixate (cands)
   "Annotate CANDS with annotation function."
   (setq cands
@@ -926,10 +940,13 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--done (str status)
   "Call the `:exit-function' with STR and STATUS and exit completion."
-  ;; XXX Is the :exit-function handling sufficient?
-  (when-let (exit (plist-get corfu--extra :exit-function))
-    (funcall exit str status))
-  (corfu-quit))
+  (let ((exit (plist-get corfu--extra :exit-function)))
+    ;; For successfull completions, amalgamate undo operations,
+    ;; such that completion can be undone in a single step.
+    (undo-amalgamate-change-group corfu--change-group)
+    (corfu-quit)
+    ;; XXX Is the :exit-function handling sufficient?
+    (when exit (funcall exit str status))))
 
 (defun corfu-insert ()
   "Insert current candidate."
@@ -942,6 +959,7 @@ A scroll bar is displayed from LO to LO+BAR."
   "Setup Corfu completion state."
   (when completion-in-region-mode
     (setq corfu--extra completion-extra-properties)
+    (activate-change-group (setq corfu--change-group (prepare-change-group)))
     (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
     (add-hook 'pre-command-hook #'corfu--pre-command nil 'local)
     (add-hook 'post-command-hook #'corfu--post-command nil 'local)
@@ -969,6 +987,7 @@ A scroll bar is displayed from LO to LO+BAR."
   (remove-hook 'post-command-hook #'corfu--post-command 'local)
   (when corfu--preview-ov (delete-overlay corfu--preview-ov))
   (when corfu--echo-timer (cancel-timer corfu--echo-timer))
+  (accept-change-group corfu--change-group)
   (mapc #'kill-local-variable corfu--state-vars))
 
 (defun corfu--completion-in-region (&rest args)

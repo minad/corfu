@@ -144,7 +144,8 @@
   - =RET= -> ~corfu-insert~
   - =M-g= -> ~corfu-show-location~
   - =M-h= -> ~corfu-show-documentation~
-  - =C-g=, =ESC ESC ESC= -> ~corfu-quit~
+  - =C-g= -> ~corfu-quit~
+  - ~keyboard-escape-quit~ -> ~corfu-reset~
 
 * Complementary packages
 
@@ -167,7 +168,6 @@
 
   - Corfu falls back to the default Completion buffer on non-graphical displays,
     since Corfu requires child frames.
-  - The abort handling could be improved, for example the input could be undone.
   - No sorting by history, since ~completion-at-point~ does not
     maintain a history (See branch =history= for a possible solution).
   - There is currently no equivalent for =company-quickhelp=. Documentation and source
