@@ -857,7 +857,7 @@ A scroll bar is displayed from LO to LO+BAR."
         (restore (make-symbol "corfu--restore")))
     (fset restore
           (lambda ()
-            (when (eq this-command #'corfu-quit)
+            (when (memq this-command '(corfu-quit corfu-reset))
               (setq this-command #'ignore))
             (remove-hook 'pre-command-hook restore)
             (setq other-window-scroll-buffer other)
