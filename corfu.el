@@ -1027,6 +1027,7 @@ A scroll bar is displayed from LO to LO+BAR."
          (setq completion-in-region--data `(,(copy-marker beg) ,(copy-marker end t)
                                             ,table ,(plist-get plist :predicate))
                corfu--auto-start (float-time))
+         (undo-boundary) ;; Necessary to support `corfu-reset'
          (completion-in-region-mode 1)
          (corfu--setup)
          (corfu--update #'ignore))))))
