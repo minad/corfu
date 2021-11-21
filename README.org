@@ -154,6 +154,10 @@
   including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
   expressions are separated by spaces (see ~corfu-quit-at-boundary~).
 
+  I collect additional Capf backends in my small [[https://github.com/minad/cape][Cape]] package, which is still
+  work in progress. For example the package provides a file name and a dabbrev
+  completion backend.
+
   Icons are supported by Corfu via an external package. For example the
   [[https://github.com/jdtsmith/kind-icon][kind-icon]] package provides beautifully styled SVG icons based on monochromatic
   icon sets like material design.
