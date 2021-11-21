@@ -919,7 +919,7 @@ input. If there hasn't been any input, then quit."
                    (str (buffer-substring-no-properties beg end))
                    (metadata (completion-metadata (substring str 0 pt) table pred)))
         (pcase (completion-try-completion str table pred pt metadata)
-          ((and `(,newstr . ,newpt) (guard (not (equal str newstr))))
+          (`(,newstr . ,newpt)
            (completion--replace beg end newstr)
            (goto-char (+ beg newpt))))))))
 
