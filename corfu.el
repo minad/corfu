@@ -757,25 +757,25 @@ input. If there hasn't been any input, then quit."
      ((and initializing (not corfu--candidates))
       (funcall msg "No match")
       (corfu-quit))
-     ;; 2) There exist candidates
-     ;; &  Not a sole exactly matching candidate
+     ;; 2) Single matching candidate
+     ((and (not (equal str "")) (equal corfu--candidates (list str)))
+      (corfu--done str 'exact))
+     ;; 3) There exist candidates
      ;; &  Input is non-empty or continue command
      ;; => Show candidates popup
-     ((and corfu--candidates
-           (not (equal corfu--candidates (list str)))
-           continue)
+     ((and corfu--candidates continue)
       (corfu--candidates-popup beg)
       (when (>= corfu--index 0)
         (corfu--echo-documentation (nth corfu--index corfu--candidates))
         (corfu--preview-current beg end str (nth corfu--index corfu--candidates))))
-     ;; 3) When after `completion-at-point/corfu-complete', no further
+     ;; 4) When after `completion-at-point/corfu-complete', no further
      ;; completion is possible and the current string is a valid match, exit
      ;; with status 'finished.
      ((and (memq this-command '(corfu-complete completion-at-point))
            (not (consp (completion-try-completion str table pred pt corfu--metadata)))
            (test-completion str table pred))
       (corfu--done str 'finished))
-     ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
+     ;; 5) There are no candidates & corfu-quit-no-match => Confirmation popup
      ((not (or corfu--candidates
                ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
                ;; initiated too long ago, quit directly without showing the "No match" popup.
