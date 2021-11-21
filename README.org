@@ -61,8 +61,8 @@
   init.el, you may want to use ~use-package~. Corfu is highly flexible and
   customizable via ~corfu-*~ customization variables. For filtering I recommend to
   give Orderless completion a try, which is different from the familiar prefix
-  TAB completion. However Corfu works well with the default completion styles,
-  the use of Orderless is not a necessity. Here is an example configuration:
+  TAB completion. Corfu can be used with the default completion styles, the use
+  of Orderless is not a necessity. Here is an example configuration:
 
   #+begin_src emacs-lisp
     (use-package corfu
@@ -107,7 +107,7 @@
             completion-category-defaults nil
             completion-category-overrides '((file (styles . (partial-completion))))))
 
-    ;; Dabbrev works with Corfu
+    ;; Use dabbrev with Corfu!
     (use-package dabbrev
       ;; Swap M-/ and C-M-/
       :bind (("M-/" . dabbrev-completion)
@@ -119,7 +119,7 @@
       ;; TAB cycle if there are only few candidates
       (setq completion-cycle-threshold 3)
 
-      ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+      ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
       ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
       ;; (setq read-extended-command-predicate
       ;;       #'command-completion-default-include-p)
@@ -154,8 +154,8 @@
   including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
   expressions are separated by spaces (see ~corfu-quit-at-boundary~).
 
-  I collect additional Capf backends in my small [[https://github.com/minad/cape][Cape]] package, which is still
-  work in progress. For example the package provides a file name and a dabbrev
+  I collect additional Capf backends and =completion-in-region= commands in my
+  small [[https://github.com/minad/cape][Cape]] package. For example the package provides a file name and a dabbrev
   completion backend.
 
   Icons are supported by Corfu via an external package. For example the
@@ -167,8 +167,7 @@
 
 * Caveats
 
-  Corfu works well in most scenarios. However there are a few known technical
-  caveats.
+  Corfu is robust in most scenarios. There are a few known technical caveats.
 
   - Corfu falls back to the default Completion buffer on non-graphical displays,
     since Corfu requires child frames.
