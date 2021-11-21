@@ -757,9 +757,11 @@ input. If there hasn't been any input, then quit."
      ((and initializing (not corfu--candidates))
       (funcall msg "No match")
       (corfu-quit))
-     ;; 2) Single matching candidate
-     ((and (not (equal str "")) (equal corfu--candidates (list str)))
-      (corfu--done str 'exact))
+     ;; 2) Single matching candidate and no further completion is possible
+     ((and (not (equal str ""))
+           (equal corfu--candidates (list str))
+           (not (consp (completion-try-completion str table pred pt corfu--metadata))))
+      (corfu--done str 'finished))
      ;; 3) There exist candidates
      ;; &  Input is non-empty or continue command
      ;; => Show candidates popup
