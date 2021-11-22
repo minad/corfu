@@ -25,7 +25,9 @@
 
   Corfu does not include custom completion backends. In contrast, the complex
   Company package includes custom completion backends, which deviate from the
-  Emacs completion infrastructure.
+  Emacs completion infrastructure. The Emacs built-in Capfs are mostly
+  sufficient, but a few additional Capfs and completion functions are provided
+  by the [[https://github.com/minad/cape][Cape]] package.
 
   *NOTE*: Corfu uses child frames to show the popup; on non-graphical displays it
   will fall back to the default setting of the ~completion-in-region-function~.
