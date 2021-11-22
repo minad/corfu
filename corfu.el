@@ -580,7 +580,8 @@ A scroll bar is displayed from LO to LO+BAR."
     (list base (length all) all hl corfu--metadata
           ;; Select the prompt when the input is a valid completion
           ;; and if it is not equal to the first candidate.
-          (if (and (not (equal str (car all)))
+          (if (and (not (equal field (car all)))
+                   (not (and completing-file (equal (concat field "/") (car all))))
                    (test-completion str table pred))
               -1 0))))
 
