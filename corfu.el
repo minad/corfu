@@ -578,7 +578,9 @@ A scroll bar is displayed from LO to LO+BAR."
         (setq all (corfu--move-to-front (concat field "/") all)))
       (setq all (corfu--move-to-front field all)))
     (list base (length all) all hl corfu--metadata
-          (if (test-completion str table pred) -1 0))))
+          (if (and (not (equal str (car all)))
+                   (test-completion str table pred))
+              -1 0))))
 
 (defun corfu--update-candidates (str pt table pred)
   "Update candidates from STR, PT, TABLE and PRED."
