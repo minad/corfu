@@ -578,6 +578,8 @@ A scroll bar is displayed from LO to LO+BAR."
         (setq all (corfu--move-to-front (concat field "/") all)))
       (setq all (corfu--move-to-front field all)))
     (list base (length all) all hl corfu--metadata
+          ;; Select the prompt when the input is a valid completion
+          ;; and if it is not equal to the first candidate.
           (if (and (not (equal str (car all)))
                    (test-completion str table pred))
               -1 0))))
