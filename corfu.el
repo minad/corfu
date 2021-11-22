@@ -247,6 +247,9 @@ return a string, possibly an icon."
 (defvar-local corfu--echo-timer nil
   "Echo area message timer.")
 
+(defvar-local corfu--echo-message nil
+  "Last echo message.")
+
 (defvar corfu--frame nil
   "Popup frame.")
 
@@ -262,6 +265,7 @@ return a string, possibly an icon."
     corfu--extra
     corfu--auto-start
     corfu--echo-timer
+    corfu--echo-message
     corfu--change-group
     corfu--metadata)
   "Buffer-local state variables used by Corfu.")
@@ -710,21 +714,33 @@ input. If there hasn't been any input, then quit."
     (overlay-put corfu--preview-ov 'window (selected-window))
     (overlay-put corfu--preview-ov 'display (concat (substring str 0 corfu--base) cand))))
 
-(defun corfu--echo (msg)
+(defun corfu--echo-refresh ()
+  "Refresh echo message to prevent flicker during redisplay."
+  (when corfu--echo-timer
+    (cancel-timer corfu--echo-timer)
+    (setq corfu--echo-timer nil))
+  (when corfu--echo-message
+    (corfu--echo-show corfu--echo-message)))
+
+(defun corfu--echo-show (msg)
   "Show MSG in echo area."
   (let ((message-log-max nil))
+    (setq corfu--echo-message msg)
     (message "%s" (if (text-property-not-all 0 (length msg) 'face nil msg)
                       msg
                     (propertize msg 'face 'corfu-echo)))))
 
 (defun corfu--echo-documentation (cand)
   "Show documentation string for CAND in echo area."
-  (when-let* ((fun (and corfu-echo-documentation (plist-get corfu--extra :company-docsig)))
+  (when corfu-echo-documentation
+    (if-let* ((fun (plist-get corfu--extra :company-docsig))
               (doc (funcall fun cand)))
-    (if (eq corfu-echo-documentation t)
-        (corfu--echo doc)
-      (setq corfu--echo-timer (run-with-idle-timer corfu-echo-documentation
-                                                   nil #'corfu--echo doc)))))
+        (if (or (eq corfu-echo-documentation t) corfu--echo-message)
+            (corfu--echo-show doc)
+          (setq corfu--echo-timer (run-with-idle-timer corfu-echo-documentation
+                                                       nil #'corfu--echo-show doc)))
+      (when corfu--echo-message
+        (corfu--echo-show "")))))
 
 (defun corfu--update (msg)
   "Refresh Corfu UI, possibly printing a message with MSG."
@@ -735,12 +751,10 @@ input. If there hasn't been any input, then quit."
                (continue (or (/= beg end)
                              (corfu--match-symbol-p corfu-continue-commands
                                                     this-command))))
+    (corfu--echo-refresh)
     (when corfu--preview-ov
       (delete-overlay corfu--preview-ov)
       (setq corfu--preview-ov nil))
-    (when corfu--echo-timer
-      (cancel-timer corfu--echo-timer)
-      (setq corfu--echo-timer nil))
     (cond
      ;; XXX Guard against errors during candidate generation.
      ;; Turn off completion immediately if there are errors
@@ -1062,6 +1076,7 @@ input. If there hasn't been any input, then quit."
     ;; issue has been mentioned. We never uninstall this advice since the
     ;; advice is active *globally*.
     (advice-add #'completion--capf-wrapper :around #'corfu--capf-wrapper-advice)
+    (advice-add #'eldoc-display-message-no-interference-p :before-while #'corfu--allow-eldoc)
     (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
     (setq-local completion-in-region-function #'corfu--completion-in-region))
    (t
@@ -1095,6 +1110,10 @@ The ORIG function takes the FUN and WHICH arguments."
               (eq (aref (buffer-name) 0) ?\s)
               (memq major-mode corfu-excluded-modes))
     (corfu-mode 1)))
+
+(defun corfu--allow-eldoc ()
+  "Return non-nil if Corfu is currently not active."
+  (not (and corfu-mode completion-in-region-mode)))
 
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-next corfu-previous corfu-first corfu-last corfu-quit corfu-reset
