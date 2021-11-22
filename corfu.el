@@ -522,7 +522,7 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--move-prefix-candidates-to-front (field candidates)
   "Move CANDIDATES which match prefix of FIELD to the beginning."
-  (let* ((word (car (split-string field)))
+  (let* ((word (replace-regexp-in-string " .*" "" field))
          (len (length word)))
     (corfu--partition! candidates
                        (and (>= (length it) len)
