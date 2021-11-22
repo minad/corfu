@@ -107,7 +107,7 @@ completion began less than that number of seconds ago."
   "Width of the bar in units of the character width."
   :type 'float)
 
-(defcustom corfu-echo-documentation 0.25
+(defcustom corfu-echo-documentation 0.5
   "Show documentation string in the echo area after that number of seconds."
   :type '(choice boolean float))
 
@@ -146,7 +146,6 @@ return a string, possibly an icon."
     (((class color) (min-colors 88) (background light)) :background "#f0f0f0")
     (t :background "gray"))
   "Default face used for the popup, in particular the background and foreground color.")
-(define-obsolete-face-alias 'corfu-background 'corfu-default "0.14")
 
 (defface corfu-current
   '((((class color) (min-colors 88) (background dark))
@@ -226,6 +225,9 @@ return a string, possibly an icon."
 (defvar-local corfu--index -1
   "Index of current candidate or negative for prompt selection.")
 
+(defvar-local corfu--preselect -1
+  "Index of preselected candidate, negative for prompt selection.")
+
 (defvar-local corfu--scroll 0
   "Scroll position.")
 
@@ -258,6 +260,7 @@ return a string, possibly an icon."
     corfu--candidates
     corfu--highlight
     corfu--index
+    corfu--preselect
     corfu--scroll
     corfu--input
     corfu--total
@@ -574,18 +577,20 @@ A scroll bar is displayed from LO to LO+BAR."
       (when (and completing-file (not (string-suffix-p "/" field)))
         (setq all (corfu--move-to-front (concat field "/") all)))
       (setq all (corfu--move-to-front field all)))
-    (list base (length all) all hl corfu--metadata)))
+    (list base (length all) all hl corfu--metadata
+          (if (test-completion str table pred) -1 0))))
 
 (defun corfu--update-candidates (str pt table pred)
   "Update candidates from STR, PT, TABLE and PRED."
   (pcase (while-no-input (corfu--recompute-candidates str pt table pred))
     ('nil (keyboard-quit))
-    (`(,base ,total ,candidates ,hl ,metadata)
+    (`(,base ,total ,candidates ,hl ,metadata ,preselect)
      (setq corfu--input (cons str pt)
            corfu--candidates candidates
            corfu--base base
            corfu--total total
-           corfu--index -1
+           corfu--preselect preselect
+           corfu--index preselect
            corfu--highlight hl
            corfu--metadata metadata))))
 
@@ -604,17 +609,18 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu-reset ()
   "Reset Corfu completion.
-This command can be executed multiple times consecutively by hammering the ESC
-key. If a candidate is selected, unselect the candidate. Otherwise reset the
-input. If there hasn't been any input, then quit."
+This command can be executed multiple times by hammering the ESC key. If a
+candidate is selected, unselect the candidate. Otherwise reset the input. If
+there hasn't been any input, then quit."
   (interactive)
-  (if (>= corfu--index 0)
-      (corfu--goto -1)
-    (let ((quit (eq buffer-undo-list (cdar corfu--change-group)))) ;; Change group is empty
-      ;; Cancel all changes and start new change group.
-      (cancel-change-group corfu--change-group)
-      (activate-change-group (setq corfu--change-group (prepare-change-group)))
-      (when quit (corfu-quit)))))
+  (if (/= corfu--index corfu--preselect)
+      (progn
+        (corfu--goto -1)
+        (setq this-command #'corfu-first))
+    ;; Cancel all changes and start new change group.
+    (cancel-change-group corfu--change-group)
+    (activate-change-group (setq corfu--change-group (prepare-change-group)))
+    (when (eq last-command #'corfu-reset) (corfu-quit))))
 
 (defun corfu--affixate (cands)
   "Annotate CANDS with annotation function."
@@ -706,9 +712,11 @@ input. If there hasn't been any input, then quit."
     (corfu--popup-show (+ pos corfu--base) pw width fcands (- corfu--index corfu--scroll)
                        (and (> corfu--total corfu-count) lo) bar)))
 
-(defun corfu--preview-current (beg end str cand)
-  "Show current CAND as overlay given BEG, END and STR."
-  (when corfu-preview-current
+(defun corfu--preview-current (beg end str)
+  "Show current candidate as overlay given BEG, END and STR."
+  (when-let (cand (and corfu-preview-current (>= corfu--index 0)
+                       (/= corfu--index corfu--preselect)
+                       (nth corfu--index corfu--candidates)))
     (setq corfu--preview-ov (make-overlay beg end nil t t))
     (overlay-put corfu--preview-ov 'priority 1000)
     (overlay-put corfu--preview-ov 'window (selected-window))
@@ -730,10 +738,11 @@ input. If there hasn't been any input, then quit."
                       msg
                     (propertize msg 'face 'corfu-echo)))))
 
-(defun corfu--echo-documentation (cand)
-  "Show documentation string for CAND in echo area."
+(defun corfu--echo-documentation ()
+  "Show documentation string of current candidate in echo area."
   (when corfu-echo-documentation
     (if-let* ((fun (plist-get corfu--extra :company-docsig))
+              (cand (and (>= corfu--index 0) (nth corfu--index corfu--candidates)))
               (doc (funcall fun cand)))
         (if (or (eq corfu-echo-documentation t) corfu--echo-message)
             (corfu--echo-show doc)
@@ -781,9 +790,8 @@ input. If there hasn't been any input, then quit."
      ;; => Show candidates popup
      ((and corfu--candidates continue)
       (corfu--candidates-popup beg)
-      (when (>= corfu--index 0)
-        (corfu--echo-documentation (nth corfu--index corfu--candidates))
-        (corfu--preview-current beg end str (nth corfu--index corfu--candidates))))
+      (corfu--echo-documentation)
+      (corfu--preview-current beg end str))
      ;; 4) When after `completion-at-point/corfu-complete', no further
      ;; completion is possible and the current string is a valid match, exit
      ;; with status 'finished.
@@ -811,14 +819,13 @@ input. If there hasn't been any input, then quit."
 
 (defun corfu-candidate-previewed-p ()
   "Return t if a candidate is selected and previewed."
-  (and corfu-preview-current (>= corfu--index 0)))
-(define-obsolete-function-alias 'corfu-candidate-selected-p 'corfu-candidate-previewed-p "0.14")
+  (and corfu-preview-current (/= corfu--index corfu--preselect)))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
   (remove-hook 'window-configuration-change-hook #'corfu-quit)
   (or (pcase completion-in-region--data
-        (`(,beg ,end ,_table ,_pred)
+        (`(,beg ,end . ,_)
          (when (let ((pt (point)))
                  (and (eq (marker-buffer beg) (current-buffer))
                       (<= beg pt end)
@@ -833,7 +840,7 @@ input. If there hasn't been any input, then quit."
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
-  (setq corfu--index (max -1 (min index (1- corfu--total)))
+  (setq corfu--index (max corfu--preselect (min index (1- corfu--total)))
         ;; Reset auto start in order to disable the `corfu-quit-no-match' timer
         corfu--auto-start nil))
 
@@ -841,9 +848,12 @@ input. If there hasn't been any input, then quit."
   "Go forward N candidates."
   (interactive "p")
   (let ((index (+ corfu--index (or n 1))))
-    (corfu--goto (if corfu-cycle
-                     (1- (mod (1+ index) (1+ corfu--total)))
-                   index))))
+    (corfu--goto
+     (cond
+      ((not corfu-cycle) index)
+      ((= corfu--total 0) -1)
+      ((< corfu--preselect 0) (1- (mod (1+ index) (1+ corfu--total))))
+      (t (mod index corfu--total))))))
 
 (defun corfu-previous (&optional n)
   "Go backward N candidates."
@@ -939,12 +949,10 @@ input. If there hasn't been any input, then quit."
 
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
-  (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
+  (pcase-let* ((`(,beg ,end . ,_) completion-in-region--data)
                (str (buffer-substring-no-properties beg end)))
-    ;; Replace if candidate is selected or if current input is not valid completion.
-    ;; For example str can be a valid path, e.g., ~/dir/.
-    (when (or (>= corfu--index 0) (equal str "")
-              (not (test-completion str table pred)))
+    ;; Replace if candidate is selected.
+    (when (>= corfu--index 0)
       ;; XXX There is a small bug here, depending on interpretation.
       ;; When completing "~/emacs/master/li|/calc" where "|" is the
       ;; cursor, then the candidate only includes the prefix
@@ -952,10 +960,9 @@ input. If there hasn't been any input, then quit."
       ;; completion has the same problem when selecting in the
       ;; *Completions* buffer. See bug#48356.
       (setq str (concat (substring str 0 corfu--base)
-                        (substring-no-properties
-                         (nth (max 0 corfu--index) corfu--candidates))))
+                        (substring-no-properties (nth corfu--index corfu--candidates))))
       (completion--replace beg end str)
-      (setq corfu--index -1)) ;; Reset selection, but continue completion.
+      (corfu--goto -1)) ;; Reset selection, but continue completion.
     (when status (corfu--done str status)))) ;; Exit with status
 
 (defun corfu--done (str status)
