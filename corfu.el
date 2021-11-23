@@ -941,7 +941,7 @@ there hasn't been any input, then quit."
      ;; Proceed with cycling
      (completion-cycling
       (let ((completion-extra-properties corfu--extra))
-        (completion--in-region beg end table pred)))
+        (corfu--completion-in-region beg end table pred)))
      ;; Continue completion with selected candidate
      ((>= corfu--index 0) (corfu--insert nil))
      ;; Try to complete the current input string
