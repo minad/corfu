@@ -131,6 +131,8 @@
       (setq tab-always-indent 'complete))
   #+end_src
 
+  See also the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips.
+
 * Key bindings
 
   Corfu uses a transient keymap ~corfu-map~ which is active while the popup is shown.
