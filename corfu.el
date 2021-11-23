@@ -797,10 +797,10 @@ there hasn't been any input, then quit."
       (corfu--candidates-popup beg)
       (corfu--echo-documentation)
       (corfu--preview-current beg end str))
-     ;; 4) When after `completion-at-point/corfu-complete', no further
+     ;; 4) When after `corfu-complete', no further
      ;; completion is possible and the current string is a valid match, exit
      ;; with status 'finished.
-     ((and (memq this-command '(corfu-complete completion-at-point))
+     ((and (eq this-command #'corfu-complete)
            (not (consp (completion-try-completion str table pred pt corfu--metadata)))
            (test-completion str table pred))
       (corfu--done str 'finished))
@@ -938,8 +938,6 @@ there hasn't been any input, then quit."
   "Try to complete current input."
   (interactive)
   (cond
-   ;; Proceed with cycling
-   (completion-cycling (completion-at-point))
    ;; Continue completion with selected candidate
    ((>= corfu--index 0) (corfu--insert nil))
    ;; Try to complete the current input string
@@ -989,24 +987,23 @@ there hasn't been any input, then quit."
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
-  (when completion-in-region-mode
-    (setq corfu--extra completion-extra-properties)
-    (activate-change-group (setq corfu--change-group (prepare-change-group)))
-    (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
-    (add-hook 'pre-command-hook #'corfu--pre-command nil 'local)
-    (add-hook 'post-command-hook #'corfu--post-command nil 'local)
-    ;; Disable default post-command handling, since we have our own
-    ;; checks in `corfu--post-command'.
-    (remove-hook 'post-command-hook #'completion-in-region--postch)
-    (let ((sym (make-symbol "corfu--teardown"))
-          (buf (current-buffer)))
-      (fset sym (lambda ()
-                  ;; Ensure that the teardown runs in the correct buffer, if still alive.
-                  (unless completion-in-region-mode
-                    (remove-hook 'completion-in-region-mode-hook sym)
-                    (with-current-buffer (if (buffer-live-p buf) buf (current-buffer))
-                      (corfu--teardown)))))
-      (add-hook 'completion-in-region-mode-hook sym))))
+  (setq corfu--extra completion-extra-properties)
+  (activate-change-group (setq corfu--change-group (prepare-change-group)))
+  (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
+  (add-hook 'pre-command-hook #'corfu--pre-command nil 'local)
+  (add-hook 'post-command-hook #'corfu--post-command nil 'local)
+  ;; Disable default post-command handling, since we have our own
+  ;; checks in `corfu--post-command'.
+  (remove-hook 'post-command-hook #'completion-in-region--postch)
+  (let ((sym (make-symbol "corfu--teardown"))
+        (buf (current-buffer)))
+    (fset sym (lambda ()
+                ;; Ensure that the teardown runs in the correct buffer, if still alive.
+                (unless completion-in-region-mode
+                  (remove-hook 'completion-in-region-mode-hook sym)
+                  (with-current-buffer (if (buffer-live-p buf) buf (current-buffer))
+                    (corfu--teardown)))))
+    (add-hook 'completion-in-region-mode-hook sym)))
 
 (defun corfu--teardown ()
   "Teardown Corfu."
@@ -1039,7 +1036,17 @@ there hasn't been any input, then quit."
           (completion-in-region-mode-predicate
            (or completion-in-region-mode-predicate (lambda () t))))
       (prog1 (apply #'completion--in-region args)
-        (corfu--setup)))))
+        (when (and completion-in-region-mode
+                   ;; Do not show Corfu when "trivially" cycling, i.e.,
+                   ;; when the completion is finished after the candidate.
+                   (not (and completion-cycling
+                             (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
+                                          (pt (max 0 (- (point) beg)))
+                                          (str (buffer-substring-no-properties beg end))
+                                          (before (substring str 0 pt))
+                                          (after (substring str pt)))
+                               (equal (completion-boundaries before table pred after) '(0 . 0))))))
+          (corfu--setup))))))
 
 (defun corfu--auto-complete (buffer)
   "Initiate auto completion after delay in BUFFER."
