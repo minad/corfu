@@ -937,18 +937,22 @@ there hasn't been any input, then quit."
 (defun corfu-complete ()
   "Try to complete current input."
   (interactive)
-  (cond
-   ;; Continue completion with selected candidate
-   ((>= corfu--index 0) (corfu--insert nil))
-   ;; Try to complete the current input string
-   (t (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
-                   (pt (max 0 (- (point) beg)))
-                   (str (buffer-substring-no-properties beg end))
-                   (metadata (completion-metadata (substring str 0 pt) table pred)))
-        (pcase (completion-try-completion str table pred pt metadata)
-          (`(,newstr . ,newpt)
-           (completion--replace beg end newstr)
-           (goto-char (+ beg newpt))))))))
+  (pcase-let ((`(,beg ,end ,table ,pred) completion-in-region--data))
+    (cond
+     ;; Proceed with cycling
+     (completion-cycling
+      (let ((completion-extra-properties corfu--extra))
+        (completion-in-region beg end table pred)))
+     ;; Continue completion with selected candidate
+     ((>= corfu--index 0) (corfu--insert nil))
+     ;; Try to complete the current input string
+     (t (let* ((pt (max 0 (- (point) beg)))
+               (str (buffer-substring-no-properties beg end))
+               (metadata (completion-metadata (substring str 0 pt) table pred)))
+          (pcase (completion-try-completion str table pred pt metadata)
+            (`(,newstr . ,newpt)
+             (completion--replace beg end newstr)
+             (goto-char (+ beg newpt)))))))))
 
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
