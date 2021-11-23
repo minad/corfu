@@ -1024,6 +1024,7 @@ there hasn't been any input, then quit."
 
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
+  (barf-if-buffer-read-only)
   (if (not (display-graphic-p))
       ;; XXX Warning this can result in an endless loop when `completion-in-region-function'
       ;; is set *globally* to `corfu--completion-in-region'. This should never happen.
