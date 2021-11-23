@@ -756,8 +756,8 @@ there hasn't been any input, then quit."
       (when corfu--echo-message
         (corfu--echo-show "")))))
 
-(defun corfu--update (msg)
-  "Refresh Corfu UI, possibly printing a message with MSG."
+(defun corfu--update ()
+  "Refresh Corfu UI."
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
@@ -781,9 +781,8 @@ there hasn't been any input, then quit."
             nil)
         (error (corfu-quit)
                (message "Corfu completion error: %s" (error-message-string err)))))
-     ;; 1) Initializing, no candidates => Show error message and quit
+     ;; 1) Initializing, no candidates => Quit
      ((and initializing (not corfu--candidates))
-      (funcall msg "No match")
       (corfu-quit))
      ;; 2) Single matching candidate and no further completion is possible
      ((and (not (equal str ""))
@@ -839,7 +838,7 @@ there hasn't been any input, then quit."
                         (<= (line-beginning-position) pt (line-end-position)))
                       (or (not corfu-quit-at-boundary)
                           (funcall completion-in-region-mode--predicate))))
-           (corfu--update #'minibuffer-message)
+           (corfu--update)
            t)))
       (corfu-quit)))
 
@@ -1034,11 +1033,15 @@ there hasn't been any input, then quit."
     ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
     (when (and completion-in-region-mode (not completion-cycling))
       (corfu-quit))
-    (let ((completion-show-inline-help)
-          (completion-auto-help)
-          ;; Set the predicate to ensure that `completion-in-region-mode' is enabled.
-          (completion-in-region-mode-predicate
-           (or completion-in-region-mode-predicate (lambda () t))))
+    (cl-letf* (((symbol-function #'completion--message)
+                (lambda (msg)
+                  (when (and completion-show-inline-help
+                             (member msg '("No match" "Sole completion")))
+                    (message msg))))
+               (completion-auto-help nil)
+               ;; Set the predicate to ensure that `completion-in-region-mode' is enabled.
+               (completion-in-region-mode-predicate
+                (or completion-in-region-mode-predicate (lambda () t))))
       (prog1 (apply #'completion--in-region args)
         (when (and completion-in-region-mode
                    ;; Do not show Corfu when "trivially" cycling, i.e.,
@@ -1074,7 +1077,7 @@ there hasn't been any input, then quit."
          (undo-boundary) ;; Necessary to support `corfu-reset'
          (completion-in-region-mode 1)
          (corfu--setup)
-         (corfu--update #'ignore))))))
+         (corfu--update))))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
