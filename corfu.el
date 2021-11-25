@@ -414,6 +414,9 @@ return a string, possibly an icon."
       ;; Disallow selection of root window (#63)
       (set-window-parameter win 'no-delete-other-windows t)
       (set-window-parameter win 'no-other-window t))
+    ;; XXX HACK Make the frame invisible before moving the popup in order to avoid flicker.
+    (unless (eq (cdr (frame-position corfu--frame)) y)
+      (make-frame-invisible corfu--frame))
     (set-frame-position corfu--frame x y)
     (set-frame-size corfu--frame width height t)
     (make-frame-visible corfu--frame)))
