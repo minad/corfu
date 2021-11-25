@@ -1020,6 +1020,7 @@ there hasn't been any input, then quit."
   (remove-hook 'post-command-hook #'corfu--post-command 'local)
   (when corfu--preview-ov (delete-overlay corfu--preview-ov))
   (when corfu--echo-timer (cancel-timer corfu--echo-timer))
+  (when corfu--echo-message (corfu--echo-show ""))
   (accept-change-group corfu--change-group)
   (mapc #'kill-local-variable corfu--state-vars))
 
