@@ -779,9 +779,6 @@ there hasn't been any input, then quit."
                              (corfu--match-symbol-p corfu-continue-commands
                                                     this-command))))
     (corfu--echo-refresh)
-    (when corfu--preview-ov
-      (delete-overlay corfu--preview-ov)
-      (setq corfu--preview-ov nil))
     (cond
      ;; XXX Guard against errors during candidate generation.
      ;; Turn off completion immediately if there are errors
@@ -829,6 +826,9 @@ there hasn't been any input, then quit."
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
   (add-hook 'window-configuration-change-hook #'corfu-quit)
+  (when corfu--preview-ov
+    (delete-overlay corfu--preview-ov)
+    (setq corfu--preview-ov nil))
   (when (and corfu-commit-predicate
              (not (corfu--match-symbol-p corfu-continue-commands this-command))
              (funcall corfu-commit-predicate))
