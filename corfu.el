@@ -736,7 +736,9 @@ there hasn't been any input, then quit."
     (setq corfu--preview-ov (make-overlay beg end nil t t))
     (overlay-put corfu--preview-ov 'priority 1000)
     (overlay-put corfu--preview-ov 'window (selected-window))
-    (overlay-put corfu--preview-ov 'display (concat (substring str 0 corfu--base) cand))))
+    (overlay-put corfu--preview-ov
+                 (if (= beg end) 'after-string 'display)
+                 (concat (substring str 0 corfu--base) cand))))
 
 (defun corfu--echo-refresh ()
   "Refresh echo message to prevent flicker during redisplay."
