@@ -544,10 +544,6 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--recompute-candidates (str pt table pred)
   "Recompute candidates from STR, PT, TABLE and PRED."
-  ;; Redisplay such that the input becomes immediately visible before the
-  ;; expensive candidate recomputation is performed (Issue #48). See also
-  ;; corresponding vertico#89.
-  (redisplay)
   (pcase-let* ((before (substring str 0 pt))
                (after (substring str pt))
                (corfu--metadata (completion-metadata before table pred))
@@ -577,7 +573,7 @@ A scroll bar is displayed from LO to LO+BAR."
       (when (and completing-file (not (string-suffix-p "/" field)))
         (setq all (corfu--move-to-front (concat field "/") all)))
       (setq all (corfu--move-to-front field all)))
-    (list base (length all) all hl corfu--metadata
+    (list base all (length all) hl corfu--metadata
           ;; Select the prompt when the input is a valid completion
           ;; and if it is not equal to the first candidate.
           (if (or (not all)
@@ -588,9 +584,13 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--update-candidates (str pt table pred)
   "Update candidates from STR, PT, TABLE and PRED."
+  ;; Redisplay such that the input becomes immediately visible before the
+  ;; expensive candidate recomputation is performed (Issue #48). See also
+  ;; corresponding vertico#89.
+  (redisplay)
   (pcase (while-no-input (corfu--recompute-candidates str pt table pred))
     ('nil (keyboard-quit))
-    (`(,base ,total ,candidates ,hl ,metadata ,preselect)
+    (`(,base ,candidates ,total ,hl ,metadata ,preselect)
      (setq corfu--input (cons str pt)
            corfu--candidates candidates
            corfu--base base
@@ -1023,6 +1023,24 @@ there hasn't been any input, then quit."
   (accept-change-group corfu--change-group)
   (mapc #'kill-local-variable corfu--state-vars))
 
+(defun corfu--completion-message (msg)
+  "Print completion MSG, do not hang like `completion--message'."
+  (when (and completion-show-inline-help
+             (member msg '("No match" "Sole completion")))
+    (message msg)))
+
+(defun corfu--all-sorted-completions (&optional beg end)
+  "Compute all sorted completions for string between BEG and END."
+  (or completion-all-sorted-completions
+      (pcase-let ((`(,base ,all . ,_) (corfu--recompute-candidates
+                                       (buffer-substring-no-properties beg end)
+                                       (max 0 (- (point) beg))
+                                       minibuffer-completion-table
+                                       minibuffer-completion-predicate)))
+        (when all
+          (completion--cache-all-sorted-completions
+           beg end (nconc all base))))))
+
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
   (barf-if-buffer-read-only)
@@ -1034,16 +1052,18 @@ there hasn't been any input, then quit."
     ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
     (when (and completion-in-region-mode (not completion-cycling))
       (corfu-quit))
-    (cl-letf* (((symbol-function #'completion--message)
-                (lambda (msg)
-                  (when (and completion-show-inline-help
-                             (member msg '("No match" "Sole completion")))
-                    (message msg))))
-               (completion-auto-help nil)
-               ;; Set the predicate to ensure that `completion-in-region-mode' is enabled.
-               (completion-in-region-mode-predicate
-                (or completion-in-region-mode-predicate (lambda () t))))
-      (prog1 (apply #'completion--in-region args)
+    (prog1
+        (cl-letf* ((completion-auto-help nil)
+                   ;; Set the predicate to ensure that `completion-in-region-mode' is enabled.
+                   (completion-in-region-mode-predicate
+                    (or completion-in-region-mode-predicate (lambda () t)))
+                   ;; Overwrite to avoid hanging.
+                   ((symbol-function #'completion--message)
+                    #'corfu--completion-message)
+                   ;; Overwrite for performance and consistency.
+                   ((symbol-function #'completion-all-sorted-completions)
+                    #'corfu--all-sorted-completions))
+          (apply #'completion--in-region args))
         (when (and completion-in-region-mode
                    ;; Do not show Corfu when "trivially" cycling, i.e.,
                    ;; when the completion is finished after the candidate.
@@ -1054,7 +1074,7 @@ there hasn't been any input, then quit."
                                           (before (substring str 0 pt))
                                           (after (substring str pt)))
                                (equal (completion-boundaries before table pred after) '(0 . 0))))))
-          (corfu--setup))))))
+          (corfu--setup)))))
 
 (defun corfu--auto-complete (buffer)
   "Initiate auto completion after delay in BUFFER."
