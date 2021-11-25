@@ -119,6 +119,13 @@ return a formatter function, which takes the candidate string and must
 return a string, possibly an icon."
   :type 'hook)
 
+(defcustom corfu-sort-function #'corfu-sort-length-alpha
+  "Default sorting function, used if no `display-sort-function' is specified."
+  :type `(choice
+          (const :tag "No sorting" nil)
+          (const :tag "By length and alpha" ,#'corfu-sort-length-alpha)
+          (function :tag "Custom function")))
+
 (defcustom corfu-auto-prefix 3
   "Minimum length of prefix for auto completion."
   :type 'integer)
@@ -501,9 +508,11 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
-  (or (< (length x) (length y))
-      (and (= (length x) (length y))
-           (string< x y))))
+  (or (< (length x) (length y)) (and (= (length x) (length y)) (string< x y))))
+
+(defun corfu-sort-length-alpha (list)
+  "Sort LIST by length and alphabetically."
+  (sort list #'corfu--sort-predicate))
 
 (defmacro corfu--partition! (list form)
   "Evaluate FORM for every element and partition LIST."
@@ -542,6 +551,10 @@ A scroll bar is displayed from LO to LO+BAR."
                     "\\)\\'")))
     (or (seq-remove (lambda (x) (string-match-p re x)) files) files)))
 
+(defun corfu--sort-function ()
+  "Return the sorting function."
+  (or (corfu--metadata-get 'display-sort-function) corfu-sort-function))
+
 (defun corfu--recompute-candidates (str pt table pred)
   "Recompute candidates from STR, PT, TABLE and PRED."
   (pcase-let* ((before (substring str 0 pt))
@@ -563,11 +576,8 @@ A scroll bar is displayed from LO to LO+BAR."
     ;; Filter the ignored file extensions. We cannot use modified predicate for this filtering,
     ;; since this breaks the special casing in the `completion-file-name-table' for `file-exists-p'
     ;; and `file-directory-p'.
-    (when completing-file
-      (setq all (corfu--filter-files all)))
-    (setq all (if-let (sort (corfu--metadata-get 'display-sort-function))
-                  (funcall sort all)
-                (sort all #'corfu--sort-predicate)))
+    (when completing-file (setq all (corfu--filter-files all)))
+    (setq all (funcall (or (corfu--sort-function) #'identity) all))
     (unless (equal field "")
       (setq all (corfu--move-prefix-candidates-to-front field all))
       (when (and completing-file (not (string-suffix-p "/" field)))
