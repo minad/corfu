@@ -84,13 +84,6 @@
       ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
       ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
-      ;; Optionally use TAB for cycling, default is `corfu-complete'.
-      ;; :bind (:map corfu-map
-      ;;        ("TAB" . corfu-next)
-      ;;        ([tab] . corfu-next)
-      ;;        ("S-TAB" . corfu-previous)
-      ;;        ([backtab] . corfu-previous))
-
       ;; You may want to enable Corfu only for certain modes.
       ;; :hook ((prog-mode . corfu-mode)
       ;;        (shell-mode . corfu-mode)
@@ -149,11 +142,13 @@ moves to the next candidate and further input will then commit the selection.
     (corfu-preselect-first nil) ;; Disable candidate preselection
 
     ;; Use TAB for cycling, default is `corfu-complete'.
-    :bind (:map corfu-map
-           ("TAB" . corfu-next)
-           ([tab] . corfu-next)
-           ("S-TAB" . corfu-previous)
-           ([backtab] . corfu-previous))
+    :bind
+    (:map corfu-map
+          ("TAB" . corfu-next)
+          ([tab] . corfu-next)
+          ("S-TAB" . corfu-previous)
+          ([backtab] . corfu-previous))
+
     :init
     (corfu-global-mode))
 #+end_src
@@ -206,7 +201,7 @@ moves to the next candidate and further input will then commit the selection.
     can be opened manually in a separate buffer.
   - Company has the ability to merge/group the candidates of multiple backends
     in some scenarios. This feature is implemented by the experimental function
-    ~cape-merge-capfs~ of the [[https://github.com/minad/cape][Cape]] package.
+    ~cape-super-capf~ of the [[https://github.com/minad/cape][Cape]] package.
 
 * Contributions
 
