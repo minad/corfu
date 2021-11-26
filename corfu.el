@@ -826,7 +826,14 @@ there hasn't been any input, then quit."
   (when (and corfu-commit-predicate
              (not (corfu--match-symbol-p corfu-continue-commands this-command))
              (funcall corfu-commit-predicate))
-    (corfu--insert 'exact)))
+    (corfu--insert 'exact)
+    (add-hook 'post-command-hook #'corfu--continue-complete nil 'local)
+    ))
+
+(defun corfu--continue-complete ()
+  (message "AUTO COMPLETE")
+  (remove-hook 'post-command-hook #'corfu--continue-complete 'local)
+  (corfu--auto-complete (current-buffer)))
 
 (defun corfu-candidate-previewed-p ()
   "Return t if a candidate is selected and previewed."
