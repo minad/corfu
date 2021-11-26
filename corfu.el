@@ -79,6 +79,10 @@ The value should lie between 0 and corfu-count/2."
   "Preview currently selected candidate."
   :type 'boolean)
 
+(defcustom corfu-preselect-first t
+  "Preselect first candidate."
+  :type 'boolean)
+
 (defcustom corfu-quit-at-boundary nil
   "Automatically quit at completion field/word boundary.
 If automatic quitting is disabled, Orderless filter strings with spaces
@@ -583,7 +587,7 @@ A scroll bar is displayed from LO to LO+BAR."
     (list base all (length all) hl corfu--metadata
           ;; Select the prompt when the input is a valid completion
           ;; and if it is not equal to the first candidate.
-          (if (or (not all)
+          (if (or (not corfu-preselect-first) (not all)
                   (and (not (equal field (car all)))
                        (not (and completing-file (equal (concat field "/") (car all))))
                        (test-completion str table pred)))
@@ -966,10 +970,12 @@ there hasn't been any input, then quit."
 
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
-  (pcase-let* ((`(,beg ,end . ,_) completion-in-region--data)
+  (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                (str (buffer-substring-no-properties beg end)))
-    ;; Replace if candidate is selected.
-    (when (>= corfu--index 0)
+    ;; Replace if candidate is selected or if current input is not valid completion.
+    ;; For example str can be a valid path, e.g., ~/dir/.
+    (when (or (>= corfu--index 0) (equal str "")
+              (not (test-completion str table pred)))
       ;; XXX There is a small bug here, depending on interpretation.
       ;; When completing "~/emacs/master/li|/calc" where "|" is the
       ;; cursor, then the candidate only includes the prefix
@@ -977,7 +983,7 @@ there hasn't been any input, then quit."
       ;; completion has the same problem when selecting in the
       ;; *Completions* buffer. See bug#48356.
       (setq str (concat (substring str 0 corfu--base)
-                        (substring-no-properties (nth corfu--index corfu--candidates))))
+                        (substring-no-properties (nth (max 0 corfu--index) corfu--candidates))))
       (completion--replace beg end str)
       (corfu--goto -1)) ;; Reset selection, but continue completion.
     (when status (corfu--done str status)))) ;; Exit with status
