@@ -131,7 +131,9 @@ return a string, possibly an icon."
           (function :tag "Custom function")))
 
 (defcustom corfu-auto-prefix 3
-  "Minimum length of prefix for auto completion."
+  "Minimum length of prefix for auto completion.
+The completion backend can override this with
+:company-prefix-length."
   :type 'integer)
 
 (defcustom corfu-auto-delay 0.2
