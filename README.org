@@ -60,11 +60,15 @@
   Corfu is available from [[http://elpa.gnu.org/packages/corfu.html][GNU ELPA]], such that it can be installed directly via
   ~package-install~. After installation, the global minor mode can be enabled with
   =M-x corfu-global-mode=. In order to configure Corfu and other packages in your
-  init.el, you may want to use ~use-package~. Corfu is highly flexible and
-  customizable via ~corfu-*~ customization variables. For filtering I recommend to
-  give Orderless completion a try, which is different from the familiar prefix
-  TAB completion. Corfu can be used with the default completion styles, the use
-  of Orderless is not a necessity. Here is an example configuration:
+  init.el, you may want to use ~use-package~.
+
+  Corfu is highly flexible and customizable via ~corfu-*~ customization variables.
+  For filtering I recommend to give Orderless completion a try, which is
+  different from the familiar prefix TAB completion. Corfu can be used with the
+  default completion styles, the use of Orderless is not a necessity. See also
+  the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips.
+
+  Here is an example configuration:
 
   #+begin_src emacs-lisp
     (use-package corfu
@@ -132,7 +136,27 @@
       (setq tab-always-indent 'complete))
   #+end_src
 
-  See also the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips.
+** TAB-and-Go completion
+
+You may be interested in configuring Corfu in TAB-and-Go style. Pressing TAB
+moves to the next candidate and further input will then commit the selection.
+
+#+begin_src emacs-lisp
+  (use-package corfu
+    ;; TAB-and-Go customizations
+    :custom
+    (corfu-cycle t)             ;; Enable cycling for `corfu-next/previous'
+    (corfu-preselect-first nil) ;; Disable candidate preselection
+
+    ;; Use TAB for cycling, default is `corfu-complete'.
+    :bind (:map corfu-map
+           ("TAB" . corfu-next)
+           ([tab] . corfu-next)
+           ("S-TAB" . corfu-previous)
+           ([backtab] . corfu-previous))
+    :init
+    (corfu-global-mode))
+#+end_src
 
 * Key bindings
 
