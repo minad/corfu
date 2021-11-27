@@ -1126,9 +1126,11 @@ there hasn't been any input, then quit."
   (when (and (not completion-in-region-mode)
              (corfu--match-symbol-p corfu-auto-commands this-command)
              (display-graphic-p))
-    (setq corfu--auto-timer (run-with-idle-timer corfu-auto-delay nil
-                                                 #'corfu--auto-complete
-                                                 (current-buffer)))))
+    ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
+    ;; in particular if flyspell-mode is enabled.
+    (setq corfu--auto-timer (run-at-time corfu-auto-delay nil
+                                         #'corfu--auto-complete
+                                         (current-buffer)))))
 
 ;;;###autoload
 (define-minor-mode corfu-mode
