@@ -67,7 +67,8 @@
   For filtering I recommend to give Orderless completion a try, which is
   different from the familiar prefix TAB completion. Corfu can be used with the
   default completion styles, the use of Orderless is not a necessity. See also
-  the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips.
+  the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips. In particular the Lsp-mode
+  configuration is documented in the Wiki.
 
   Here is an example configuration:
 
