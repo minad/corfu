@@ -202,7 +202,7 @@ moves to the next candidate and further input will then commit the selection.
   - There is currently no equivalent for =company-quickhelp=. Documentation and source
     can be opened manually in a separate buffer.
   - Company has the ability to merge/group the candidates of multiple backends
-    in some scenarios. This feature is implemented by the experimental function
+    in some scenarios. This feature is implemented by the function
     ~cape-super-capf~ of the [[https://github.com/minad/cape][Cape]] package.
 
 * Contributions
