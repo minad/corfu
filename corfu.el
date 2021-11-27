@@ -1152,23 +1152,26 @@ there hasn't been any input, then quit."
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function))))
 
+(defun corfu--capf-wrapper (fun)
+  "Wrapper for `completion-at-point' FUN.
+Determines if the capf is applicable at the current position."
+  (pcase (funcall fun)
+    ((and res `(,beg ,end ,table . ,plist))
+     (and (integer-or-marker-p beg) ;; Valid capf result
+          (<= beg (point) end) ;; Sanity checking
+          ;; For non-exclusive capfs, check for valid completion.
+          (or (not (eq 'no (plist-get plist :exclusive)))
+              (let* ((str (buffer-substring-no-properties beg end))
+                     (pt (- (point) beg))
+                     (pred (plist-get plist :predicate))
+                     (md (completion-metadata (substring str 0 pt) table pred)))
+                (completion-try-completion str table pred pt md)))
+          (cons fun res)))))
+
 (defun corfu--capf-wrapper-advice (orig fun which)
   "Around advice for `completion--capf-wrapper'.
 The ORIG function takes the FUN and WHICH arguments."
-  (if corfu-mode ;; Only enable the advice when Corfu is active
-      (let ((res (funcall fun)))
-        (when (and (consp res) (integer-or-marker-p (car res)) ;; Valid capf result
-                   (pcase-let ((`(,beg ,end ,table . ,plist) res))
-                     (and (<= beg (point) end) ;; Sanity checking
-                          ;; For non-exclusive capfs, check for valid completion.
-                          (or (not (eq 'no (plist-get plist :exclusive)))
-                              (let* ((str (buffer-substring-no-properties beg end))
-                                     (pt (- (point) beg))
-                                     (pred (plist-get plist :predicate))
-                                     (md (completion-metadata (substring str 0 pt) table pred)))
-                                (completion-try-completion str table pred pt md))))))
-          (cons fun res)))
-    (funcall orig fun which)))
+  (if corfu-mode (corfu--capf-wrapper fun) (funcall orig fun which)))
 
 ;;;###autoload
 (define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on :group 'corfu)
