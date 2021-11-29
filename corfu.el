@@ -579,12 +579,11 @@ A scroll bar is displayed from LO to LO+BAR."
     ;; since this breaks the special casing in the `completion-file-name-table' for `file-exists-p'
     ;; and `file-directory-p'.
     (when completing-file (setq all (corfu--filter-files all)))
-    (setq all (funcall (or (corfu--sort-function) #'identity) all))
-    (unless (equal field "")
-      (setq all (corfu--move-prefix-candidates-to-front field all))
-      (when (and completing-file (not (string-suffix-p "/" field)))
-        (setq all (corfu--move-to-front (concat field "/") all)))
-      (setq all (corfu--move-to-front field all)))
+    (setq all (delete-consecutive-dups (funcall (or (corfu--sort-function) #'identity) all)))
+    (setq all (corfu--move-prefix-candidates-to-front field all))
+    (when (and completing-file (not (string-suffix-p "/" field)))
+      (setq all (corfu--move-to-front (concat field "/") all)))
+    (setq all (corfu--move-to-front field all))
     (list base all (length all) hl corfu--metadata
           ;; Select the prompt when the input is a valid completion
           ;; and if it is not equal to the first candidate.
