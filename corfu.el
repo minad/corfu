@@ -799,7 +799,7 @@ there hasn't been any input, then quit."
      ((and (not (equal str ""))
            (equal corfu--candidates (list str))
            (not (consp (completion-try-completion str table pred pt corfu--metadata))))
-      (corfu--done str 'finished))
+      (corfu--done str (if initializing 'exact 'finished)))
      ;; 3) There exist candidates
      ;; &  Input is non-empty or continue command
      ;; => Show candidates popup
