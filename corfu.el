@@ -141,7 +141,8 @@ The completion backend can override this with
   :type 'float)
 
 (defcustom corfu-auto-commands
-  '("self-insert-command\\'")
+  '("self-insert-command\\'"
+    c-electric-colon c-electric-lt-gt c-electric-slash c-scope-operator)
   "Commands which initiate auto completion."
   :type '(repeat (choice regexp symbol)))
 
