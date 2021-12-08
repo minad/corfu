@@ -132,6 +132,11 @@
       (setq tab-always-indent 'complete))
   #+end_src
 
+  See also the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips. For more general
+  documentation read the chapter about completion in the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Completion.html][Emacs manual]]. If you
+  want to create your own Capfs, you can find documentation about completion in
+  the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
+
 ** TAB-and-Go completion
 
 You may be interested in configuring Corfu in TAB-and-Go style. Pressing TAB
