@@ -385,9 +385,9 @@ The completion backend can override this with
          (after-make-frame-functions)
          (edge (window-inside-pixel-edges))
          (lh (default-line-height))
-         (x (max 0 (min (+ (car edge) x
-                           (- (alist-get 'child-frame-border-width corfu--frame-parameters)))
-                        (- (frame-pixel-width) width))))
+         (border (alist-get 'child-frame-border-width corfu--frame-parameters))
+         (x (max border (min (+ (car edge) x (- border))
+                             (- (frame-pixel-width) width))))
          (yb (+ (cadr edge) (window-tab-line-height) y lh))
          (y (if (> (+ yb height lh lh) (frame-pixel-height))
                 (- yb height lh 1)
@@ -401,8 +401,7 @@ The completion backend can override this with
                             (minibuffer . ,(minibuffer-window (window-frame)))
                             (line-spacing . ,line-spacing)
                             ;; Set `internal-border-width' for Emacs 27
-                            (internal-border-width
-                             . ,(alist-get 'child-frame-border-width corfu--frame-parameters))
+                            (internal-border-width . ,border)
                             ,@corfu--frame-parameters))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop (BUG!).
     ;; Check explicitly before applying the setting.
