@@ -1100,8 +1100,7 @@ there hasn't been any input, then quit."
   (when (and (not completion-in-region-mode)
              (eq (current-buffer) buffer))
     (pcase (while-no-input ;; Interruptible capf query
-             (run-hook-wrapped 'completion-at-point-functions
-                               #'completion--capf-wrapper 'all))
+             (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
       ((and `(,fun ,beg ,end ,table . ,plist)
             (guard (integer-or-marker-p beg))
             (guard (<= beg (point) end))
