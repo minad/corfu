@@ -182,20 +182,26 @@ moves to the next candidate and further input will then commit the selection.
 * Complementary packages
 
   Corfu works well together with all packages providing code completion via the
-  ~completion-at-point-functions~. Furthermore it supports completion styles,
+  ~completion-at-point-functions~. Many modes and packages already provide a Capf
+  out of the box. Nevertheless you may want to look into complementary packages
+  to enhance your setup.
+
+  - [[https://github.com/oantolin/orderless][Orderless]]: Cofu supports completion styles,
   including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
   expressions are separated by spaces (see ~corfu-quit-at-boundary~).
 
-  I collect additional Capf backends and =completion-in-region= commands in my
-  small [[https://github.com/minad/cape][Cape]] package. For example the package provides a file name and a dabbrev
-  completion backend.
+  - [[https://github.com/minad/cape][Cape]]: I collect additional Capf backends and =completion-in-region= commands
+  in my [[https://github.com/minad/cape][Cape]] package. The package provides a file path, a dabbrev completion
+  backend and a backend which allows you to enter unicode characters in the form
+  of TeX commands. Furthermore Cape provides an adapter to reuse Company
+  backends in Corfu.
 
-  Icons are supported by Corfu via an external package. For example the
-  [[https://github.com/jdtsmith/kind-icon][kind-icon]] package provides beautifully styled SVG icons based on monochromatic
-  icon sets like material design.
+  - [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via an external package. For example
+  the [[https://github.com/jdtsmith/kind-icon][kind-icon]] package provides beautifully styled SVG icons based on
+  monochromatic icon sets like material design.
 
-  You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the minibuffer
-  counterpart of Corfu.
+  - [[https://github.com/minad/vertico][Vertico]]: You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the
+  minibuffer completion counterpart of Corfu.
 
 * Caveats
 
