@@ -765,8 +765,8 @@ there hasn't been any input, then quit."
               (doc (funcall fun cand)))
         (if (or (eq corfu-echo-documentation t) corfu--echo-message)
             (corfu--echo-show doc)
-          (setq corfu--echo-timer (run-with-idle-timer corfu-echo-documentation
-                                                       nil #'corfu--echo-show doc)))
+          (setq corfu--echo-timer (run-at-time corfu-echo-documentation
+                                               nil #'corfu--echo-show doc)))
       (when corfu--echo-message
         (corfu--echo-show "")))))
 
