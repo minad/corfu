@@ -1154,8 +1154,10 @@ there hasn't been any input, then quit."
   "Wrapper for `completion-at-point' FUN.
 Determines if the capf is applicable at the current position."
   (pcase
-      ;; bug#50470: Fix Capfs which illegally modify the buffer
-      ;; or which illegally call `completion-in-region'
+      ;; bug#50470: Fix Capfs which illegally modify the buffer or which
+      ;; illegally call `completion-in-region'. The workaround here has been
+      ;; proposed @jakanakaevangeli in bug#50470 and is used in
+      ;; @jakanakaevangeli's capf-autosuggest package.
       (catch 'corfu--illegal-completion-in-region
         (condition-case nil
             (let ((buffer-read-only t)
