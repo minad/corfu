@@ -1175,6 +1175,10 @@ Determines if the capf is applicable at the current position."
                      (pt (- (point) beg))
                      (pred (plist-get plist :predicate))
                      (md (completion-metadata (substring str 0 pt) table pred)))
+                ;; We use `completion-try-completion' to check if there are
+                ;; completions. The upstream `completion--capf-wrapper' uses
+                ;; `try-completion' which is incorrect since it only checks for
+                ;; prefix completions.
                 (completion-try-completion str table pred pt md)))
           (cons fun res)))))
 
