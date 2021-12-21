@@ -898,11 +898,12 @@ there hasn't been any input, then quit."
         (restore (make-symbol "corfu--restore")))
     (fset restore
           (lambda ()
-            (when (memq this-command '(corfu-quit corfu-reset))
-              (setq this-command #'ignore))
-            (remove-hook 'pre-command-hook restore)
             (setq other-window-scroll-buffer other)
-            (set-window-configuration config)))
+            (unless (memq this-command '(scroll-other-window scroll-other-window-down))
+              (when (memq this-command '(corfu-quit corfu-reset))
+                (setq this-command #'ignore))
+              (remove-hook 'pre-command-hook restore)
+              (set-window-configuration config))))
     (add-hook 'pre-command-hook restore)))
 
 ;; Company support, taken from `company.el', see `company-show-doc-buffer'.
