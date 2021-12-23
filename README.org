@@ -193,12 +193,19 @@ moves to the next candidate and further input will then commit the selection.
   - [[https://github.com/minad/cape][Cape]]: I collect additional Capf backends and =completion-in-region= commands
     in my [[https://github.com/minad/cape][Cape]] package. The package provides a file path, a dabbrev completion
     backend and a backend which allows you to enter unicode characters in the
-    form of TeX commands. Furthermore Cape provides an adapter to reuse Company
-    backends in Corfu.
+    form of TeX commands. Cape provides an adapter to reuse Company backends in
+    Corfu. Furthermore the function ~cape-super-capf~ can merge/groups multiple
+    Capfs, such that the candidates of multiple Capfs are displayed together at
+    the same time.
 
   - [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via an external package. For example
     the [[https://github.com/jdtsmith/kind-icon][kind-icon]] package provides beautifully styled SVG icons based on
     monochromatic icon sets like material design.
+
+  - [[https://github.com/galeo/corfu-doc][corfu-doc]]: The corfu-doc package by @galeo allows you to display the candidate
+    documentation in a popup next to the Corfu popup, similar to
+    =company-quickhelp=. /Note that the corfu-doc package is new and still work in
+    progress./
 
   - [[https://github.com/minad/vertico][Vertico]]: You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the
     minibuffer completion counterpart of Corfu.
@@ -210,14 +217,9 @@ moves to the next candidate and further input will then commit the selection.
   - Corfu uses child frames to show the popup. For now Corfu falls back to the
     default setting of the ~completion-in-region-function~ on non-graphical
     displays. You may want to use ~consult-completion-in-region~.
-  - No sorting by history, since ~completion-at-point~ does not
+
+  - Corfu does not sort by history, since ~completion-at-point~ does not
     maintain a history (See branch =history= for a possible solution).
-  - There is currently no equivalent for =company-quickhelp=. Documentation and source
-    can be opened manually in a separate buffer.
-  - Company has the ability to merge/group the candidates of multiple backends
-    in some scenarios. Merging multiple backends is not directly supported by
-    the ~completion-at-point-functions~. The [[https://github.com/minad/cape][Cape]] package provides the function
-    ~cape-super-capf~ which can merge multiple Capfs.
 
 * Contributions
 
