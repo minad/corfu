@@ -17,22 +17,19 @@
   Corfu is the minimalistic ~completion-in-region~ counterpart of the [[https://github.com/minad/vertico][Vertico]]
   minibuffer UI.
 
-  Corfu is a minimal package, which relies on the Emacs completion facilities and
-  concentrates on providing a polished completion UI. Completions are either
+  Corfu is a minimal package, which relies on the Emacs completion facilities
+  and concentrates on providing a polished completion UI. Completions are either
   provided by commands like ~dabbrev-completion~ or by pluggable backends
   (~completion-at-point-functions~, Capfs). Most programming language major modes
-  implement a Capf. Furthermore the language server packages, [[https://github.com/joaotavora/eglot][Eglot]] and [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]],
-  both use Capfs which talk to the LSP server to retrieve the completions.
-
-  Corfu does not include custom completion backends. In contrast, the complex
-  Company package includes custom completion backends, which deviate from the
-  Emacs completion infrastructure. The Emacs built-in Capfs are mostly
-  sufficient, but a few additional Capfs and completion functions are provided
-  by the [[https://github.com/minad/cape][Cape]] package.
+  implement a Capf. Furthermore the language server packages, [[https://github.com/joaotavora/eglot][Eglot]] and
+  [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]], use Capfs which talk to the LSP server to retrieve the completions.
+  Corfu does not include its own completion backends. The Emacs built-in Capfs
+  and the Capfs provided by other packages are usually sufficient, but a few
+  additional Capfs and completion functions are provided by the [[https://github.com/minad/cape][Cape]] package.
 
   *NOTE*: Corfu uses child frames to show the popup. For now Corfu falls back to
   the default setting of the ~completion-in-region-function~ on non-graphical
-  displays. You may want to use ~consult-completion-in-region~.
+  displays.
 
   [[https://github.com/minad/corfu/blob/screenshots/light.png?raw=true]]
 
@@ -210,13 +207,46 @@ moves to the next candidate and further input will then commit the selection.
   - [[https://github.com/minad/vertico][Vertico]]: You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the
     minibuffer completion counterpart of Corfu.
 
+* Alternatives
+
+  - [[https://github.com/company-mode/company-mode][Company]]: Company is a widely used and mature completion package, which
+    implements a similar interaction model and popup UI as Corfu. While Corfu
+    relies exclusively on the standard Emacs completion API (Capfs), Company
+    defines its own API for the backends. Furthermore Company includes its
+    completion backends, which are incompatible with the Emacs completion
+    infrastructure. As a result of this design, Company is a more complex
+    package than Corfu. Company by default uses overlays to display the popup in
+    contrast to the child frames used by Corfu. Overall both packages work well.
+    Company is more mature but the integration into Emacs is a bit less tight,
+    since for example the ~completion-at-point~ command (or the
+    ~completion-in-region~ function) does not invoke Company.
+
+  - [[https://gitlab.com/protesilaos/mct][Mct]]: Protesilaos' Minibuffer Confines Transcended package supports both
+    minibuffer completion and completion in region. It reuses the default
+    completion UI for this purpose and installs a timer which live updates the
+    completion buffer. The main advantage of Mct is that you work with a regular
+    Emacs buffer instead of with a popup. You can take advantage of the usual
+    Emacs commands to navigate in the completions buffer. On top, Mct enhances
+    the movement such that you can quickly switch between the completions buffer
+    and the minibuffer or the region which is being completed. Mct does not
+    support timer-based auto completion, but the integration into Emacs is
+    naturally tight.
+
+  - [[https://github.com/minad/consult][consult-completion-in-region]]: The Consult package provides the function
+    ~consult-completion-in-region~ which can be set as
+    ~completion-in-region-function~ such that it handles ~completion-at-point~. The
+    function works by transferring the in-buffer completion to the minibuffer.
+    In the minibuffer, the minibuffer completion UI, for example [[https://github.com/minad/vertico][Vertico]] takes
+    over. If you prefer to perform all your completions in the minibuffer
+    ~consult-completion-in-region~ is your best option.
+
 * Caveats
 
   Corfu is robust in most scenarios. There are a few known technical caveats.
 
   - Corfu uses child frames to show the popup. For now Corfu falls back to the
     default setting of the ~completion-in-region-function~ on non-graphical
-    displays. You may want to use ~consult-completion-in-region~.
+    displays. You can use one of the alternatives in terminals.
 
   - Corfu does not sort by history, since ~completion-at-point~ does not
     maintain a history (See branch =history= for a possible solution).
