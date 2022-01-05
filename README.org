@@ -204,6 +204,9 @@ moves to the next candidate and further input will then commit the selection.
     =company-quickhelp=. /Note that the corfu-doc package is new and still work in
     progress./
 
+  - [[https://github.com/minad/tempel][Tempel]]: Tiny template/snippet package based on the Emacs Tempo library,
+    which can be used in conjunction with Corfu.
+
   - [[https://github.com/minad/vertico][Vertico]]: You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the
     minibuffer completion counterpart of Corfu.
 
