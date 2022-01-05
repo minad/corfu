@@ -211,7 +211,7 @@ The completion backend can override this with
     (define-key map "\en" #'corfu-next)
     (define-key map "\ep" #'corfu-previous)
     (define-key map "\C-g" #'corfu-quit)
-    (define-key map "\r" #'corfu-insert)
+    (define-key map [return] #'corfu-insert)
     (define-key map "\t" #'corfu-complete)
     (define-key map "\eg" #'corfu-show-location)
     (define-key map "\eh" #'corfu-show-documentation)
