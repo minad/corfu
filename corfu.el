@@ -1102,11 +1102,9 @@ there hasn't been any input, then quit."
   (setq corfu--auto-timer nil)
   (when (and (not completion-in-region-mode)
              (eq (current-buffer) buffer))
-    (pcase
-        (while-no-input ;; Interruptible capf query
-          (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
+    (pcase (while-no-input ;; Interruptible capf query
+             (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
       ((and `(,fun ,beg ,end ,table . ,plist)
-            (guard (message "XXXGOT RETURN %S %S %S" beg end (plist-get plist :company-prefix-length)))
             (guard (integer-or-marker-p beg))
             (guard (<= beg (point) end))
             (guard
