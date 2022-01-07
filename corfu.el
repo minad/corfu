@@ -424,10 +424,7 @@ The completion backend can override this with
       (make-frame-invisible corfu--frame))
     (set-frame-position corfu--frame x y)
     (set-frame-size corfu--frame width height t)
-    (make-frame-visible corfu--frame)
-    ;; HACK: Force redisplay, otherwise the popup somtimes
-    ;; does not display content.
-    (redisplay)))
+    (make-frame-visible corfu--frame)))
 
 (defun corfu--popup-show (pos off width lines &optional curr lo bar)
   "Show LINES as popup at POS - OFF.
@@ -809,7 +806,10 @@ there hasn't been any input, then quit."
      ((and corfu--candidates continue)
       (corfu--candidates-popup beg)
       (corfu--echo-documentation)
-      (corfu--preview-current beg end str))
+      (corfu--preview-current beg end str)
+      ;; HACK: Force redisplay, otherwise the popup somtimes
+      ;; does not display content.
+      (redisplay))
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
      ((not (or corfu--candidates
                ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
