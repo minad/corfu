@@ -649,13 +649,12 @@ there hasn't been any input, then quit."
                            (plist-get corfu--extra :annotation-function)))
               (cl-loop for cand in cands collect
                        (let ((suffix (or (funcall ann cand) "")))
-                         (list cand ""
-                               ;; The default completion UI adds the `completions-annotations' face
-                               ;; if no other faces are present. We use a custom `corfu-annotations'
-                               ;; face to allow further styling which fits better for popups.
-                               (if (text-property-not-all 0 (length suffix) 'face nil suffix)
-                                   suffix
-                                 (propertize suffix 'face 'corfu-annotations)))))
+                         ;; The default completion UI adds the `completions-annotations' face
+                         ;; if no other faces are present. We use a custom `corfu-annotations'
+                         ;; face to allow further styling which fits better for popups.
+                         (unless (text-property-not-all 0 (length suffix) 'face nil suffix)
+                           (setq suffix (propertize suffix 'face 'corfu-annotations)))
+                         (list cand "" suffix)))
             (cl-loop for cand in cands collect (list cand "" "")))))
   (let* ((dep (plist-get corfu--extra :company-deprecated))
          (completion-extra-properties corfu--extra)
