@@ -1096,11 +1096,11 @@ there hasn't been any input, then quit."
                                (equal (completion-boundaries before table pred after) '(0 . 0))))))
           (corfu--setup)))))
 
-(defun corfu--auto-complete (buffer)
-  "Initiate auto completion after delay in BUFFER."
+(defun corfu--auto-complete (buf tick pt)
+  "Initiate auto completion if BUF, TICK and PT did not change."
   (setq corfu--auto-timer nil)
-  (when (and (not completion-in-region-mode)
-             (eq (current-buffer) buffer))
+  (when (and (not completion-in-region-mode) (eq buf (current-buffer))
+             (eq tick (buffer-chars-modified-tick)) (eq pt (point)))
     (pcase (while-no-input ;; Interruptible capf query
              (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
       ((and `(,fun ,beg ,end ,table . ,plist)
@@ -1131,9 +1131,10 @@ there hasn't been any input, then quit."
              (display-graphic-p))
     ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
     ;; in particular if flyspell-mode is enabled.
-    (setq corfu--auto-timer (run-at-time corfu-auto-delay nil
-                                         #'corfu--auto-complete
-                                         (current-buffer)))))
+    (setq corfu--auto-timer
+          (run-at-time
+           corfu-auto-delay nil #'corfu--auto-complete
+           (current-buffer) (buffer-chars-modified-tick) (point)))))
 
 ;;;###autoload
 (define-minor-mode corfu-mode
