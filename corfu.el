@@ -1126,6 +1126,7 @@ there hasn't been any input, then quit."
     (cancel-timer corfu--auto-timer)
     (setq corfu--auto-timer nil))
   (when (and (not completion-in-region-mode)
+             (not defining-kbd-macro)
              (corfu--match-symbol-p corfu-auto-commands this-command)
              (display-graphic-p))
     ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
