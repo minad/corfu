@@ -433,25 +433,25 @@ The current candidate CURR is highlighted.
 A scroll bar is displayed from LO to LO+BAR."
   (let* ((ch (default-line-height))
          (cw (default-font-width))
-         (lm (ceiling (* cw corfu-left-margin-width)))
-         (rm (ceiling (* cw corfu-right-margin-width)))
-         (bw (ceiling (min rm (* cw corfu-bar-width))))
-         (lmargin (and (> lm 0) (propertize " " 'display `(space :width (,lm)))))
-         (rmargin (and (> rm 0) (propertize " " 'display `(space :align-to right))))
+         (ml (ceiling (* cw corfu-left-margin-width)))
+         (mr (ceiling (* cw corfu-right-margin-width)))
+         (bw (ceiling (min mr (* cw corfu-bar-width))))
+         (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
+         (marginr (and (> mr 0) (propertize " " 'display `(space :align-to right))))
          (sbar (when (> bw 0)
-                 (concat (propertize " " 'display `(space :align-to (- right (,rm))))
-                         (propertize " " 'display `(space :width (,(- rm bw))))
+                 (concat (propertize " " 'display `(space :align-to (- right (,mr))))
+                         (propertize " " 'display `(space :width (,(- mr bw))))
                          (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
          (row 0)
          (pos (posn-x-y (posn-at-point pos)))
          (x (or (car pos) 0))
          (y (or (cdr pos) 0)))
     (corfu--make-frame
-     (- x lm (* cw off)) y
-     (+ (* width cw) lm rm) (* (length lines) ch)
+     (- x ml (* cw off)) y
+     (+ (* width cw) ml mr) (* (length lines) ch)
      (mapconcat (lambda (line)
-                  (let ((str (concat lmargin line
-                                     (if (and lo (<= lo row (+ lo bar))) sbar rmargin))))
+                  (let ((str (concat marginl line
+                                     (if (and lo (<= lo row (+ lo bar))) sbar marginr))))
                     (when (eq row curr)
                       (add-face-text-property
                        0 (length str) 'corfu-current 'append str))
