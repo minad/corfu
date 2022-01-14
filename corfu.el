@@ -425,8 +425,7 @@ The completion backend can override this with
     (set-frame-position corfu--frame x y)
     (set-frame-size corfu--frame width height t)
     (unless (frame-visible-p corfu--frame)
-      ;; HACK: Force redisplay, otherwise the popup somtimes
-      ;; does not display content.
+      ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
       (redisplay)
       (make-frame-visible corfu--frame))))
 
@@ -810,8 +809,7 @@ there hasn't been any input, then quit."
       (corfu--candidates-popup beg)
       (corfu--echo-documentation)
       (corfu--preview-current beg end str)
-      ;; HACK: Force redisplay, otherwise the popup somtimes
-      ;; does not display content.
+      ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
       (redisplay))
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
      ((not (or corfu--candidates
