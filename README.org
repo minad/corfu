@@ -134,6 +134,24 @@
   want to create your own Capfs, you can find documentation about completion in
   the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
 
+** Using Corfu in the minibuffer
+
+Corfu can be used in the minibuffer, since it relies on child frames to display
+the candidates. By default, ~corfu-global-mode~ does not activate ~corfu-mode~ in
+the minibuffer, to avoid interference with specialised minibuffer completion UIs
+like Vertico or Mct. However you may still want to enable Corfu completion for
+commands like ~M-:~ (~eval-expression~) or ~M-!~ (~shell-command~), which read from the
+minibuffer, or more generally for all minibuffer inputs, as long as no other
+completion UI is active. If you use Vertico as your main minibuffer completion
+UI, you can use the following code snippet.
+
+#+begin_src emacs-lisp
+  (defun corfu-enable-in-minibuffer ()
+    "Enable Corfu in the minibuffer only if Vertico is not active."
+    (unless (bound-and-true-p vertico--input) (corfu-mode 1)))
+  (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer 1)
+#+end_src
+
 ** TAB-and-Go completion
 
 You may be interested in configuring Corfu in TAB-and-Go style. Pressing TAB
