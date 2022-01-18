@@ -142,13 +142,15 @@ the minibuffer, to avoid interference with specialised minibuffer completion UIs
 like Vertico or Mct. However you may still want to enable Corfu completion for
 commands like ~M-:~ (~eval-expression~) or ~M-!~ (~shell-command~), which read from the
 minibuffer, or more generally for all minibuffer inputs, as long as no other
-completion UI is active. If you use Vertico as your main minibuffer completion
-UI, you can use the following code snippet.
+completion UI is active. If you use Mct or Vertico as your main minibuffer
+completion UI, you can use the following code snippet.
 
 #+begin_src emacs-lisp
   (defun corfu-enable-in-minibuffer ()
     "Enable Corfu in the minibuffer only if Vertico is not active."
-    (unless (bound-and-true-p vertico--input) (corfu-mode 1)))
+    (unless (or (bound-and-true-p mct--active)
+                (bound-and-true-p vertico--input))
+      (corfu-mode 1)))
   (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer 1)
 #+end_src
 
