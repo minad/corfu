@@ -1087,6 +1087,11 @@ there hasn't been any input, then quit."
                     #'corfu--all-sorted-completions))
           (apply #'completion--in-region args))
       (when (and completion-in-region-mode
+                 ;; Terminate immediately when the completion boundary changed.
+                 ;; This happens for example when completing file names in shell
+                 ;; and the terminating space is added by the :exit-function.
+                 (or (funcall completion-in-region-mode--predicate)
+                     (and (completion-in-region-mode -1) nil))
                  ;; Do not show Corfu when "trivially" cycling, i.e.,
                  ;; when the completion is finished after the candidate.
                  (not (and completion-cycling
