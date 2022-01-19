@@ -1086,17 +1086,17 @@ there hasn't been any input, then quit."
                    ((symbol-function #'completion-all-sorted-completions)
                     #'corfu--all-sorted-completions))
           (apply #'completion--in-region args))
-        (when (and completion-in-region-mode
-                   ;; Do not show Corfu when "trivially" cycling, i.e.,
-                   ;; when the completion is finished after the candidate.
-                   (not (and completion-cycling
-                             (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
-                                          (pt (max 0 (- (point) beg)))
-                                          (str (buffer-substring-no-properties beg end))
-                                          (before (substring str 0 pt))
-                                          (after (substring str pt)))
-                               (equal (completion-boundaries before table pred after) '(0 . 0))))))
-          (corfu--setup)))))
+      (when (and completion-in-region-mode
+                 ;; Do not show Corfu when "trivially" cycling, i.e.,
+                 ;; when the completion is finished after the candidate.
+                 (not (and completion-cycling
+                           (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
+                                        (pt (max 0 (- (point) beg)))
+                                        (str (buffer-substring-no-properties beg end))
+                                        (before (substring str 0 pt))
+                                        (after (substring str pt)))
+                             (equal (completion-boundaries before table pred after) '(0 . 0))))))
+        (corfu--setup)))))
 
 (defun corfu--auto-complete (buf tick pt)
   "Initiate auto completion if BUF, TICK and PT did not change."
