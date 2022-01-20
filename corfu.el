@@ -1066,6 +1066,10 @@ there hasn't been any input, then quit."
           (completion--cache-all-sorted-completions
            beg end (nconc all base))))))
 
+;; TODO Rewrite this with a clean reimplementation. We have to use way
+;; too many advices and overrides to adjust default completion to our
+;; needs. The original idea was to initiate completion via
+;; `completion--in-region' and proceed with the Corfu popup.
 (defun corfu--completion-in-region (&rest args)
   "Corfu completion in region function passing ARGS to `completion--in-region'."
   (barf-if-buffer-read-only)
@@ -1082,6 +1086,14 @@ there hasn't been any input, then quit."
                    ;; Set the predicate to ensure that `completion-in-region-mode' is enabled.
                    (completion-in-region-mode-predicate
                     (or completion-in-region-mode-predicate (lambda () t)))
+                   ;; Disable completion-in-region-mode after exit!
+                   (exit-fun (plist-get completion-extra-properties :exit-function))
+                   (completion-extra-properties
+                    `(:exit-function
+                      ,(lambda (str status)
+                         (when exit-fun (funcall exit-fun str status))
+                         (when (eq status 'finished) (completion-in-region-mode -1)))
+                      ,@completion-extra-properties))
                    ;; Overwrite to avoid hanging.
                    ((symbol-function #'completion--message)
                     #'corfu--completion-message)
@@ -1090,11 +1102,6 @@ there hasn't been any input, then quit."
                     #'corfu--all-sorted-completions))
           (apply #'completion--in-region args))
       (when (and completion-in-region-mode
-                 ;; Terminate immediately when the completion boundary changed.
-                 ;; This happens for example when completing file names in shell
-                 ;; and the terminating space is added by the :exit-function.
-                 (or (funcall completion-in-region-mode--predicate)
-                     (and (completion-in-region-mode -1) nil))
                  ;; Do not show Corfu when "trivially" cycling, i.e.,
                  ;; when the completion is finished after the candidate.
                  (not (and completion-cycling
