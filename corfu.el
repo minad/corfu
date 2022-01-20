@@ -66,7 +66,7 @@ The value should lie between 0 and corfu-count/2."
 
 (defcustom corfu-continue-commands
   ;; nil is undefined command
-  '(nil ignore completion-at-point universal-argument universal-argument-more digit-argument
+  '(nil ignore universal-argument universal-argument-more digit-argument
         "\\`corfu-" "\\`scroll-other-window")
   "Continue Corfu completion after executing these commands."
   :type '(repeat (choice regexp symbol)))
@@ -756,11 +756,10 @@ there hasn't been any input, then quit."
 
 (defun corfu--echo-show (msg)
   "Show MSG in echo area."
-  (let ((message-log-max nil))
-    (setq corfu--echo-message msg)
-    (message "%s" (if (text-property-not-all 0 (length msg) 'face nil msg)
-                      msg
-                    (propertize msg 'face 'corfu-echo)))))
+  (setq corfu--echo-message msg)
+  (corfu--message "%s" (if (text-property-not-all 0 (length msg) 'face nil msg)
+                           msg
+                         (propertize msg 'face 'corfu-echo))))
 
 (defun corfu--echo-documentation ()
   "Show documentation string of current candidate in echo area."
@@ -781,7 +780,7 @@ there hasn't been any input, then quit."
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
                (initializing (not corfu--input))
-               (continue (or (/= beg end)
+               (continue (or (/= beg end) initializing
                              (corfu--match-symbol-p corfu-continue-commands
                                                     this-command))))
     (corfu--echo-refresh)
@@ -1030,8 +1029,7 @@ there hasn't been any input, then quit."
                   (remove-hook 'completion-in-region-mode-hook sym)
                   (with-current-buffer (if (buffer-live-p buf) buf (current-buffer))
                     (corfu--teardown)))))
-    (add-hook 'completion-in-region-mode-hook sym))
-  (corfu--update))
+    (add-hook 'completion-in-region-mode-hook sym)))
 
 (defun corfu--teardown ()
   "Teardown Corfu."
@@ -1064,22 +1062,62 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
            (before (substring str 0 pt))
            (metadata (completion-metadata before table pred))
            (exit (plist-get completion-extra-properties :exit-function))
+           (threshold (completion--cycle-threshold metadata))
            (completion-in-region-mode-predicate
             (or completion-in-region-mode-predicate (lambda () t))))
       (pcase (completion-try-completion str table pred pt metadata)
-        ('nil (message "No match") nil)
+        ('nil (corfu--message "No match") nil)
         ('t
          (goto-char end)
-         (message "Sole match")
+         (corfu--message "Sole match")
          (when exit (funcall exit str 'finished))
          t)
         (`(,newstr . ,newpt)
-         (setq completion-in-region--data
-               (list (copy-marker beg) (copy-marker end t) table pred))
-         (unless (equal str newstr)
-           (completion--replace beg end newstr))
-         (goto-char (+ beg newpt))
-         (corfu--setup))))))
+         (pcase-let ((`(,base ,candidates ,total . ,_)
+                      (corfu--recompute-candidates str pt table pred)))
+           (setq beg (copy-marker beg)
+                 end (copy-marker end t)
+                 completion-in-region--data (list beg end table pred))
+           (unless (equal str newstr)
+             (completion--replace beg end newstr))
+           (goto-char (+ beg newpt))
+           (if (= total 1)
+               (when exit
+                 (funcall exit newstr
+                          ;; If completion is finished and cannot be further completed,
+                          ; return 'finished. Otherwise return 'exact.
+                          (if (eq (try-completion (car candidates) table pred) t)
+                          'finished 'exact)))
+             (if (or (not threshold) (< threshold total))
+                 (corfu--setup)
+               (corfu--cycle-candidates total candidates (+ base beg) end)
+               ;; Do not show Corfu when "trivially" cycling, i.e.,
+               ;; when the completion is finished after the candidate.
+               (unless (equal (completion-boundaries
+                               (buffer-substring-no-properties beg end)
+                               table pred "") '(0 . 0))
+                 (corfu--setup)))))
+         t)))))
+
+(defun corfu--message (&rest msg)
+  "Show completion MSG."
+  (let (message-log-max) (apply #'message msg)))
+
+(defun corfu--cycle-candidates (total cands beg end)
+  "Cycle between TOTAL number of CANDS.
+See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
+  (let* ((idx 0)
+         (map (make-sparse-keymap))
+         (replace (lambda ()
+                    (interactive)
+                    (completion--replace beg end (nth idx cands))
+                    (corfu--message "Cycling %d/%d..." (1+ idx) total)
+                    (setq idx (mod (1+ idx) total))
+                    (set-transient-map map))))
+    (define-key map [remap completion-at-point] replace)
+    (define-key map [remap corfu-complete] replace)
+    (define-key map (vector last-command-event) replace)
+    (funcall replace)))
 
 (defun corfu--auto-complete (buf tick pt)
   "Initiate auto completion if BUF, TICK and PT did not change."
@@ -1101,7 +1139,8 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                completion-in-region--data
                (list (copy-marker beg) (copy-marker end t) table
                      (plist-get plist :predicate)))
-         (corfu--setup))))))
+         (corfu--setup)
+         (corfu--update))))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
