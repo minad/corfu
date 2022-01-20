@@ -134,24 +134,38 @@
   want to create your own Capfs, you can find documentation about completion in
   the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
 
-** Using Corfu in the minibuffer
+** Completing with Corfu in the minibuffer
 
-Corfu can be used in the minibuffer, since it relies on child frames to display
-the candidates. By default, ~corfu-global-mode~ does not activate ~corfu-mode~ in
-the minibuffer, to avoid interference with specialised minibuffer completion UIs
-like Vertico or Mct. However you may still want to enable Corfu completion for
-commands like ~M-:~ (~eval-expression~) or ~M-!~ (~shell-command~), which read from the
-minibuffer, or more generally for all minibuffer inputs, as long as no other
-completion UI is active. If you use Mct or Vertico as your main minibuffer
-completion UI, you can use the following code snippet.
+Corfu can be used for completion in the minibuffer, since it relies on child
+frames to display the candidates. By default, ~corfu-global-mode~ does not
+activate ~corfu-mode~ in the minibuffer, to avoid interference with specialised
+minibuffer completion UIs like Vertico or Mct. However you may still want to
+enable Corfu completion for commands like ~M-:~ (~eval-expression~) or ~M-!~
+(~shell-command~), which read from the minibuffer. Activate ~corfu-mode~ only if
+~completion-at-point~ is bound in the minibuffer-local keymap to achieve this
+effect.
 
 #+begin_src emacs-lisp
   (defun corfu-enable-in-minibuffer ()
-    "Enable Corfu in the minibuffer only if Vertico is not active."
+    "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+    (when (where-is-internal #'completion-at-point (current-local-map))
+      ;; (setq-local corfu-auto nil) Enable/disable auto completion
+      (corfu-mode 1)))
+  (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
+#+end_src
+
+You can also enable Corfu more generally for every minibuffer, as long as no
+other completion UI is active. If you use Mct or Vertico as your main minibuffer
+completion UI, the following snippet should yield the desired result.
+
+#+begin_src emacs-lisp
+  (defun corfu-enable-always-in-minibuffer ()
+    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
     (unless (or (bound-and-true-p mct--active)
                 (bound-and-true-p vertico--input))
+      ;; (setq-local corfu-auto nil) Enable/disable auto completion
       (corfu-mode 1)))
-  (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer 1)
+  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
 #+end_src
 
 ** TAB-and-Go completion
