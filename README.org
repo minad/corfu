@@ -12,20 +12,20 @@
 
 * Introduction
 
-  Corfu enhances the default completion in region function with a completion
-  overlay. The current candidates are shown in a popup below or above the point.
-  Corfu is the minimalistic ~completion-in-region~ counterpart of the [[https://github.com/minad/vertico][Vertico]]
-  minibuffer UI.
+  Corfu enhances completion at point with a small completion popup. The current
+  candidates are shown in a popup below or above the point. Corfu is the
+  minimalistic ~completion-in-region~ counterpart of the [[https://github.com/minad/vertico][Vertico]] minibuffer UI.
 
-  Corfu is a minimal package, which relies on the Emacs completion facilities
-  and concentrates on providing a polished completion UI. Completions are either
+  Corfu is a small package, which relies on the Emacs completion facilities and
+  concentrates on providing a polished completion UI. Completions are either
   provided by commands like ~dabbrev-completion~ or by pluggable backends
   (~completion-at-point-functions~, Capfs). Most programming language major modes
   implement a Capf. Furthermore the language server packages, [[https://github.com/joaotavora/eglot][Eglot]] and
   [[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]], use Capfs which talk to the LSP server to retrieve the completions.
   Corfu does not include its own completion backends. The Emacs built-in Capfs
-  and the Capfs provided by other packages are usually sufficient, but a few
-  additional Capfs and completion functions are provided by the [[https://github.com/minad/cape][Cape]] package.
+  and the Capfs provided by other programming language packages are usually
+  sufficient. A few additional Capfs and completion utilities are provided by
+  the [[https://github.com/minad/cape][Cape]] package.
 
   *NOTE*: Corfu uses child frames to show the popup. For now Corfu falls back to
   the default setting of the ~completion-in-region-function~ on non-graphical
