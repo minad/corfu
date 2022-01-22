@@ -168,6 +168,38 @@ completion UI, the following snippet should yield the desired result.
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
 #+end_src
 
+** Completing with Corfu in the Shell or Eshell
+
+When completing in the Eshell I recommend conservative local settings, no auto
+completion, quitting at boundary and quitting if there is no match.
+
+#+begin_src emacs-lisp
+  (add-hook 'eshell-mode-hook
+            (lambda ()
+              (setq-local corfu-quit-at-boundary t
+                          corfu-quit-no-match t
+                          corfu-auto nil)
+              (corfu-mode)))
+#+end_src
+
+Shell completion uses the flexible ~pcomplete~ mechanism internally, which allows
+you to program the completions per shell command. If you want to know more, look
+into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure pcomplete for git commands.
+Unfortunately pcomplete has a few technical issues, which we can work around
+with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers,
+which sanitize the pcomplete function. Ideally the bugs in pcomplete should be
+fixed upstream. *For now these two advices are strongly recommended to achieve a
+sane Eshell experience.*
+
+#+begin_src emacs-lisp
+  ;; Silence the pcomplete capf, no errors or messages!
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+  ;; Ensure that pcomplete does not write to the buffer
+  ;; and behaves as a pure `completion-at-point-function'.
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+#+end_src
+
 ** TAB-and-Go completion
 
 You may be interested in configuring Corfu in TAB-and-Go style. Pressing TAB

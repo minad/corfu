@@ -1180,21 +1180,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 (defun corfu--capf-wrapper (fun)
   "Wrapper for `completion-at-point' FUN.
 Determines if the capf is applicable at the current position."
-  (pcase
-      ;; bug#50470: Fix Capfs which illegally modify the buffer or which
-      ;; illegally call `completion-in-region'. The workaround here has been
-      ;; proposed @jakanakaevangeli in bug#50470 and is used in
-      ;; @jakanakaevangeli's capf-autosuggest package.
-      (catch 'corfu--illegal-completion-in-region
-        (condition-case nil
-            (let ((buffer-read-only t)
-                  (inhibit-read-only nil)
-                  (completion-in-region-function
-                   (lambda (beg end coll pred)
-                     (throw 'corfu--illegal-completion-in-region
-                            (list beg end coll :predicate pred)))))
-              (funcall fun))
-          (buffer-read-only nil)))
+  (pcase (funcall fun)
     ((and res `(,beg ,end ,table . ,plist))
      (and (integer-or-marker-p beg) ;; Valid capf result
           (<= beg (point) end) ;; Sanity checking
