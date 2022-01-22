@@ -1088,7 +1088,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                           ; return 'finished. Otherwise return 'exact.
                           (if (eq (try-completion (car candidates) table pred) t)
                           'finished 'exact)))
-             (if (or (not threshold) (< threshold total))
+             (if (not (and threshold (or (eq threshold t) (>= threshold total))))
                  (corfu--setup)
                (corfu--cycle-candidates total candidates (+ base beg) end)
                ;; Do not show Corfu when "trivially" cycling, i.e.,
