@@ -1119,11 +1119,10 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
     (define-key map (vector last-command-event) replace)
     (funcall replace)))
 
-(defun corfu--auto-complete (buf tick pt)
-  "Initiate auto completion if BUF, TICK and PT did not change."
+(defun corfu--auto-complete (tick)
+  "Initiate auto completion if TICK did not change."
   (setq corfu--auto-timer nil)
-  (when (and (not completion-in-region-mode) (eq buf (current-buffer))
-             (eq tick (buffer-chars-modified-tick)) (eq pt (point)))
+  (when (and (not completion-in-region-mode) (equal tick (corfu--auto-tick)))
     (pcase (while-no-input ;; Interruptible capf query
              (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
       ((and `(,fun ,beg ,end ,table . ,plist)
@@ -1154,9 +1153,13 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
     ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
     ;; in particular if flyspell-mode is enabled.
     (setq corfu--auto-timer
-          (run-at-time
-           corfu-auto-delay nil #'corfu--auto-complete
-           (current-buffer) (buffer-chars-modified-tick) (point)))))
+          (run-at-time corfu-auto-delay nil
+                       #'corfu--auto-complete (corfu--auto-tick)))))
+
+(defun corfu--auto-tick ()
+  "Return the current tick/status of the buffer.
+Auto completion is only performed if the tick did not change."
+  (list (current-buffer) (buffer-chars-modified-tick) (point)))
 
 ;;;###autoload
 (define-minor-mode corfu-mode
