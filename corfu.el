@@ -961,7 +961,7 @@ there hasn't been any input, then quit."
         (pcase (completion-try-completion str table pred pt metadata)
           (`(,newstr . ,newpt)
            (unless (equal str newstr)
-             (completion--replace beg end newstr))
+             (completion--replace beg end (concat newstr)))
            (goto-char (+ beg newpt))))))
     ;; No further completion is possible and the current string is a valid
     ;; match, exit with status 'finished.
@@ -1079,7 +1079,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                  end (copy-marker end t)
                  completion-in-region--data (list beg end table pred))
            (unless (equal str newstr)
-             (completion--replace beg end newstr))
+             (completion--replace beg end (concat newstr)))
            (goto-char (+ beg newpt))
            (if (= total 1)
                (when exit
@@ -1110,7 +1110,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
          (map (make-sparse-keymap))
          (replace (lambda ()
                     (interactive)
-                    (completion--replace beg end (nth idx cands))
+                    (completion--replace beg end (concat (nth idx cands)))
                     (corfu--message "Cycling %d/%d..." (1+ idx) total)
                     (setq idx (mod (1+ idx) total))
                     (set-transient-map map))))
