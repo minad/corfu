@@ -796,14 +796,15 @@ there hasn't been any input, then quit."
             nil)
         (error (corfu-quit)
                (message "Corfu completion error: %s" (error-message-string err)))))
-     ;; 1) Initializing, no candidates => Quit
+     ;; 1) Initializing, no candidates => Quit (happens during auto completion!)
      ((and initializing (not corfu--candidates))
       (corfu-quit))
      ;; 2) Single matching candidate and no further completion is possible
      ((and (not (equal str ""))
            (equal corfu--candidates (list str))
            (not (consp (completion-try-completion str table pred pt corfu--metadata))))
-      (corfu--done str (if initializing 'exact 'finished)))
+      ;; Quit directly, happens during auto completion!
+      (if initializing (corfu-quit) (corfu--done str 'finished)))
      ;; 3) There exist candidates
      ;; &  Input is non-empty or continue command
      ;; => Show candidates popup
