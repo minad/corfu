@@ -184,8 +184,13 @@ completion, quitting at boundary and quitting if there is no match.
 
 Shell completion uses the flexible ~pcomplete~ mechanism internally, which allows
 you to program the completions per shell command. If you want to know more, look
-into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure pcomplete for git commands.
-Unfortunately pcomplete has a few technical issues, which we can work around
+into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure pcomplete for git commands. I
+recommend the [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]] package which extends Pcomplete with completion support
+for more commands. Similar to the Fish shell, pcmpl-args uses man page parsing
+and --help output parsing to dynamically generate completions. This package
+brings Eshell completion to another level!
+
+Unfortunately Pcomplete has a few technical issues, which we can work around
 with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers,
 which sanitize the pcomplete function. Ideally the bugs in pcomplete should be
 fixed upstream. *For now these two advices are strongly recommended to achieve a
@@ -269,6 +274,11 @@ moves to the next candidate and further input will then commit the selection.
     documentation in a popup next to the Corfu popup, similar to
     =company-quickhelp=. /Note that the corfu-doc package is new and still work in
     progress./
+
+  - [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]]: Extend the Eshell/Shell Pcomplete mechanism with support for many
+    more commands. Similar to the Fish shell, Pcomplete uses man page parsing to
+    dynamically retrieve the completion candidates. This package brings Eshell
+    completions to another level!
 
   - [[https://github.com/minad/tempel][Tempel]]: Tiny template/snippet package which can be used in conjunction with Corfu.
 
