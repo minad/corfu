@@ -186,9 +186,9 @@ Shell completion uses the flexible ~pcomplete~ mechanism internally, which allow
 you to program the completions per shell command. If you want to know more, look
 into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure pcomplete for git commands. I
 recommend the [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]] package which extends Pcomplete with completion support
-for more commands. Similar to the Fish shell, pcmpl-args uses man page parsing
-and --help output parsing to dynamically generate completions. This package
-brings Eshell completion to another level!
+and helpful annotation support for more commands. Similar to the Fish shell,
+pcmpl-args uses man page parsing and --help output parsing to dynamically
+generate completions. This package brings Eshell completion to another level!
 
 Unfortunately Pcomplete has a few technical issues, which we can work around
 with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers,
@@ -277,8 +277,8 @@ moves to the next candidate and further input will then commit the selection.
 
   - [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]]: Extend the Eshell/Shell Pcomplete mechanism with support for many
     more commands. Similar to the Fish shell, Pcomplete uses man page parsing to
-    dynamically retrieve the completion candidates. This package brings Eshell
-    completions to another level!
+    dynamically retrieve the completions and helpful annotations. This package
+    brings Eshell completions to another level!
 
   - [[https://github.com/minad/tempel][Tempel]]: Tiny template/snippet package which can be used in conjunction with Corfu.
 
