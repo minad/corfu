@@ -813,7 +813,7 @@ there hasn't been any input, then quit."
       (corfu--echo-documentation)
       (corfu--preview-current beg end str)
       ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
-      (run-at-time 0 nil #'redisplay))
+      (run-at-time 0.01 nil #'redisplay))
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
      ((not (or corfu--candidates
                ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
