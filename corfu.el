@@ -826,7 +826,6 @@ there hasn't been any input, then quit."
 
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
-  (add-hook 'window-configuration-change-hook #'corfu-quit)
   (when corfu--preview-ov
     (delete-overlay corfu--preview-ov)
     (setq corfu--preview-ov nil))
@@ -841,7 +840,6 @@ there hasn't been any input, then quit."
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
-  (remove-hook 'window-configuration-change-hook #'corfu-quit)
   (or (pcase completion-in-region--data
         (`(,beg ,end . ,_)
          (when (let ((pt (point)))
@@ -1018,7 +1016,7 @@ there hasn't been any input, then quit."
   (activate-change-group (setq corfu--change-group (prepare-change-group)))
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
   (add-hook 'pre-command-hook #'corfu--pre-command nil 'local)
-  (add-hook 'post-command-hook #'corfu--post-command nil 'local)
+  (add-hook 'post-command-hook #'corfu--post-command)
   ;; Disable default post-command handling, since we have our own
   ;; checks in `corfu--post-command'.
   (remove-hook 'post-command-hook #'completion-in-region--postch)
@@ -1038,9 +1036,8 @@ there hasn't been any input, then quit."
   ;; hiding, which is slow (Issue #48). See also corresponding vertico#89.
   (redisplay)
   (corfu--popup-hide)
-  (remove-hook 'window-configuration-change-hook #'corfu-quit)
   (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
-  (remove-hook 'post-command-hook #'corfu--post-command 'local)
+  (remove-hook 'post-command-hook #'corfu--post-command)
   (when corfu--preview-ov (delete-overlay corfu--preview-ov))
   (when corfu--echo-timer (cancel-timer corfu--echo-timer))
   (when corfu--echo-message (corfu--echo-show ""))
