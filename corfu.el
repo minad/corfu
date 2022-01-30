@@ -562,14 +562,12 @@ A scroll bar is displayed from LO to LO+BAR."
                     "\\)\\'")))
     (or (seq-remove (lambda (x) (string-match-p re x)) files) files)))
 
-(defun corfu--sort-function (cycle)
-  "Return the (CYCLE or display) sort function."
-  (or (corfu--metadata-get (if cycle 'cycle-sort-function 'display-sort-function))
-      corfu-sort-function))
+(defun corfu--sort-function ()
+  "Return the sorting function."
+  (or (corfu--metadata-get 'display-sort-function) corfu-sort-function))
 
-(defun corfu--recompute-candidates (str pt table pred cycle)
-  "Recompute candidates from STR, PT, TABLE and PRED.
-Either use the CYCLE or the display sort function."
+(defun corfu--recompute-candidates (str pt table pred)
+  "Recompute candidates from STR, PT, TABLE and PRED."
   (pcase-let* ((before (substring str 0 pt))
                (after (substring str pt))
                (corfu--metadata (completion-metadata before table pred))
@@ -587,9 +585,8 @@ Either use the CYCLE or the display sort function."
     ;; since this breaks the special casing in the `completion-file-name-table' for `file-exists-p'
     ;; and `file-directory-p'.
     (when completing-file (setq all (corfu--filter-files all)))
-    (setq all (funcall (or (corfu--sort-function cycle) #'identity) all)
-          all (delete-consecutive-dups all)
-          all (corfu--move-prefix-candidates-to-front field all))
+    (setq all (delete-consecutive-dups (funcall (or (corfu--sort-function) #'identity) all)))
+    (setq all (corfu--move-prefix-candidates-to-front field all))
     (when (and completing-file (not (string-suffix-p "/" field)))
       (setq all (corfu--move-to-front (concat field "/") all)))
     (setq all (corfu--move-to-front field all))
@@ -608,7 +605,7 @@ Either use the CYCLE or the display sort function."
   ;; expensive candidate recomputation is performed (Issue #48). See also
   ;; corresponding vertico#89.
   (redisplay)
-  (pcase (while-no-input (corfu--recompute-candidates str pt table pred nil))
+  (pcase (while-no-input (corfu--recompute-candidates str pt table pred))
     ('nil (keyboard-quit))
     (`(,base ,candidates ,total ,hl ,metadata ,preselect)
      (setq corfu--input (cons str pt)
@@ -1075,7 +1072,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
          t)
         (`(,newstr . ,newpt)
          (pcase-let ((`(,base ,candidates ,total . ,_)
-                      (corfu--recompute-candidates str pt table pred 'cycle)))
+                      (corfu--recompute-candidates str pt table pred)))
            (setq beg (copy-marker beg)
                  end (copy-marker end t)
                  completion-in-region--data (list beg end table pred))
