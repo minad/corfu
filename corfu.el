@@ -551,9 +551,11 @@ A scroll bar is displayed from LO to LO+BAR."
   "Move CANDIDATES which match prefix of FIELD to the beginning."
   (let* ((word (replace-regexp-in-string " .*" "" field))
          (len (length word)))
-    (corfu--partition! candidates
-                       (and (>= (length it) len)
-                            (eq t (compare-strings word 0 len it 0 len))))))
+    (corfu--partition!
+     candidates
+     (and (>= (length it) len)
+          (eq t (compare-strings word 0 len it 0 len
+                                 completion-ignore-case))))))
 
 (defun corfu--filter-files (files)
   "Filter FILES by `completion-ignored-extensions'."
