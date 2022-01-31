@@ -1,11 +1,11 @@
 ;;; corfu.el --- Completion Overlay Region FUnction -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2021, 2022  Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
-;; Version: 0.17
+;; Version: 0.18
 ;; Package-Requires: ((emacs "27.1"))
 ;; Homepage: https://github.com/minad/corfu
 
