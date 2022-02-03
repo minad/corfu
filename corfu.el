@@ -842,7 +842,9 @@ there hasn't been any input, then quit."
          (when (let ((pt (point)))
                  (and (eq (marker-buffer beg) (current-buffer))
                       (<= beg pt end)
-                      (or (not corfu--input) (< beg end))
+                      (or (not corfu--input)
+                          (corfu--match-symbol-p corfu-continue-commands this-command)
+                          (< beg end))
                       (save-excursion
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
