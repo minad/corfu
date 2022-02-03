@@ -273,7 +273,7 @@ moves to the next candidate and further input will then commit the selection.
   out of the box. Nevertheless you may want to look into complementary packages
   to enhance your setup.
 
-  - [[https://github.com/oantolin/orderless][Orderless]]: Cofu supports completion styles,
+  - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles,
     including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
     expressions are separated by spaces (see ~corfu-quit-at-boundary~).
 
