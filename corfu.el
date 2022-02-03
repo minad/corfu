@@ -781,10 +781,7 @@ there hasn't been any input, then quit."
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
-               (initializing (not corfu--input))
-               (continue (or (/= beg end) initializing
-                             (corfu--match-symbol-p corfu-continue-commands
-                                                    this-command))))
+               (initializing (not corfu--input)))
     (corfu--echo-refresh)
     (cond
      ;; XXX Guard against errors during candidate generation.
@@ -792,8 +789,8 @@ there hasn't been any input, then quit."
      ;; For example dabbrev throws error "No dynamic expansion ... found".
      ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
      ((condition-case err
-          ;; Only recompute when input changed and when input is non-empty
-          (when (and continue (not (equal corfu--input (cons str pt))))
+          ;; Only recompute when input changed
+          (unless (equal corfu--input (cons str pt))
             (corfu--update-candidates str pt table pred)
             nil)
         (error (corfu-quit)
@@ -807,10 +804,8 @@ there hasn't been any input, then quit."
            (not (consp (completion-try-completion str table pred pt corfu--metadata))))
       ;; Quit directly, happens during auto completion!
       (if initializing (corfu-quit) (corfu--done str 'finished)))
-     ;; 3) There exist candidates
-     ;; &  Input is non-empty or continue command
-     ;; => Show candidates popup
-     ((and corfu--candidates continue)
+     ;; 3) There exist candidates => Show candidates popup
+     (corfu--candidates
       (corfu--candidates-popup beg)
       (corfu--echo-documentation)
       (corfu--preview-current beg end str)
