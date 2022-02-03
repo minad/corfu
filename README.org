@@ -134,6 +134,25 @@
   want to create your own Capfs, you can find documentation about completion in
   the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
 
+** Auto completion
+
+  Auto completion is disabled by default, but can be enabled by setting
+  ~corfu-auto=t~. Furthermore you may want to configure Corfu to quit completion
+  eagerly, such that the completion popup stays out of your way when it
+  appeared unexpectedly.
+
+  #+begin_src emacs-lisp
+    ;; Enable auto completion and eager quitting
+    (setq corfu-auto t
+          corfu-quit-at-boundary t
+          corfu-quit-no-match t)
+  #+end_src
+
+  In general, I recommend to experiment a bit with the various settings and key
+  bindings to find a configuration which works for you. There is no one size
+  fits all solution. Some people like auto completion, some like manual
+  completion, some want to cycle with TAB or and some with the arrow keys...
+
 ** Completing with Corfu in the minibuffer
 
 Corfu can be used for completion in the minibuffer, since it relies on child
