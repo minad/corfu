@@ -246,7 +246,7 @@ The completion backend can override this with
   "Scroll position.")
 
 (defvar-local corfu--input nil
-  "Cons of last prompt contents and point or t.")
+  "Cons of last prompt contents and point.")
 
 (defvar-local corfu--preview-ov nil
   "Current candidate overlay.")
@@ -846,7 +846,8 @@ there hasn't been any input, then quit."
         (`(,beg ,end . ,_)
          (when (let ((pt (point)))
                  (and (eq (marker-buffer beg) (current-buffer))
-                      (< beg end) (<= beg pt end)
+                      (<= beg pt end)
+                      (or (not corfu--input) (< beg end))
                       (save-excursion
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
