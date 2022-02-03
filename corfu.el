@@ -71,9 +71,17 @@ The value should lie between 0 and corfu-count/2."
   "Continue Corfu completion after executing these commands."
   :type '(repeat (choice regexp symbol)))
 
-(defcustom corfu-commit-predicate #'corfu-candidate-previewed-p
-  "Automatically commit if the predicate returns t."
-  :type '(choice (const nil) function))
+(defcustom corfu-pre-input-hook
+  (list #'corfu-insert-previewed-candidate)
+  "Hooks to run before input."
+  :type 'hook)
+
+(defcustom corfu-post-input-hook
+  (list #'corfu-commit-single-candidate
+        ;;#'corfu-quit-no-match
+        )
+  "Hooks to run before input."
+  :type 'hook)
 
 (defcustom corfu-preview-current t
   "Preview currently selected candidate."
@@ -88,12 +96,6 @@ The value should lie between 0 and corfu-count/2."
 If automatic quitting is disabled, Orderless filter strings with spaces
 are allowed."
   :type 'boolean)
-
-(defcustom corfu-quit-no-match 1.0
-  "Automatically quit if no matching candidate is found.
-If a floating point number, quit on no match only if the auto-started
-completion began less than that number of seconds ago."
-  :type '(choice boolean float))
 
 (defcustom corfu-excluded-modes nil
   "List of modes excluded by `corfu-global-mode'."
@@ -795,45 +797,49 @@ there hasn't been any input, then quit."
             nil)
         (error (corfu-quit)
                (message "Corfu completion error: %s" (error-message-string err)))))
-     ;; 1) Initializing, no candidates => Quit (happens during auto completion!)
+     ;; Initializing, no candidates => Quit (happens during auto completion!)
      ((and initializing (not corfu--candidates))
       (corfu-quit))
-     ;; 2) Single matching candidate and no further completion is possible
-     ((and (not (equal str ""))
-           (equal corfu--candidates (list str))
-           (not (consp (completion-try-completion str table pred pt corfu--metadata))))
-      ;; Quit directly, happens during auto completion!
-      (if initializing (corfu-quit) (corfu--done str 'finished)))
-     ;; 3) There exist candidates => Show candidates popup
+     ;; Run post input actions
+     ((run-hook-with-args-until-success 'corfu-post-input-hook))
+     ;; There exist candidates => Show candidates popup
      (corfu--candidates
       (corfu--candidates-popup beg)
       (corfu--echo-documentation)
       (corfu--preview-current beg end str)
       ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
       (run-at-time 0.01 nil #'redisplay))
-     ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
-     ((not (or corfu--candidates
-               ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
-               ;; initiated too long ago, quit directly without showing the "No match" popup.
-               (if (and corfu--auto-start (numberp corfu-quit-no-match))
-                   (< (- (float-time) corfu--auto-start) corfu-quit-no-match)
-                 (eq t corfu-quit-no-match))))
-      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic)))))
-     (t (corfu-quit)))))
+     ;; No candidates => Confirmation popup
+     (t (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic))))))))
 
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
   (when corfu--preview-ov
     (delete-overlay corfu--preview-ov)
     (setq corfu--preview-ov nil))
-  (when (and corfu-commit-predicate
-             (not (corfu--match-symbol-p corfu-continue-commands this-command))
-             (funcall corfu-commit-predicate))
-    (corfu--insert 'exact)))
+  (unless (corfu--match-symbol-p corfu-continue-commands this-command)
+    (run-hook-with-args-until-success 'corfu-pre-input-hook)))
 
-(defun corfu-candidate-previewed-p ()
-  "Return t if a candidate is selected and previewed."
-  (and corfu-preview-current (/= corfu--index corfu--preselect)))
+(defun corfu-insert-previewed-candidate ()
+  "Insert if a candidate is selected and previewed."
+  (when (and corfu-preview-current (/= corfu--index corfu--preselect))
+    (corfu--insert 'exact)
+    t))
+
+(defun corfu-commit-single-candidate ()
+  ;; ((and (not (equal str ""))
+  ;;       (equal corfu--candidates (list str))
+  ;;       (not (consp (completion-try-completion str table pred pt corfu--metadata))))
+  ;;  (if initializing (corfu-quit) (corfu--done str 'finished)))
+
+  )
+
+(defun corfu-quit-no-match (&optional delay)
+  (unless (or corfu--candidates
+              (and corfu--auto-start (numberp delay)
+                   (< (- (float-time) corfu--auto-start) delay)))
+    (corfu-quit)
+    t))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
