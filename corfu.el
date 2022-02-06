@@ -430,7 +430,16 @@ The completion backend can override this with
       ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
       (set-frame-position corfu--frame x y)
       (redisplay)
-      (make-frame-visible corfu--frame))))
+      (make-frame-visible corfu--frame))
+    ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
+    (run-at-time 0.01 nil
+                 (lambda ()
+                   (with-current-buffer buffer
+                     (let ((inhibit-read-only t))
+                       (goto-char (point-min))
+                       (insert "please redisplay")
+                       (delete-region (point-min) (point))))
+                   (redisplay)))))
 
 (defun corfu--popup-show (pos off width lines &optional curr lo bar)
   "Show LINES as popup at POS - OFF.
@@ -808,9 +817,7 @@ there hasn't been any input, then quit."
      (corfu--candidates
       (corfu--candidates-popup beg)
       (corfu--echo-documentation)
-      (corfu--preview-current beg end str)
-      ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
-      (run-at-time 0.01 nil #'redisplay))
+      (corfu--preview-current beg end str))
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
      ((not (or corfu--candidates
                ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
