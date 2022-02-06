@@ -46,7 +46,7 @@
   - The selected candidate automatically committed on further input by default
     (configurable via ~corfu-commit-predicate~).
   - The [[https://github.com/oantolin/orderless][Orderless]] completion style is supported. The filter string can contain
-    arbitrary characters, including spaces, if ~corfu-quit-at-boundary~ is nil.
+    arbitrary characters, including spaces, if ~corfu-separator-char~ is configured to match the orderless separator, and a special key is used to insert the first separator.
   - Deferred completion style highlighting for performance.
   - Jumping to location/documentation of current candidate.
   - Show candidate documentation/signature string in the echo area.
@@ -77,13 +77,15 @@
       ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
       ;; (corfu-auto t)                 ;; Enable auto completion
       ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
-      ;; (corfu-quit-at-boundary t)     ;; Automatically quit at word boundary
+      ;; (corfu-separator-char ? )      ;; Inihibit quit at word boundary with this char
       ;; (corfu-quit-no-match t)        ;; Automatically quit if there is no match
       ;; (corfu-preview-current nil)    ;; Disable current candidate preview
       ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
       ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
       ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
+      ;; :bind (corfu-map               ;; Bind a command to insert 1st separator char
+      ;;        ("M-SPC" . corfu-insert-separator-char))
       ;; You may want to enable Corfu only for certain modes.
       ;; :hook ((prog-mode . corfu-mode)
       ;;        (shell-mode . corfu-mode)
@@ -104,14 +106,14 @@
       ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
       ;;       orderless-component-separator #'orderless-escapable-split-on-space)
       (setq completion-styles '(orderless)
-            completion-category-defaults nil
-            completion-category-overrides '((file (styles . (partial-completion))))))
+	    completion-category-defaults nil
+	    completion-category-overrides '((file (styles . (partial-completion))))))
 
     ;; Use dabbrev with Corfu!
     (use-package dabbrev
       ;; Swap M-/ and C-M-/
       :bind (("M-/" . dabbrev-completion)
-             ("C-M-/" . dabbrev-expand)))
+	     ("C-M-/" . dabbrev-expand)))
 
     ;; A few more useful configurations...
     (use-package emacs
@@ -144,14 +146,13 @@
   #+begin_src emacs-lisp
     ;; Enable auto completion and eager quitting
     (setq corfu-auto t
-          corfu-quit-at-boundary t
           corfu-quit-no-match t)
   #+end_src
 
   In general, I recommend to experiment a bit with the various settings and key
   bindings to find a configuration which works for you. There is no one size
   fits all solution. Some people like auto completion, some like manual
-  completion, some want to cycle with TAB or and some with the arrow keys...
+  completion, some want to cycle with TAB and some with the arrow keys...
 
 ** Completing with Corfu in the minibuffer
 
@@ -190,13 +191,12 @@ completion UI, the following snippet should yield the desired result.
 ** Completing with Corfu in the Shell or Eshell
 
 When completing in the Eshell I recommend conservative local settings, no auto
-completion, quitting at boundary and quitting if there is no match.
+completion, and quitting if there is no match.
 
 #+begin_src emacs-lisp
   (add-hook 'eshell-mode-hook
             (lambda ()
-              (setq-local corfu-quit-at-boundary t
-                          corfu-quit-no-match t
+              (setq-local corfu-quit-no-match t
                           corfu-auto nil)
               (corfu-mode)))
 #+end_src
@@ -223,6 +223,23 @@ sane Eshell experience.*
   ;; and behaves as a pure `completion-at-point-function'.
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
 #+end_src
+
+** Orderless auto-completion
+
+[[https://github.com/oantolin/orderless][Orderless]] is an advanced completion style that supports multi-component search filters separated by a configurable character (space, by default).  To use orderless effectively in the buffer with ~corfu-auto~, while still normally quitting at completion boundaries, bind the command ~corfu-insert-separator-char~ to a convenient key in Corfu's keymap, and set ~corfu-separator-char~ (a space, by default) to the primary character of your orderless component separator.  Simply enter this key-binding for the /first/ component separator, and arbitrary orderless search terms can be entered thereafter. 
+
+ #+begin_src emacs-lisp
+   (use-package corfu
+     ;; Orderless customizations
+     :custom
+     (corfu-auto t)
+     ;; (corfu-separator-char ?_) ;; Set to orderless separator, if not using space
+     :bind
+     (:map corfu-map
+	   ("M-SPC" . corfu-insert-separator-char))
+     :init
+     (corfu-global-mode))
+ #+end_src    
 
 ** TAB-and-Go completion
 
@@ -275,7 +292,7 @@ moves to the next candidate and further input will then commit the selection.
 
   - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles,
     including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
-    expressions are separated by spaces (see ~corfu-quit-at-boundary~).
+    expressions are separated by spaces or another character (see ~corfu-separator-char~).
 
   - [[https://github.com/minad/cape][Cape]]: I collect additional Capf backends and =completion-in-region= commands
     in my [[https://github.com/minad/cape][Cape]] package. The package provides a file path, a dabbrev completion
