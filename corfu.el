@@ -87,15 +87,15 @@ The value should lie between 0 and corfu-count/2."
                "see the new `corfu-separator-char' customization."
                "0.19")
 
-(defcustom corfu-separator-char ? 
+(defcustom corfu-separator-char ?\s 
   "Component separator character.
 The character used for separating components in the input.
 Useful for multi-component completion styles such as orderless.
 To use, bind `corfu-insert-separator-char' to a convenient
 key (e.g. M-SPC) in corfu-map, and use this binding to enter the
 first separator character.  Both this command and the presence of
-this separator character within the input will inhibit quitting
-on completion boundaries."
+the separator character within the input will inhibit quitting on
+completion boundaries."
     :type 'character)
 
 (defcustom corfu-quit-no-match 1.0
