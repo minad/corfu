@@ -106,14 +106,14 @@
       ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
       ;;       orderless-component-separator #'orderless-escapable-split-on-space)
       (setq completion-styles '(orderless)
-	    completion-category-defaults nil
-	    completion-category-overrides '((file (styles . (partial-completion))))))
+            completion-category-defaults nil
+            completion-category-overrides '((file (styles . (partial-completion))))))
 
     ;; Use dabbrev with Corfu!
     (use-package dabbrev
       ;; Swap M-/ and C-M-/
       :bind (("M-/" . dabbrev-completion)
-	     ("C-M-/" . dabbrev-expand)))
+             ("C-M-/" . dabbrev-expand)))
 
     ;; A few more useful configurations...
     (use-package emacs
