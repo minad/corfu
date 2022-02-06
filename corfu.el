@@ -568,7 +568,7 @@ A scroll bar is displayed from LO to LO+BAR."
 (defun corfu--move-prefix-candidates-to-front (field candidates)
   "Move CANDIDATES which match prefix of FIELD to the beginning."
   (let* ((word (replace-regexp-in-string
-		(format "[%c].*" corfu-separator-char) "" field))
+                (format "[%c].*" corfu-separator-char) "" field))
          (len (length word)))
     (corfu--partition!
      candidates
@@ -873,8 +873,8 @@ Bind to a convenient key in corfu-map."
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
                       (or (eq this-command 'corfu-insert-separator-char)
-			  (seq-contains-p (car corfu--input) corfu-separator-char)
-			  (funcall completion-in-region-mode--predicate))))
+                          (seq-contains-p (car corfu--input) corfu-separator-char)
+                          (funcall completion-in-region-mode--predicate))))
            (corfu--update)
            t)))
       (corfu-quit)))
