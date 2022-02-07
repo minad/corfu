@@ -46,7 +46,7 @@
   - The selected candidate automatically committed on further input by default
     (configurable via ~corfu-commit-predicate~).
   - The [[https://github.com/oantolin/orderless][Orderless]] completion style is supported. The filter string can contain
-    arbitrary characters, including spaces, if ~corfu-separator-char~ is configured (try =M-SPC=).
+    arbitrary characters, including spaces, if ~corfu-separator~ is configured (try =M-SPC=).
   - Deferred completion style highlighting for performance.
   - Jumping to location/documentation of current candidate.
   - Show candidate documentation/signature string in the echo area.
@@ -77,7 +77,7 @@
       ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
       ;; (corfu-auto t)                 ;; Enable auto completion
       ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
-      ;; (corfu-separator-char ?\s)     ;; Inihibit quit at word boundary with this char
+      ;; (corfu-separator ?\s)     ;; Inihibit quit at word boundary with this char
       ;; (corfu-quit-no-match t)        ;; Automatically quit if there is no match
       ;; (corfu-preview-current nil)    ;; Disable current candidate preview
       ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
@@ -234,11 +234,11 @@ way.
 
 But orderless search terms can contain any characters; they are regular
 expressions. To use orderless in the buffer with ~corfu-auto~, set
-~corfu-separator-char~ (a space, by default) to the primary character of your
+~corfu-separator~ (a space, by default) to the primary character of your
 orderless component separator.
 
 Then, when a new orderless component is desired, simply use =M-SPC=
-(~corfu-insert-separator-char~) to enter the /first/ component separator in the
+(~corfu-insert-separator~) to enter the /first/ component separator in the
 input, and arbitrary orderless search terms and new separators can be entered
 thereafter.
 
@@ -247,10 +247,10 @@ thereafter.
      ;; Orderless customizations
      :custom
      (corfu-auto t)
-     ;; (corfu-separator-char ?_) ;; Set to orderless separator, if not using space
+     ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
      :bind
      ;; (:map corfu-map  ;; Another key binding can be used, such as S-SPC
-     ;;	   ("M-SPC" . corfu-insert-separator-char))
+     ;;	   ("M-SPC" . corfu-insert-separator))
      :init
      (corfu-global-mode))
  #+end_src
@@ -306,7 +306,7 @@ moves to the next candidate and further input will then commit the selection.
 
   - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles,
     including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
-    expressions are separated by spaces or another character (see ~corfu-separator-char~).
+    expressions are separated by spaces or another character (see ~corfu-separator~).
 
   - [[https://github.com/minad/cape][Cape]]: I collect additional Capf backends and =completion-in-region= commands
     in my [[https://github.com/minad/cape][Cape]] package. The package provides a file path, a dabbrev completion
