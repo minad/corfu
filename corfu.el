@@ -87,7 +87,7 @@ The value should lie between 0 and corfu-count/2."
                "see the new `corfu-separator-char' customization."
                "0.19")
 
-(defcustom corfu-separator-char ?\s 
+(defcustom corfu-separator-char ?\s
   "Component separator character.
 The character used for separating components in the input.  If
 non-nil, the presence of this separator character will inhibit
