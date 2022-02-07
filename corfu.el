@@ -83,11 +83,21 @@ The value should lie between 0 and corfu-count/2."
   "Preselect first candidate."
   :type 'boolean)
 
-(defcustom corfu-quit-at-boundary nil
-  "Automatically quit at completion field/word boundary.
-If automatic quitting is disabled, Orderless filter strings with spaces
-are allowed."
-  :type 'boolean)
+(make-obsolete
+ 'corfu-quit-at-boundary
+ "See the new `corfu-separator' customization."
+ "0.19")
+
+(defcustom corfu-separator ?\s
+  "Component separator character.
+The character used for separating components in the input.  If
+non-nil, the presence of this separator character will inhibit
+quitting at completion boundaries, so that any further characters
+can be entered.  If nil, always quit at completion boundaries.
+To enter the first separator character, call
+`corfu-insert-separator' (bound to M-SPC by default).
+Useful for multi-component completion styles such as orderless."
+  :type '(choice (const nil) 'character))
 
 (defcustom corfu-quit-no-match 1.0
   "Automatically quit if no matching candidate is found.
@@ -215,6 +225,7 @@ The completion backend can override this with
     (define-key map "\t" #'corfu-complete)
     (define-key map "\eg" #'corfu-show-location)
     (define-key map "\eh" #'corfu-show-documentation)
+    (define-key map "\e " #'corfu-insert-separator)
     map)
   "Corfu keymap used when popup is shown.")
 
@@ -558,7 +569,8 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--move-prefix-candidates-to-front (field candidates)
   "Move CANDIDATES which match prefix of FIELD to the beginning."
-  (let* ((word (replace-regexp-in-string " .*" "" field))
+  (let* ((word (substring field 0
+                          (seq-position field corfu-separator)))
          (len (length word)))
     (corfu--partition!
      candidates
@@ -842,6 +854,12 @@ there hasn't been any input, then quit."
   "Return t if a candidate is selected and previewed."
   (and corfu-preview-current (/= corfu--index corfu--preselect)))
 
+(defun corfu-insert-separator ()
+  "Insert a separator character, inhibiting quit on completion boundary."
+  (interactive)
+  (unless corfu-separator (error "`corfu-separator' character is nil"))
+  (insert corfu-separator))
+
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
   (or (pcase completion-in-region--data
@@ -855,8 +873,11 @@ there hasn't been any input, then quit."
                       (save-excursion
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
-                      (or (not corfu-quit-at-boundary)
-                          (funcall completion-in-region-mode--predicate))))
+                      (or (and corfu-separator ;; command enables separator insertion
+			       (or (eq this-command #'corfu-insert-separator)
+                                   ;; with separator, any further chars allowed
+				   (seq-contains-p (car corfu--input) corfu-separator)))
+			  (funcall completion-in-region-mode--predicate))))
            (corfu--update)
            t)))
       (corfu-quit)))
