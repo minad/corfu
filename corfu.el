@@ -873,9 +873,10 @@ Bind to a convenient key in corfu-map."
                       (save-excursion
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
-                      (or (and corfu-separator-char
+                      (or (and corfu-separator-char ; command enables separator insertion
 			       (or (eq this-command 'corfu-insert-separator-char)
-				   (seq-contains-p (car corfu--input) corfu-separator-char)))
+				   (seq-contains-p  ; with separator, any further chars allowed
+				    (car corfu--input) corfu-separator-char)))
 			  (funcall completion-in-region-mode--predicate))))
            (corfu--update)
            t)))
