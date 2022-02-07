@@ -830,7 +830,8 @@ there hasn't been any input, then quit."
       (corfu--preview-current beg end str))
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
      ((and (not corfu--candidates)
-           (pcase corfu-quit-no-match
+           (pcase-exhaustive corfu-quit-no-match
+             ('t nil)
              ('nil t)
              ('separator (seq-contains-p (car corfu--input) corfu-separator))))
       (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic)))))

@@ -78,7 +78,7 @@
       ;; (corfu-auto t)                 ;; Enable auto completion
       ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
       ;; (corfu-separator ?\s)          ;; Orderless field separator
-      ;; (corfu-quit-no-match t)        ;; Automatically quit if there is no match
+      ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
       ;; (corfu-preview-current nil)    ;; Disable current candidate preview
       ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
       ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
@@ -142,9 +142,9 @@
   appeared unexpectedly.
 
   #+begin_src emacs-lisp
-    ;; Enable auto completion and eager quitting
+    ;; Enable auto completion and configure quitting
     (setq corfu-auto t
-          corfu-quit-no-match t)
+          corfu-quit-no-match 'separator) ;; or t
   #+end_src
 
   In general, I recommend to experiment a bit with the various settings and key
@@ -188,14 +188,13 @@ completion UI, the following snippet should yield the desired result.
 
 ** Completing with Corfu in the Shell or Eshell
 
-When completing in the Eshell I recommend conservative local settings, no auto
-completion, and quitting if there is no match.
+When completing in the Eshell I recommend conservative local settings without
+auto completion.
 
 #+begin_src emacs-lisp
   (add-hook 'eshell-mode-hook
             (lambda ()
-              (setq-local corfu-quit-no-match t
-                          corfu-auto nil)
+              (setq-local corfu-auto nil)
               (corfu-mode)))
 #+end_src
 
