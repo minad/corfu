@@ -97,11 +97,15 @@ can be entered.  If nil, always quit at completion boundaries.
 To enter the first separator character, call
 `corfu-insert-separator' (bound to M-SPC by default).
 Useful for multi-component completion styles such as orderless."
-  :type '(choice (const nil) 'character))
+  :type '(choice (const nil) character))
 
-(defcustom corfu-quit-no-match t
-  "Automatically quit if no matching candidate is found."
-  :type 'boolean)
+(defcustom corfu-quit-no-match 'separator
+  "Automatically quit if no matching candidate is found.
+nil: Stay alive even if there is no match.
+t: Quit if there is no match.
+separator: Only stay alive if there is no match and
+`corfu-separator' has been inserted."
+  :type '(choice boolean (const separator)))
 
 (defcustom corfu-excluded-modes nil
   "List of modes excluded by `corfu-global-mode'."
@@ -825,7 +829,10 @@ there hasn't been any input, then quit."
       (corfu--echo-documentation)
       (corfu--preview-current beg end str))
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
-     ((and (not corfu--candidates) (not corfu-quit-no-match))
+     ((and (not corfu--candidates)
+           (pcase corfu-quit-no-match
+             ('nil t)
+             ('separator (seq-contains-p (car corfu--input) corfu-separator))))
       (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic)))))
      (t (corfu-quit)))))
 
