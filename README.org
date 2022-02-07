@@ -242,6 +242,10 @@ Then, when a new orderless component is desired, simply use =M-SPC=
 input, and arbitrary orderless search terms and new separators can be entered
 thereafter.
 
+Note that ~corfu-separator~ replaced and obsoleted ~corfu-quit-at-boundary~. If you
+want to restore the old behavior of ~corfu-quit-at-boundary=t~ you can bind
+~corfu-insert-separator~ to =SPC= in ~corfu-map~.
+
  #+begin_src emacs-lisp
    (use-package corfu
      ;; Orderless customizations
@@ -294,6 +298,7 @@ moves to the next candidate and further input will then commit the selection.
   - =RET= -> ~corfu-insert~
   - =M-g= -> ~corfu-show-location~
   - =M-h= -> ~corfu-show-documentation~
+  - =M-SPC= -> ~corfu-insert-separator~
   - =C-g= -> ~corfu-quit~
   - ~keyboard-escape-quit~ -> ~corfu-reset~
 
