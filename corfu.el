@@ -375,6 +375,7 @@ The completion backend can override this with
     buffer))
 
 ;; Function adapted from posframe.el by tumashu
+(defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
 (defun corfu--make-frame (x y width height content)
   "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT."
   (let* ((window-min-height 1)
