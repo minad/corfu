@@ -93,10 +93,11 @@ The character used for separating components in the input.
 Useful for multi-component completion styles such as orderless.
 To use, bind `corfu-insert-separator-char' to a convenient
 key (e.g. M-SPC) in corfu-map, and use this binding to enter the
-first separator character.  Both this command and the presence of
-the separator character within the input will inhibit quitting on
-completion boundaries."
-    :type 'character)
+first separator character.  If this char is non-nil, both this
+command and the presence of the separator character within the
+input will inhibit quitting at completion boundaries.  If nil,
+always quit at boundaries."
+  :type '(choice (const nil) 'character))
 
 (defcustom corfu-quit-no-match 1.0
   "Automatically quit if no matching candidate is found.
@@ -852,12 +853,12 @@ there hasn't been any input, then quit."
   "Return t if a candidate is selected and previewed."
   (and corfu-preview-current (/= corfu--index corfu--preselect)))
 
-
 (defun corfu-insert-separator-char ()
   "Insert a separator character, inhibiting quit on completion boundary.
 Bind to a convenient key in corfu-map."
   (interactive)
-  (insert corfu-separator-char))
+  (if corfu-separator-char (insert corfu-separator-char)
+    (user-error "Corfu separator character is nil.")))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
@@ -872,9 +873,10 @@ Bind to a convenient key in corfu-map."
                       (save-excursion
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
-                      (or (eq this-command 'corfu-insert-separator-char)
-                          (seq-contains-p (car corfu--input) corfu-separator-char)
-                          (funcall completion-in-region-mode--predicate))))
+                      (or (and corfu-separator-char
+			       (or (eq this-command 'corfu-insert-separator-char)
+				   (seq-contains-p (car corfu--input) corfu-separator-char)))
+			  (funcall completion-in-region-mode--predicate))))
            (corfu--update)
            t)))
       (corfu-quit)))
