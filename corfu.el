@@ -97,13 +97,15 @@ can be entered.  If nil, always quit at completion boundaries.
 To enter the first separator character, call
 `corfu-insert-separator' (bound to M-SPC by default).
 Useful for multi-component completion styles such as orderless."
-  :type '(choice (const nil) 'character))
+  :type '(choice (const nil) character))
 
-(defcustom corfu-quit-no-match 1.0
+(defcustom corfu-quit-no-match 'separator
   "Automatically quit if no matching candidate is found.
-If a floating point number, quit on no match only if the auto-started
-completion began less than that number of seconds ago."
-  :type '(choice boolean float))
+nil: Stay alive even if there is no match.
+t: Quit if there is no match.
+separator: Only stay alive if there is no match and
+`corfu-separator' has been inserted."
+  :type '(choice boolean (const separator)))
 
 (defcustom corfu-excluded-modes nil
   "List of modes excluded by `corfu-global-mode'."
@@ -268,9 +270,6 @@ The completion backend can override this with
 (defvar-local corfu--change-group nil
   "Undo change group.")
 
-(defvar-local corfu--auto-start nil
-  "Auto completion start time.")
-
 (defvar-local corfu--echo-timer nil
   "Echo area message timer.")
 
@@ -291,7 +290,6 @@ The completion backend can override this with
     corfu--total
     corfu--preview-ov
     corfu--extra
-    corfu--auto-start
     corfu--echo-timer
     corfu--echo-message
     corfu--change-group
@@ -831,12 +829,11 @@ there hasn't been any input, then quit."
       (corfu--echo-documentation)
       (corfu--preview-current beg end str))
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup
-     ((not (or corfu--candidates
-               ;; When `corfu-quit-no-match' is a number of seconds and the auto completion wasn't
-               ;; initiated too long ago, quit directly without showing the "No match" popup.
-               (if (and corfu--auto-start (numberp corfu-quit-no-match))
-                   (< (- (float-time) corfu--auto-start) corfu-quit-no-match)
-                 (eq t corfu-quit-no-match))))
+     ((and (not corfu--candidates)
+           (pcase-exhaustive corfu-quit-no-match
+             ('t nil)
+             ('nil t)
+             ('separator (seq-contains-p (car corfu--input) corfu-separator))))
       (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic)))))
      (t (corfu-quit)))))
 
@@ -884,9 +881,7 @@ there hasn't been any input, then quit."
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
-  (setq corfu--index (max corfu--preselect (min index (1- corfu--total)))
-        ;; Reset auto start in order to disable the `corfu-quit-no-match' timer
-        corfu--auto-start nil))
+  (setq corfu--index (max corfu--preselect (min index (1- corfu--total)))))
 
 (defun corfu-next (&optional n)
   "Go forward N candidates."
@@ -1160,8 +1155,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
        (let ((completion-in-region-mode-predicate
               (lambda () (eq beg (car-safe (funcall fun)))))
              (completion-extra-properties plist))
-         (setq corfu--auto-start (float-time)
-               completion-in-region--data
+         (setq completion-in-region--data
                (list (copy-marker beg) (copy-marker end t) table
                      (plist-get plist :predicate)))
          (corfu--setup)
