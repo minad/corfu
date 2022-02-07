@@ -567,8 +567,8 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--move-prefix-candidates-to-front (field candidates)
   "Move CANDIDATES which match prefix of FIELD to the beginning."
-  (let* ((word (replace-regexp-in-string
-                (format "[%c].*" corfu-separator-char) "" field))
+  (let* ((word (substring field 0
+                          (seq-position field corfu-separator-char)))
          (len (length word)))
     (corfu--partition!
      candidates
@@ -854,7 +854,7 @@ there hasn't been any input, then quit."
 
 
 (defun corfu-insert-separator-char ()
-  "Insert a separator character and inhibit quit on completion boundary.
+  "Insert a separator character, inhibiting quit on completion boundary.
 Bind to a convenient key in corfu-map."
   (interactive)
   (insert corfu-separator-char))
