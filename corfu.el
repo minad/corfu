@@ -875,8 +875,8 @@ there hasn't been any input, then quit."
                         (<= (line-beginning-position) pt (line-end-position)))
                       (or (and corfu-separator ;; command enables separator insertion
 			       (or (eq this-command #'corfu-insert-separator)
-				   (seq-contains-p  ;; with separator, any further chars allowed
-				    (car corfu--input) corfu-separator)))
+                                   ;; with separator, any further chars allowed
+				   (seq-contains-p (car corfu--input) corfu-separator)))
 			  (funcall completion-in-region-mode--predicate))))
            (corfu--update)
            t)))
