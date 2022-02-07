@@ -89,14 +89,13 @@ The value should lie between 0 and corfu-count/2."
 
 (defcustom corfu-separator-char ?\s 
   "Component separator character.
-The character used for separating components in the input.
-Useful for multi-component completion styles such as orderless.
-To use, bind `corfu-insert-separator-char' to a convenient
-key (e.g. M-SPC) in corfu-map, and use this binding to enter the
-first separator character.  If this char is non-nil, both this
-command and the presence of the separator character within the
-input will inhibit quitting at completion boundaries.  If nil,
-always quit at boundaries."
+The character used for separating components in the input.  If
+non-nil, the presence of this separator character will inhibit
+quitting at completion boundaries, so that any further characters
+can be entered.  If nil, always quit at completion boundaries.
+To enter the first separator character, call
+`corfu-insert-separator-char' (bound to M-SPC by default).
+Useful for multi-component completion styles such as orderless."
   :type '(choice (const nil) 'character))
 
 (defcustom corfu-quit-no-match 1.0
@@ -225,6 +224,7 @@ The completion backend can override this with
     (define-key map "\t" #'corfu-complete)
     (define-key map "\eg" #'corfu-show-location)
     (define-key map "\eh" #'corfu-show-documentation)
+    (define-key map "\e " #'corfu-insert-separator-char)
     map)
   "Corfu keymap used when popup is shown.")
 
@@ -854,8 +854,7 @@ there hasn't been any input, then quit."
   (and corfu-preview-current (/= corfu--index corfu--preselect)))
 
 (defun corfu-insert-separator-char ()
-  "Insert a separator character, inhibiting quit on completion boundary.
-Bind to a convenient key in corfu-map."
+  "Insert a separator character, inhibiting quit on completion boundary."
   (interactive)
   (if corfu-separator-char (insert corfu-separator-char)
     (user-error "Corfu separator character is nil.")))

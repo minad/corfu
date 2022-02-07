@@ -46,7 +46,7 @@
   - The selected candidate automatically committed on further input by default
     (configurable via ~corfu-commit-predicate~).
   - The [[https://github.com/oantolin/orderless][Orderless]] completion style is supported. The filter string can contain
-    arbitrary characters, including spaces, if ~corfu-separator-char~ is configured to match the orderless separator, and a special key is used to insert the first separator.
+    arbitrary characters, including spaces, if ~corfu-separator-char~ is configured (try =M-SPC=).
   - Deferred completion style highlighting for performance.
   - Jumping to location/documentation of current candidate.
   - Show candidate documentation/signature string in the echo area.
@@ -77,15 +77,13 @@
       ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
       ;; (corfu-auto t)                 ;; Enable auto completion
       ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
-      ;; (corfu-separator-char ? )      ;; Inihibit quit at word boundary with this char
+      ;; (corfu-separator-char ?\s)     ;; Inihibit quit at word boundary with this char
       ;; (corfu-quit-no-match t)        ;; Automatically quit if there is no match
       ;; (corfu-preview-current nil)    ;; Disable current candidate preview
       ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
       ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
       ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
-      ;; :bind (corfu-map               ;; Bind a command to insert 1st separator char
-      ;;        ("M-SPC" . corfu-insert-separator-char))
       ;; You may want to enable Corfu only for certain modes.
       ;; :hook ((prog-mode . corfu-mode)
       ;;        (shell-mode . corfu-mode)
@@ -226,7 +224,11 @@ sane Eshell experience.*
 
 ** Orderless auto-completion
 
-[[https://github.com/oantolin/orderless][Orderless]] is an advanced completion style that supports multi-component search filters separated by a configurable character (space, by default).  To use orderless effectively in the buffer with ~corfu-auto~, while still normally quitting at completion boundaries, bind the command ~corfu-insert-separator-char~ to a convenient key in Corfu's keymap, and set ~corfu-separator-char~ (a space, by default) to the primary character of your orderless component separator.  Simply enter this key-binding for the /first/ component separator, and arbitrary orderless search terms can be entered thereafter. 
+[[https://github.com/oantolin/orderless][Orderless]] is an advanced completion style that supports multi-component search filters separated by a configurable character (space, by default).  Normally, entering characters like space which lie outside the completion region boundaries (words, typically) causes corfu to quit.  This behavior is very helpful with auto-completion, which may pop-up when not desired, e.g. on entering a new variable name.  Just keep typing and corfu will get out of the way.  
+
+But orderless search terms can contain any characters; they are regular expressions. To use orderless in the buffer with ~corfu-auto~, set ~corfu-separator-char~ (a space, by default) to the primary character of your orderless component separator.
+
+Then, when a new orderless component is desired, simply use =M-SPC= (~corfu-insert-separator-char~) to enter the /first/ component separator in the input, and arbitrary orderless search terms and new separators can be entered thereafter.  
 
  #+begin_src emacs-lisp
    (use-package corfu
@@ -235,8 +237,8 @@ sane Eshell experience.*
      (corfu-auto t)
      ;; (corfu-separator-char ?_) ;; Set to orderless separator, if not using space
      :bind
-     (:map corfu-map
-	   ("M-SPC" . corfu-insert-separator-char))
+     ;; (:map corfu-map  ;; Another key binding can be used, such as S-SPC
+     ;;	   ("M-SPC" . corfu-insert-separator-char))
      :init
      (corfu-global-mode))
  #+end_src    
