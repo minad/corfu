@@ -434,22 +434,14 @@ The completion backend can override this with
         ;; XXX HACK Avoid flicker when frame is already visible.
         ;; Redisplay, wait for resize and then move the frame.
         (unless (equal (frame-position corfu--frame) (cons x y))
-          (redisplay)
+          (redisplay 'force)
           (sleep-for 0.01)
           (set-frame-position corfu--frame x y))
       ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
       (set-frame-position corfu--frame x y)
-      (redisplay)
+      (redisplay 'force)
       (make-frame-visible corfu--frame))
-    ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
-    (run-at-time 0.01 nil
-                 (lambda ()
-                   (with-current-buffer buffer
-                     (let ((inhibit-read-only t))
-                       (goto-char (point-min))
-                       (insert "please redisplay")
-                       (delete-region (point-min) (point))))
-                   (redisplay)))))
+    (redisplay 'force)))
 
 (defun corfu--popup-show (pos off width lines &optional curr lo bar)
   "Show LINES as popup at POS - OFF.
