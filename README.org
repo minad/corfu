@@ -285,6 +285,30 @@ moves to the next candidate and further input will then commit the selection.
     (corfu-global-mode))
 #+end_src
 
+** Transfer completion to the minibuffer
+
+Sometimes it is useful to transfer the Corfu completion session to the
+minibuffer, since the minibuffer offers richer interaction features. In
+particular, [[https://github.com/oantolin/embark][Embark]] is available in the minibuffer, such that you can act on the
+candidates or export/collect the candidates to a separate buffer. Hopefully we
+can also add Corfu-support to Embark in the future, such that at least
+export/collect is possible directly from Corfu. But in my opinion having the
+ability to transfer the Corfu completion to the minibuffer is an even better
+feature, since further completion can be performed there.
+
+The command ~corfu-move-to-minibuffer~ is defined here in terms of
+~consult-completion-in-region~, which uses the minibuffer completion UI via
+~completing-read~.
+
+#+begin_src emacs-lisp
+  (defun corfu-move-to-minibuffer ()
+    (interactive)
+    (let ((completion-extra-properties corfu--extra)
+          completion-cycle-threshold completion-cycling)
+      (apply #'consult-completion-in-region completion-in-region--data)))
+  (define-key corfu-map "\M-m" #'corfu-move-to-minibuffer)
+#+end_src
+
 * Key bindings
 
   Corfu uses a transient keymap ~corfu-map~ which is active while the popup is shown.
