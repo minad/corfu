@@ -186,16 +186,43 @@ completion UI, the following snippet should yield the desired result.
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
 #+end_src
 
-** Completing with Corfu in the Shell or Eshell
+** Completing with Corfu in the Eshell or Shell
 
 When completing in the Eshell I recommend conservative local settings without
-auto completion.
+auto completion, such that the completion behavior is similar to widely used
+shells like Bash, Zsh or Fish.
 
 #+begin_src emacs-lisp
   (add-hook 'eshell-mode-hook
             (lambda ()
               (setq-local corfu-auto nil)
               (corfu-mode)))
+#+end_src
+
+When pressing =RET= while the Corfu popup is visible, the ~corfu-insert~ command
+will be invoked. This command does inserts the currently selected candidate, but
+it does not send the prompt input to Eshell or the comint process. In my
+configuration I define the command ~corfu-insert-and-send~ which performs the two
+steps at once.
+
+#+begin_src emacs-lisp
+  (defun corfu-insert-and-send ()
+    (interactive)
+    ;; 1. First insert the completed candidate
+    (corfu-insert)
+    ;; 2. Send the entire prompt input to the shell
+    (cond
+     ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
+      (eshell-send-input))
+     ((derived-mode-p 'comint-mode)
+      (comint-send-input))))
+
+  (add-hook 'eshell-mode
+            (lambda ()
+              ;; Create a local copy of corfu-map
+              (setq-local corfu-map (copy-keymap corfu-map))
+              ;; Rebind RET to corfu-insert-and-send
+              (define-key corfu-map "\r" #'corfu-insert-and-send)))
 #+end_src
 
 Shell completion uses the flexible ~pcomplete~ mechanism internally, which allows
