@@ -201,9 +201,10 @@ shells like Bash, Zsh or Fish.
 
 When pressing =RET= while the Corfu popup is visible, the ~corfu-insert~ command
 will be invoked. This command does inserts the currently selected candidate, but
-it does not send the prompt input to Eshell or the comint process. In my
-configuration I define the command ~corfu-insert-and-send~ which performs the two
-steps at once.
+it does not send the prompt input to Eshell or the comint process. Therefore you
+often have to press =RET= twice which feels like an unnecessary double
+confirmation. Fortunately it is easy to improve this! In my configuration I
+define the command ~corfu-insert-and-send~ which performs the two steps at once.
 
 #+begin_src emacs-lisp
   (defun corfu-insert-and-send ()
