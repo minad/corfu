@@ -71,21 +71,25 @@ The value should lie between 0 and corfu-count/2."
   "Continue Corfu completion after executing these commands."
   :type '(repeat (choice regexp symbol)))
 
-(defcustom corfu-commit-predicate #'corfu-candidate-previewed-p
-  "Automatically commit if the predicate returns t."
-  :type '(choice (const nil) function))
-
-(defcustom corfu-preview-current t
-  "Preview currently selected candidate."
-  :type 'boolean)
+(defcustom corfu-preview-current 'insert
+  "Preview currently selected candidate.
+If the variable has the value `insert', the candidate is automatically
+inserted on further input."
+  :type '(choice boolean (const insert)))
 
 (defcustom corfu-preselect-first t
   "Preselect first candidate."
   :type 'boolean)
 
-(make-obsolete
+(defvar corfu-quit-at-boundary nil)
+(defvar corfu-commit-predicate nil)
+(make-obsolete-variable
  'corfu-quit-at-boundary
  "See the new `corfu-separator' customization."
+ "0.19")
+(make-obsolete-variable
+ 'corfu-commit-predicate
+ "Set `corfu-preview-current' to the value `insert'."
  "0.19")
 
 (defcustom corfu-separator ?\s
@@ -227,7 +231,7 @@ The completion backend can override this with
     (define-key map "\t" #'corfu-complete)
     (define-key map "\eg" #'corfu-show-location)
     (define-key map "\eh" #'corfu-show-documentation)
-    (define-key map "\e " #'corfu-insert-separator)
+    (define-key map (concat "\e" " ") #'corfu-insert-separator) ;; Avoid ugly warning
     map)
   "Corfu keymap used when popup is shown.")
 
@@ -835,14 +839,10 @@ there hasn't been any input, then quit."
   (when corfu--preview-ov
     (delete-overlay corfu--preview-ov)
     (setq corfu--preview-ov nil))
-  (when (and corfu-commit-predicate
-             (not (corfu--match-symbol-p corfu-continue-commands this-command))
-             (funcall corfu-commit-predicate))
+  (when (and (eq corfu-preview-current 'insert)
+             (/= corfu--index corfu--preselect)
+             (not (corfu--match-symbol-p corfu-continue-commands this-command)))
     (corfu--insert 'exact)))
-
-(defun corfu-candidate-previewed-p ()
-  "Return t if a candidate is selected and previewed."
-  (and corfu-preview-current (/= corfu--index corfu--preselect)))
 
 (defun corfu-insert-separator ()
   "Insert a separator character, inhibiting quit on completion boundary."
@@ -1176,7 +1176,7 @@ Auto completion is only performed if the tick did not change."
 
 ;;;###autoload
 (define-minor-mode corfu-mode
-  "Completion Overlay Region FUnction"
+  "Completion Overlay Region FUnction."
   :global nil :group 'corfu
   (cond
    (corfu-mode
