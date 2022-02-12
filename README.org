@@ -43,8 +43,8 @@
   - The current candidate is inserted with =TAB= and selected with =RET=.
   - Candidates sorting by prefix, string length and alphabetically.
   - The selected candidate is previewed (configuable via ~corfu-preview-current~).
-  - The selected candidate automatically committed on further input by default
-    (configurable via ~corfu-commit-predicate~).
+  - The selected candidate automatically committed on further input by default.
+    (configurable via ~corfu-preview-current~).
   - The [[https://github.com/oantolin/orderless][Orderless]] completion style is supported. The filter string can contain
     arbitrary characters, including spaces, if ~corfu-separator~ is configured (try =M-SPC=).
   - Deferred completion style highlighting for performance.
@@ -61,10 +61,17 @@
   =M-x corfu-global-mode=. In order to configure Corfu and other packages in your
   init.el, you may want to use ~use-package~.
 
-  Corfu is highly flexible and customizable via ~corfu-*~ customization variables.
-  For filtering I recommend to give Orderless completion a try, which is
+  Corfu is highly flexible and customizable via ~corfu-*~ customization variables,
+  such that you can adapt it precisely to your requirements. However in order to
+  quickly try out the Corfu completion package, it should be sufficient to
+  activate ~corfu-global-mode~. Then you experiment with manual completion for
+  example in an Elisp buffer or in an Eshell or Shell buffer. For auto
+  completion, set ~corfu-auto=t~ before turning on ~corfu-global-mode~.
+
+  If you start to configure the package more deeply, I recommend to give the
+  Orderless completion style a try for filtering. Orderless completion is
   different from the familiar prefix TAB completion. Corfu can be used with the
-  default completion styles, the use of Orderless is not a necessity. See also
+  default completion styles. The use of Orderless is not a necessity. See also
   the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips. In particular the Lsp-mode
   configuration is documented in the Wiki.
 
@@ -76,11 +83,11 @@
       ;; :custom
       ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
       ;; (corfu-auto t)                 ;; Enable auto completion
-      ;; (corfu-commit-predicate nil)   ;; Do not commit selected candidates on next input
       ;; (corfu-separator ?\s)          ;; Orderless field separator
       ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
       ;; (corfu-preview-current nil)    ;; Disable current candidate preview
       ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
+      ;; (corfu-insert-single nil)      ;; Do not insert single matches automatically
       ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
       ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
