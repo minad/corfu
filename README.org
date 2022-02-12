@@ -274,17 +274,39 @@ Note that ~corfu-separator~ replaced the older less general option
 ~corfu-map~. In contrast, if you /always/ want to quit at the boundary, simply set
 ~corfu-separator~ to ~nil~.
 
+Finally, there exists the user option ~corfu-quit-no-match~ which is set to
+=separator= by default. With this setting Corfu stays alive as soon as you start
+advanced filtering with a ~corfu-separator~ even if there are no matches, for
+example due to a typo. As long as no separator character has been inserted with
+~corfu-insert-separator~, Corfu will still quit if there are no matches. This
+ensures that the Corfu popup goes away quickly if completion is not possible.
+
+In the following we show two configurations, one which works best with auto
+completion and one which may work better with manual completion if you prefer to
+always use =SPC= to separate the Orderless components.
+
  #+begin_src emacs-lisp
+   ;; Auto completion example
    (use-package corfu
      :custom
-     ;; (corfu-auto t)       ;; Enable auto completion
+     (corfu-auto t)          ;; Enable auto completion
      ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
      :bind
-     ;; Another key binding can be used, such as S-SPC or even SPC only.
+     ;; Another key binding can be used, such as S-SPC.
      ;; (:map corfu-map ("M-SPC" . corfu-insert-separator))
      :init
      (corfu-global-mode))
- #+end_src
+
+   ;; Manual completion example
+   (use-package corfu
+     :custom
+     ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
+     :bind
+     ;; Configure SPC for separator insertion
+     (:map corfu-map ("SPC" . corfu-insert-separator))
+     :init
+     (corfu-global-mode))
+#+end_src
 
 ** TAB-and-Go completion
 
