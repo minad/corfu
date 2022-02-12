@@ -448,8 +448,7 @@ The completion backend can override this with
       ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not display content.
       (set-frame-position corfu--frame x y)
       (redisplay 'force)
-      (make-frame-visible corfu--frame))
-    (redisplay 'force)))
+      (make-frame-visible corfu--frame))))
 
 (defun corfu--popup-show (pos off width lines &optional curr lo bar)
   "Show LINES as popup at POS - OFF.
@@ -830,15 +829,17 @@ there hasn't been any input, then quit."
      ;; 3) There exist candidates => Show candidates popup.
      (corfu--candidates
       (corfu--candidates-popup beg)
+      (corfu--preview-current beg end str)
       (corfu--echo-documentation)
-      (corfu--preview-current beg end str))
+      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup.
      ((and (not corfu--candidates)
            (pcase-exhaustive corfu-quit-no-match
              ('t nil)
              ('nil t)
              ('separator (seq-contains-p (car corfu--input) corfu-separator))))
-      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic)))))
+      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic))))
+      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
      (t (corfu-quit)))))
 
 (defun corfu--pre-command ()
