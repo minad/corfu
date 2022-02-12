@@ -64,9 +64,9 @@ The value should lie between 0 and corfu-count/2."
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
-(defcustom corfu-insert-single t
-  "Automatically insert single matching candidate."
-  :type 'boolean)
+(defcustom corfu-on-exact-match 'insert
+  "Configure how a single exact match should be handled."
+  :type '(choice (const insert) (const quit) (const nil)))
 
 (defcustom corfu-continue-commands
   ;; nil is undefined command
@@ -818,13 +818,15 @@ there hasn't been any input, then quit."
      ;; 1) Initializing, no candidates => Quit. Happens during auto completion.
      ((and initializing (not corfu--candidates))
       (corfu-quit))
-     ;; 2) Single matching candidate and no further completion is possible.
+     ;; 2) Single exactly matching candidate and no further completion is possible.
      ((and (not (equal str ""))
            (equal (car corfu--candidates) str) (not (cdr corfu--candidates))
            (not (consp (completion-try-completion str table pred pt corfu--metadata)))
-           (or initializing corfu-insert-single))
-      ;; Quit directly, happens during auto completion.
-      (if initializing (corfu-quit) (corfu--done str 'finished)))
+           (or initializing corfu-on-exact-match))
+      ;; Quit directly when initializing. This happens during auto completion.
+      (if (or initializing (eq corfu-on-exact-match 'quit))
+          (corfu-quit)
+        (corfu--done str 'finished)))
      ;; 3) There exist candidates => Show candidates popup.
      (corfu--candidates
       (corfu--candidates-popup beg)
