@@ -131,7 +131,7 @@ separator: Only stay alive if there is no match and
   "Width of the bar in units of the character width."
   :type 'float)
 
-(defcustom corfu-echo-documentation 0.5
+(defcustom corfu-echo-documentation 1.0
   "Show documentation string in the echo area after that number of seconds."
   :type '(choice boolean float))
 
