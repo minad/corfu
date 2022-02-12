@@ -249,42 +249,39 @@ sane Eshell experience.*
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
 #+end_src
 
-** Orderless auto-completion
+** Orderless completion
 
 [[https://github.com/oantolin/orderless][Orderless]] is an advanced completion style that supports multi-component search
 filters separated by a configurable character (space, by default). Normally,
 entering characters like space which lie outside the completion region
-boundaries (words, typically) causes corfu to quit. This behavior is very
-helpful with auto-completion, which may pop-up when not desired, e.g. on
-entering a new variable name. Just keep typing and corfu will get out of the
-way.
+boundaries (words, typically) causes Corfu to quit. This behavior is helpful
+with auto-completion, which may pop-up when not desired, e.g. on entering a new
+variable name. Just keep typing and Corfu will get out of the way.
 
-But orderless search terms can contain any characters; they are regular
-expressions. To use orderless in the buffer with ~corfu-auto~, set
-~corfu-separator~ (a space, by default) to the primary character of your
-orderless component separator.
+But orderless search terms can contain arbitrary characters; they are also
+interpreted as regular expressions. To use orderless, set ~corfu-separator~ (a
+space, by default) to the primary character of your orderless component
+separator.
 
-Then, when a new orderless component is desired, simply use =M-SPC=
-(~corfu-insert-separator~) to enter the /first/ component separator in the
-input, and arbitrary orderless search terms and new separators can be entered
+Then, when a new orderless component is desired, use =M-SPC=
+(~corfu-insert-separator~) to enter the /first/ component separator in the input,
+and arbitrary orderless search terms and new separators can be entered
 thereafter.
 
-Note that ~corfu-separator~ replaced and obsoleted
+Note that ~corfu-separator~ replaced the older less general option
 ~corfu-quit-at-boundary~. If you want similar behavior as with
-~corfu-quit-at-boundary=nil~, you can bind ~corfu-insert-separator~ to
-=SPC= (or whatever separator character you use) in ~corfu-map~.  If
-you /always/ want to quit at the boundary, simply set ~corfu-separator~ to
-~nil~.
+~corfu-quit-at-boundary=nil~, you can bind ~corfu-insert-separator~ to =SPC= in
+~corfu-map~. In contrast, if you /always/ want to quit at the boundary, simply set
+~corfu-separator~ to ~nil~.
 
  #+begin_src emacs-lisp
    (use-package corfu
-     ;; Orderless customizations
      :custom
-     (corfu-auto t)
+     ;; (corfu-auto t)       ;; Enable auto completion
      ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
      :bind
-     ;; (:map corfu-map  ;; Another key binding can be used, such as S-SPC
-     ;;	   ("M-SPC" . corfu-insert-separator))
+     ;; Another key binding can be used, such as S-SPC or even SPC only.
+     ;; (:map corfu-map ("M-SPC" . corfu-insert-separator))
      :init
      (corfu-global-mode))
  #+end_src
@@ -363,9 +360,9 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
   out of the box. Nevertheless you may want to look into complementary packages
   to enhance your setup.
 
-  - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles,
-    including the advanced [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering
-    expressions are separated by spaces or another character (see ~corfu-separator~).
+  - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced
+    [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering expressions are separated by
+    spaces or another character (see ~corfu-separator~).
 
   - [[https://github.com/minad/cape][Cape]]: I collect additional Capf backends and =completion-in-region= commands
     in my [[https://github.com/minad/cape][Cape]] package. The package provides a file path, a dabbrev completion
