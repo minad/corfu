@@ -225,12 +225,7 @@ define the command ~corfu-insert-and-send~ which performs the two steps at once.
      ((derived-mode-p 'comint-mode)
       (comint-send-input))))
 
-  (add-hook 'eshell-mode
-            (lambda ()
-              ;; Create a local copy of corfu-map
-              (setq-local corfu-map (copy-keymap corfu-map))
-              ;; Rebind RET to corfu-insert-and-send
-              (define-key corfu-map "\r" #'corfu-insert-and-send)))
+  (define-key corfu-map "\r" #'+corfu-insert-and-send)
 #+end_src
 
 Shell completion uses the flexible ~pcomplete~ mechanism internally, which allows
