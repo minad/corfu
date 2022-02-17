@@ -1147,12 +1147,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   (when (and (not completion-in-region-mode) (equal tick (corfu--auto-tick)))
     (pcase (while-no-input ;; Interruptible capf query
              (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
-      ((and `(,fun ,beg ,end ,table . ,plist)
-            (guard (integer-or-marker-p beg))
-            (guard (<= beg (point) end))
-            (guard
-             (let ((len (or (plist-get plist :company-prefix-length) (- (point) beg))))
-               (or (eq len t) (>= len corfu-auto-prefix)))))
+      (`(,fun ,beg ,end ,table . ,plist)
        (let ((completion-in-region-mode-predicate
               (lambda () (eq beg (car-safe (funcall fun)))))
              (completion-extra-properties plist))
@@ -1201,13 +1196,20 @@ Auto completion is only performed if the tick did not change."
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function))))
 
-(defun corfu--capf-wrapper (fun)
+(defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
-Determines if the capf is applicable at the current position."
+The wrapper determines if the capf is applicable at the current position
+and performs sanity checking on the returned result. PREFIX is a prefix
+length override, set to t for manual completion."
   (pcase (funcall fun)
     ((and res `(,beg ,end ,table . ,plist))
      (and (integer-or-marker-p beg) ;; Valid capf result
-          (<= beg (point) end) ;; Sanity checking
+          (<= beg (point) end)      ;; Sanity checking
+          ;; When auto completing, check the prefix length!
+          (let ((len (or prefix
+                         (plist-get plist :company-prefix-length)
+                         (- (point) beg))))
+            (or (eq len t) (>= len corfu-auto-prefix)))
           ;; For non-exclusive capfs, check for valid completion.
           (or (not (eq 'no (plist-get plist :exclusive)))
               (let* ((str (buffer-substring-no-properties beg end))
@@ -1224,7 +1226,7 @@ Determines if the capf is applicable at the current position."
 (defun corfu--capf-wrapper-advice (orig fun which)
   "Around advice for `completion--capf-wrapper'.
 The ORIG function takes the FUN and WHICH arguments."
-  (if corfu-mode (corfu--capf-wrapper fun) (funcall orig fun which)))
+  (if corfu-mode (corfu--capf-wrapper fun t) (funcall orig fun which)))
 
 ;;;###autoload
 (define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on :group 'corfu)
