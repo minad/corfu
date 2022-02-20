@@ -427,12 +427,12 @@ The completion backend can override this with
     ;; XXX HACK We have to apply the face background before adjusting the frame parameter,
     ;; otherwise the border is not updated (BUG!).
     (let* ((face (if (facep 'child-frame-border) 'child-frame-border 'internal-border))
-	   (new (face-attribute 'corfu-border :background nil 'default)))
+           (new (face-attribute 'corfu-border :background nil 'default)))
       (unless (equal (face-attribute face :background corfu--frame 'default) new)
-	(set-face-background face new corfu--frame)))
+        (set-face-background face new corfu--frame)))
     (let ((new (face-attribute 'corfu-default :background nil 'default)))
       (unless (equal (frame-parameter corfu--frame 'background-color) new)
-	(set-frame-parameter corfu--frame 'background-color new)))
+        (set-frame-parameter corfu--frame 'background-color new)))
     (let ((win (frame-root-window corfu--frame)))
       (set-window-buffer win buffer)
       ;; Mark window as dedicated to prevent frame reuse (#60)
@@ -864,18 +864,23 @@ there hasn't been any input, then quit."
         (`(,beg ,end . ,_)
          (when (let ((pt (point)))
                  (and (eq (marker-buffer beg) (current-buffer))
+                      ;; Check ranges
                       (<= beg pt end)
-                      (or (not corfu--input)
-                          (corfu--match-symbol-p corfu-continue-commands this-command)
-                          (< beg end))
                       (save-excursion
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
-                      (or (and corfu-separator ;; command enables separator insertion
-			       (or (eq this-command #'corfu-insert-separator)
-                                   ;; with separator, any further chars allowed
-				   (seq-contains-p (car corfu--input) corfu-separator)))
-			  (funcall completion-in-region-mode--predicate))))
+                      (or
+                       ;; Check if it is an explicitly listed continue command
+                       (corfu--match-symbol-p corfu-continue-commands this-command)
+                       (and
+                        ;; Check for empty input
+                        (or (not corfu--input) (< beg end))
+                        ;; Check separator or predicate
+                        (or (and corfu-separator ;; Command enables separator insertion
+                                 (or (eq this-command #'corfu-insert-separator)
+                                     ;; with separator, any further chars allowed
+                                     (seq-contains-p (car corfu--input) corfu-separator)))
+                            (funcall completion-in-region-mode--predicate))))))
            (corfu--update)
            t)))
       (corfu-quit)))
