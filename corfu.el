@@ -134,8 +134,18 @@ separator: Only stay alive if there is no match and
 (defcustom corfu-echo-documentation 0.2
   "Show documentation string in the echo area after that number of seconds.
 Set to nil to disable docsig, or t to echo immediately on
-selecting a new candidate."
-  :type '(choice boolean float))
+selecting a new candidate.  Can also be a 2-element list of
+floats (or t) to specify initial and seubsequent delay."
+  :type '(choice (const :tag "Never" nil)
+		 (const :tag "Instant" t)
+		 (number :tag "Delay [sec]")
+		 (list :tag "Two Delays"
+		       (choice :tag "Initial   "
+			       (const :tag "Instant" t)
+			       (number :tag "Delay [sec]"))
+		       (choice :tag "Subsequent"
+			       (const :tag "Instant" t)
+			       (number :tag "Delay [sec]")))))
 
 (defcustom corfu-margin-formatters nil
   "Registry for margin formatter functions.
@@ -244,6 +254,9 @@ The completion backend can override this with
 (defvar corfu--auto-timer nil
   "Auto completion timer.")
 
+(defvar-local corfu--initial t
+  "Whether on the initial update.")
+
 (defvar-local corfu--candidates nil
   "List of candidates.")
 
@@ -291,6 +304,7 @@ The completion backend can override this with
 
 (defconst corfu--state-vars
   '(corfu--base
+    corfu--initial
     corfu--candidates
     corfu--highlight
     corfu--index
@@ -789,17 +803,18 @@ there hasn't been any input, then quit."
 
 (defun corfu--echo-documentation ()
   "Show documentation string of current candidate in echo area."
-  (when corfu-echo-documentation
-    (if-let* ((fun (plist-get corfu--extra :company-docsig))
-              (cand (and (>= corfu--index 0)
-			 (nth corfu--index corfu--candidates))))
-	(if (eq corfu-echo-documentation t)
-	    (corfu--echo-show (funcall fun cand))
-          (when corfu--echo-timer (cancel-timer corfu--echo-timer))
-	  (setq corfu--echo-timer 
-		(run-at-time corfu-echo-documentation nil
-			     #'corfu--echo-call-show fun cand))
-	  (when corfu--echo-message (corfu--echo-show ""))))))
+  (if-let* ((delay (if (consp corfu-echo-documentation)
+		       (nth (if corfu--initial 0 1) corfu-echo-documentation)
+		     corfu-echo-documentation))
+            (fun (plist-get corfu--extra :company-docsig))
+	    (cand (and (>= corfu--index 0)
+		       (nth corfu--index corfu--candidates))))
+      (if (eq delay t) 			; immediate
+	  (corfu--echo-show (funcall fun cand))
+        (when corfu--echo-timer (cancel-timer corfu--echo-timer))
+	(setq corfu--echo-timer 
+	      (run-at-time delay nil #'corfu--echo-call-show fun cand))
+	(when corfu--echo-message (corfu--echo-show "")))))
 
 (defun corfu--update ()
   "Refresh Corfu UI."
@@ -837,6 +852,7 @@ there hasn't been any input, then quit."
       (corfu--candidates-popup beg)
       (corfu--preview-current beg end str)
       (corfu--echo-documentation)
+      (setq corfu--initial nil)
       (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup.
      ((and (not corfu--candidates)
