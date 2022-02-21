@@ -133,9 +133,11 @@ separator: Only stay alive if there is no match and
 
 (defcustom corfu-echo-documentation '(1.0 . 0.2)
   "Show documentation string in the echo area after that number of seconds.
-Set to nil to disable. The value can be a pair of two floats to specify
-initial and subsequent delay."
+Set to nil to disable the echo message or to t for an instant message.
+The value can be a pair of two floats to specify initial and subsequent
+delay."
   :type '(choice (const :tag "Never" nil)
+                 (const :tag "Instant" t)
                  (number :tag "Delay in seconds")
                  (cons :tag "Two Delays"
                        (choice :tag "Initial   " number))
@@ -791,21 +793,22 @@ there hasn't been any input, then quit."
 
 (defun corfu--echo-documentation ()
   "Show documentation string of current candidate in echo area."
-  (when-let* ((delay (if (consp corfu-echo-documentation)
-                         (funcall (if corfu--echo-message #'cdr #'car)
-                                  corfu-echo-documentation)
-                       corfu-echo-documentation))
-              (fun (plist-get corfu--extra :company-docsig))
-              (cand (and (>= corfu--index 0)
-                         (nth corfu--index corfu--candidates))))
-    (if (<= delay 0)
-        (corfu--echo-show (funcall fun cand))
-      (when corfu--echo-timer (cancel-timer corfu--echo-timer))
-      (setq corfu--echo-timer
-            (run-at-time delay nil
-                         (lambda ()
-                           (corfu--echo-show (funcall fun cand)))))))
-  (corfu--echo-show))
+  (if-let* ((delay (if (consp corfu-echo-documentation)
+                       (funcall (if corfu--echo-message #'cdr #'car)
+                                corfu-echo-documentation)
+                     corfu-echo-documentation))
+            (fun (plist-get corfu--extra :company-docsig))
+            (cand (and (>= corfu--index 0)
+                       (nth corfu--index corfu--candidates))))
+      (if (or (eq delay t) (<= delay 0))
+          (corfu--echo-show (funcall fun cand))
+        (when corfu--echo-timer (cancel-timer corfu--echo-timer))
+        (setq corfu--echo-timer
+              (run-at-time delay nil
+                           (lambda ()
+                             (corfu--echo-show (funcall fun cand)))))
+        (corfu--echo-show))
+    (corfu--echo-show)))
 
 (defun corfu--update ()
   "Refresh Corfu UI."
