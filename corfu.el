@@ -131,7 +131,7 @@ separator: Only stay alive if there is no match and
   "Width of the bar in units of the character width."
   :type 'float)
 
-(defcustom corfu-echo-documentation 0.2
+(defcustom corfu-echo-documentation '(1.0 0.2)
   "Show documentation string in the echo area after that number of seconds.
 Set to nil to disable docsig, or t to echo immediately on
 selecting a new candidate.  Can also be a 2-element list of
