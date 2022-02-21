@@ -131,8 +131,10 @@ separator: Only stay alive if there is no match and
   "Width of the bar in units of the character width."
   :type 'float)
 
-(defcustom corfu-echo-documentation 1.0
-  "Show documentation string in the echo area after that number of seconds."
+(defcustom corfu-echo-documentation 0.2
+  "Show documentation string in the echo area after that number of seconds.
+Set to nil to disable docsig, or t to echo immediately on
+selecting a new candidate."
   :type '(choice boolean float))
 
 (defcustom corfu-margin-formatters nil
@@ -782,18 +784,22 @@ there hasn't been any input, then quit."
                            msg
                          (propertize msg 'face 'corfu-echo))))
 
+(defun corfu--echo-call-show (fun cand)
+  (corfu--echo-show (funcall fun cand)))
+
 (defun corfu--echo-documentation ()
   "Show documentation string of current candidate in echo area."
   (when corfu-echo-documentation
     (if-let* ((fun (plist-get corfu--extra :company-docsig))
-              (cand (and (>= corfu--index 0) (nth corfu--index corfu--candidates)))
-              (doc (funcall fun cand)))
-        (if (or (eq corfu-echo-documentation t) corfu--echo-message)
-            (corfu--echo-show doc)
-          (setq corfu--echo-timer (run-at-time corfu-echo-documentation
-                                               nil #'corfu--echo-show doc)))
-      (when corfu--echo-message
-        (corfu--echo-show "")))))
+              (cand (and (>= corfu--index 0)
+			 (nth corfu--index corfu--candidates))))
+	(if (eq corfu-echo-documentation t)
+	    (corfu--echo-show (funcall fun cand))
+          (when corfu--echo-timer (cancel-timer corfu--echo-timer))
+	  (setq corfu--echo-timer 
+		(run-at-time corfu-echo-documentation nil
+			     #'corfu--echo-call-show fun cand))
+	  (when corfu--echo-message (corfu--echo-show ""))))))
 
 (defun corfu--update ()
   "Refresh Corfu UI."
