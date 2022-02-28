@@ -400,17 +400,16 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
     the [[https://github.com/jdtsmith/kind-icon][kind-icon]] package provides beautifully styled SVG icons based on
     monochromatic icon sets like material design.
 
-  - [[https://github.com/galeo/corfu-doc][corfu-doc]]: The corfu-doc package by @galeo allows you to display the candidate
-    documentation in a popup next to the Corfu popup, similar to
-    =company-quickhelp=. /Note that the corfu-doc package is new and still work in
-    progress./
+  - [[https://github.com/galeo/corfu-doc][corfu-doc]]: The corfu-doc package displays the candidate documentation in a
+    popup next to the Corfu popup, similar to =company-quickhelp=.
 
   - [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]]: Extend the Eshell/Shell Pcomplete mechanism with support for many
     more commands. Similar to the Fish shell, Pcomplete uses man page parsing to
     dynamically retrieve the completions and helpful annotations. This package
     brings Eshell completions to another level!
 
-  - [[https://github.com/minad/tempel][Tempel]]: Tiny template/snippet package which can be used in conjunction with Corfu.
+  - [[https://github.com/minad/tempel][Tempel]]: Tiny template/snippet package with templates in Lisp syntax, which
+    can be used in conjunction with Corfu.
 
   - [[https://github.com/minad/vertico][Vertico]]: You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the
     minibuffer completion counterpart of Corfu.
