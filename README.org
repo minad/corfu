@@ -84,6 +84,7 @@
       ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
       ;; (corfu-auto t)                 ;; Enable auto completion
       ;; (corfu-separator ?\s)          ;; Orderless field separator
+      ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
       ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
       ;; (corfu-preview-current nil)    ;; Disable current candidate preview
       ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
@@ -270,11 +271,12 @@ Then, when a new orderless component is desired, use =M-SPC=
 and arbitrary orderless search terms and new separators can be entered
 thereafter.
 
-Note that ~corfu-separator~ replaced the older less general option
-~corfu-quit-at-boundary~. If you want similar behavior as with
-~corfu-quit-at-boundary=nil~, you can bind ~corfu-insert-separator~ to =SPC= in
-~corfu-map~. In contrast, if you /always/ want to quit at the boundary, simply set
-~corfu-separator~ to ~nil~.
+To treat the entire input as Orderless input, you can set the customization
+option ~corfu-quit-at-boundary=t~. This disables the predicate which checks if the
+current completion boundary has been left. In contrast, if you /always/ want to
+quit at the boundary, simply set ~corfu-quit-at-boundary=nil~. By default
+~corfu-quit-at-boundary~ is set to ~separator~ which quits at completion boundaries
+as long as no separator has been inserted with ~corfu-insert-separator~.
 
 Finally, there exists the user option ~corfu-quit-no-match~ which is set to
 =separator= by default. With this setting Corfu stays alive as soon as you start

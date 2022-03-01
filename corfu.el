@@ -85,12 +85,7 @@ inserted on further input."
   "Preselect first candidate."
   :type 'boolean)
 
-(defvar corfu-quit-at-boundary nil)
 (defvar corfu-commit-predicate nil)
-(make-obsolete-variable
- 'corfu-quit-at-boundary
- "See the new `corfu-separator' customization."
- "0.19")
 (make-obsolete-variable
  'corfu-commit-predicate
  "Set `corfu-preview-current' to the value `insert'."
@@ -98,14 +93,20 @@ inserted on further input."
 
 (defcustom corfu-separator ?\s
   "Component separator character.
-The character used for separating components in the input.  If
-non-nil, the presence of this separator character will inhibit
-quitting at completion boundaries, so that any further characters
-can be entered.  If nil, always quit at completion boundaries.
-To enter the first separator character, call
-`corfu-insert-separator' (bound to M-SPC by default).
-Useful for multi-component completion styles such as orderless."
-  :type '(choice (const nil) character))
+The character used for separating components in the input. The presence
+of this separator character will inhibit quitting at completion
+boundaries, so that any further characters can be entered. To enter the
+first separator character, call `corfu-insert-separator' (bound to M-SPC
+by default). Useful for multi-component completion styles such as
+Orderless."
+  :type 'character)
+
+(defcustom corfu-quit-at-boundary 'separator
+  "Automatically quit at completion boundary.
+nil: Never quit at completion boundary.
+t: Always quit at completion boundary.
+separator: Quit at boundary if no `corfu-separator' has been inserted."
+  :type '(choice boolean (const separator)))
 
 (defcustom corfu-quit-no-match 'separator
   "Automatically quit if no matching candidate is found.
@@ -875,7 +876,6 @@ there hasn't been any input, then quit."
 (defun corfu-insert-separator ()
   "Insert a separator character, inhibiting quit on completion boundary."
   (interactive)
-  (unless corfu-separator (error "`corfu-separator' character is nil"))
   (insert corfu-separator))
 
 (defun corfu--post-command ()
@@ -896,7 +896,8 @@ there hasn't been any input, then quit."
                         ;; Check for empty input
                         (or (not corfu--input) (< beg end))
                         ;; Check separator or predicate
-                        (or (and corfu-separator ;; Command enables separator insertion
+                        (or (not corfu-quit-at-boundary)
+                            (and (eq corfu-quit-at-boundary 'separator)
                                  (or (eq this-command #'corfu-insert-separator)
                                      ;; with separator, any further chars allowed
                                      (seq-contains-p (car corfu--input) corfu-separator)))
