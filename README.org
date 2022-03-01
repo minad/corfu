@@ -42,16 +42,16 @@
   - The popup can be summoned explicitly by pressing =TAB= at any time.
   - The current candidate is inserted with =TAB= and selected with =RET=.
   - Candidates sorting by prefix, string length and alphabetically.
-  - The selected candidate is previewed (configuable via ~corfu-preview-current~).
+  - The selected candidate is previewed (configurable via ~corfu-preview-current~).
   - The selected candidate automatically committed on further input by default.
     (configurable via ~corfu-preview-current~).
   - The [[https://github.com/oantolin/orderless][Orderless]] completion style is supported. The filter string can contain
-    arbitrary characters, including spaces, if ~corfu-separator~ is configured (try =M-SPC=).
+    arbitrary characters, after inserting a space via =M-SPC= (configurable via
+    ~corfu-quit-at-boundary~ and ~corfu-separator~).
   - Deferred completion style highlighting for performance.
   - Jumping to location/documentation of current candidate.
-  - Show candidate documentation/signature string in the echo area.
+  - Support for candidate annotations and documentation in the echo area.
   - Deprecated candidates are crossed out in the display.
-  - Support for annotations (~annotation-function~, ~affixation-function~).
   - Icons can be provided by an external package via margin formatter functions.
 
 * Installation and Configuration
