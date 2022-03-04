@@ -177,7 +177,8 @@ The completion backend can override this with
 
 (defcustom corfu-auto nil
   "Enable auto completion."
-  :type 'boolean)
+  :type 'boolean
+  :local t)
 
 (defgroup corfu-faces nil
   "Faces used by Corfu."
@@ -1185,18 +1186,19 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
-  (when corfu--auto-timer
-    (cancel-timer corfu--auto-timer)
-    (setq corfu--auto-timer nil))
-  (when (and (not completion-in-region-mode)
-             (not defining-kbd-macro)
-             (corfu--match-symbol-p corfu-auto-commands this-command)
-             (display-graphic-p))
-    ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
-    ;; in particular if flyspell-mode is enabled.
-    (setq corfu--auto-timer
-          (run-at-time corfu-auto-delay nil
-                       #'corfu--auto-complete (corfu--auto-tick)))))
+  (when corfu-auto
+    (when corfu--auto-timer
+      (cancel-timer corfu--auto-timer)
+      (setq corfu--auto-timer nil))
+    (when (and (not completion-in-region-mode)
+               (not defining-kbd-macro)
+               (corfu--match-symbol-p corfu-auto-commands this-command)
+               (display-graphic-p))
+      ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
+      ;; in particular if flyspell-mode is enabled.
+      (setq corfu--auto-timer
+            (run-at-time corfu-auto-delay nil
+                         #'corfu--auto-complete (corfu--auto-tick))))))
 
 (defun corfu--auto-tick ()
   "Return the current tick/status of the buffer.
@@ -1216,7 +1218,7 @@ Auto completion is only performed if the tick did not change."
     ;; advice is active *globally*.
     (advice-add #'completion--capf-wrapper :around #'corfu--capf-wrapper-advice)
     (advice-add #'eldoc-display-message-no-interference-p :before-while #'corfu--allow-eldoc)
-    (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
+    (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local)
     (setq-local completion-in-region-function #'corfu--in-region))
    (t
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
