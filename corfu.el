@@ -1133,10 +1133,11 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                (when exit
                  (funcall exit newstr
                           ;; If completion is finished and cannot be further completed,
-                          ; return 'finished. Otherwise return 'exact.
+                          ;; return 'finished. Otherwise return 'exact.
                           (if (eq (try-completion (car candidates) table pred) t)
-                          'finished 'exact)))
-             (if (not (and threshold (or (eq threshold t) (>= threshold total))))
+                              'finished 'exact)))
+             (if (or (= total 0) (not threshold)
+                     (and (not (eq threshold t)) (< threshold total)))
                  (corfu--setup)
                (corfu--cycle-candidates total candidates (+ base beg) end)
                ;; Do not show Corfu when "trivially" cycling, i.e.,
