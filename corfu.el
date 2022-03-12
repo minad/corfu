@@ -85,12 +85,6 @@ inserted on further input."
   "Preselect first candidate."
   :type 'boolean)
 
-(defvar corfu-commit-predicate nil)
-(make-obsolete-variable
- 'corfu-commit-predicate
- "Set `corfu-preview-current' to the value `insert'."
- "0.19")
-
 (defcustom corfu-separator ?\s
   "Component separator character.
 The character used for separating components in the input. The presence
