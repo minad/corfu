@@ -2,11 +2,11 @@
 
 ;; Copyright (C) 2021  Free Software Foundation, Inc.
 
-;; Author: Luis Henriquez-Perez <luis@luishp.xyz>
+;; Author: Luis Henriquez-Perez <luis@luishp.xyz>, Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
-;; Version: 0.19
-;; Package-Requires: ((emacs "27.1"))
+;; Version: 0.1
+;; Package-Requires: ((emacs "27.1") (corfu "0.21"))
 ;; Homepage: https://github.com/minad/corfu
 
 ;; This file is part of GNU Emacs.
@@ -72,22 +72,22 @@ the candidate that corresponds to QUICK-KEYS.")
 (defun corfu-quick--keys (index)
   "Return `corfu-quick' keys for candidate at INDEX."
   (let ((length1 (seq-length corfu-quick1))
-	(length2 (seq-length corfu-quick2))
-	(key1 "")
-	(key2 ""))
+        (length2 (seq-length corfu-quick2))
+        (key1 "")
+        (key2 ""))
     (if (< index length1)
-	(setq key1 (char-to-string (seq-elt corfu-quick1 index)))
+        (setq key1 (char-to-string (seq-elt corfu-quick1 index)))
       (setq key1 (char-to-string (seq-elt corfu-quick1 (% (- index length1) length1))))
       (setq key2 (char-to-string (seq-elt corfu-quick2 (% (- index length1) length2)))))
     (concat (propertize key2 'face 'corfu-quick1)
-	    (propertize key1 'face 'corfu-quick2))))
+            (propertize key1 'face 'corfu-quick2))))
 
 (defun corfu-quick--format-candidates (orig candidates)
   "Advice for `corfu--format-candidates' that adds quick keys to candidates.
 See `corfu--format-candidates'."
   (let ((updated-candidates nil)
-	(quick-keys nil)
-	(index 0))
+        (quick-keys nil)
+        (index 0))
     (setq corfu-quick--alist nil)
     (pcase-dolist (`(,candidate ,prefix ,suffix) candidates)
       (setq quick-keys (corfu-quick--keys index))
@@ -100,18 +100,18 @@ See `corfu--format-candidates'."
 (defun corfu-quick--read ()
   "Read quick keys and return index of candidate specified by quick keys."
   (cl-letf* ((old-fn (symbol-function #'corfu--format-candidates))
-	     (new-fn (apply-partially #'corfu-quick--format-candidates old-fn))
-	     ((symbol-function #'corfu--format-candidates) new-fn))
+             (new-fn (apply-partially #'corfu-quick--format-candidates old-fn))
+             ((symbol-function #'corfu--format-candidates) new-fn))
     (corfu--candidates-popup (point))
     (let* ((key (read-key))
-	   (quick-keys (char-to-string key)))
+           (quick-keys (char-to-string key)))
       (when (seq-contains-p corfu-quick2 key)
-	(cl-letf* ((orig-fn (symbol-function #'corfu-quick--keys))
-		   ((symbol-function #'corfu-quick--keys) (lambda (index) (seq-rest (funcall orig-fn index)))))
-	  (corfu--candidates-popup (point)))
-	(setq quick-keys (char-to-string (read-key))))
+        (cl-letf* ((orig-fn (symbol-function #'corfu-quick--keys))
+                   ((symbol-function #'corfu-quick--keys) (lambda (index) (seq-rest (funcall orig-fn index)))))
+          (corfu--candidates-popup (point)))
+        (setq quick-keys (char-to-string (read-key))))
       (or (alist-get quick-keys corfu-quick--alist 0 nil #'string=)
-	  (corfu-quick-exit)))))
+          (corfu-quick-exit)))))
 
 ;;;###autoload
 (defun corfu-quick-jump ()

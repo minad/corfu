@@ -240,8 +240,8 @@ The completion backend can override this with
     (define-key map "\C-g" #'corfu-quit)
     (define-key map "\r" #'corfu-insert)
     (define-key map "\t" #'corfu-complete)
-    (define-key map "\eg" #'corfu-show-location)
-    (define-key map "\eh" #'corfu-show-documentation)
+    (define-key map "\eg" 'corfu-info-location)
+    (define-key map "\eh" 'corfu-info-documentation)
     (define-key map (concat "\e" " ") #'corfu-insert-separator) ;; Avoid ugly warning
     map)
   "Corfu keymap used when popup is shown.")
@@ -949,56 +949,6 @@ See `corfu-separator' for more details."
   (interactive)
   (corfu--goto (1- corfu--total)))
 
-(defun corfu--restore-on-next-command ()
-  "Restore window configuration before next command."
-  (let ((config (current-window-configuration))
-        (other other-window-scroll-buffer)
-        (restore (make-symbol "corfu--restore")))
-    (fset restore
-          (lambda ()
-            (setq other-window-scroll-buffer other)
-            (unless (memq this-command '(scroll-other-window scroll-other-window-down))
-              (when (memq this-command '(corfu-quit corfu-reset))
-                (setq this-command #'ignore))
-              (remove-hook 'pre-command-hook restore)
-              (set-window-configuration config))))
-    (add-hook 'pre-command-hook restore)))
-
-;; Company support, taken from `company.el', see `company-show-doc-buffer'.
-(defun corfu-show-documentation ()
-  "Show documentation of current candidate."
-  (interactive)
-  (when (< corfu--index 0)
-    (user-error "No candidate selected"))
-  (if-let* ((fun (plist-get corfu--extra :company-doc-buffer))
-            (res (funcall fun (nth corfu--index corfu--candidates))))
-      (let ((buf (or (car-safe res) res)))
-        (corfu--restore-on-next-command)
-        (setq other-window-scroll-buffer (get-buffer buf))
-        (set-window-start (display-buffer buf t) (or (cdr-safe res) (point-min))))
-    (user-error "No documentation available")))
-
-;; Company support, taken from `company.el', see `company-show-location'.
-(defun corfu-show-location ()
-  "Show location of current candidate."
-  (interactive)
-  (when (< corfu--index 0)
-    (user-error "No candidate selected"))
-  (if-let* ((fun (plist-get corfu--extra :company-location))
-            (loc (funcall fun (nth corfu--index corfu--candidates))))
-      (let ((buf (or (and (bufferp (car loc)) (car loc)) (find-file-noselect (car loc) t))))
-        (corfu--restore-on-next-command)
-        (setq other-window-scroll-buffer buf)
-        (with-selected-window (display-buffer buf t)
-          (save-restriction
-            (widen)
-            (if (bufferp (car loc))
-                (goto-char (cdr loc))
-              (goto-char (point-min))
-              (forward-line (1- (cdr loc))))
-            (set-window-start nil (point)))))
-    (user-error "No candidate location available")))
-
 (defun corfu-complete ()
   "Try to complete current input.
 If a candidate is selected, insert it."
@@ -1273,7 +1223,7 @@ The ORIG function takes the FUN and WHICH arguments."
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-next corfu-previous corfu-first corfu-last corfu-quit corfu-reset
                corfu-complete corfu-insert corfu-scroll-up corfu-scroll-down
-               corfu-show-location corfu-show-documentation corfu-insert-separator))
+               corfu-insert-separator))
   (put sym 'completion-predicate #'ignore))
 
 (provide 'corfu)
