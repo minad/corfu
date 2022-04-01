@@ -868,7 +868,8 @@ there hasn't been any input, then quit."
     (corfu--insert 'exact)))
 
 (defun corfu-insert-separator ()
-  "Insert a separator character, inhibiting quit on completion boundary."
+  "Insert a separator character, inhibiting quit on completion boundary.
+See `corfu-separator' for more details."
   (interactive)
   (insert corfu-separator))
 
@@ -991,7 +992,8 @@ there hasn't been any input, then quit."
     (user-error "No candidate location available")))
 
 (defun corfu-complete ()
-  "Try to complete current input."
+  "Try to complete current input.
+If a candidate is selected, insert it."
   (interactive)
   (pcase-let ((`(,beg ,end ,table ,pred) completion-in-region--data))
     (if (>= corfu--index 0)
@@ -1042,7 +1044,8 @@ there hasn't been any input, then quit."
     (when exit (funcall exit str status))))
 
 (defun corfu-insert ()
-  "Insert current candidate."
+  "Insert current candidate.
+Quit if no candidate is selected."
   (interactive)
   (if (>= corfu--index 0)
       (corfu--insert 'finished)
