@@ -1017,22 +1017,18 @@ there hasn't been any input, then quit."
 
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
-  (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
+  (pcase-let* ((`(,beg ,end . ,_) completion-in-region--data)
                (str (buffer-substring-no-properties beg end)))
-    ;; Replace if candidate is selected or if current input is not valid completion.
-    ;; For example str can be a valid path, e.g., ~/dir/.
-    (when (or (>= corfu--index 0) (equal str "")
-              (not (test-completion str table pred)))
-      ;; XXX There is a small bug here, depending on interpretation.
-      ;; When completing "~/emacs/master/li|/calc" where "|" is the
-      ;; cursor, then the candidate only includes the prefix
-      ;; "~/emacs/master/lisp/", but not the suffix "/calc". Default
-      ;; completion has the same problem when selecting in the
-      ;; *Completions* buffer. See bug#48356.
-      (setq str (concat (substring str 0 corfu--base)
-                        (substring-no-properties (nth (max 0 corfu--index) corfu--candidates))))
-      (completion--replace beg end str)
-      (corfu--goto -1)) ;; Reset selection, but continue completion.
+    ;; XXX There is a small bug here, depending on interpretation.
+    ;; When completing "~/emacs/master/li|/calc" where "|" is the
+    ;; cursor, then the candidate only includes the prefix
+    ;; "~/emacs/master/lisp/", but not the suffix "/calc". Default
+    ;; completion has the same problem when selecting in the
+    ;; *Completions* buffer. See bug#48356.
+    (setq str (concat (substring str 0 corfu--base)
+                      (substring-no-properties (nth corfu--index corfu--candidates))))
+    (completion--replace beg end str)
+    (corfu--goto -1) ;; Reset selection, but continue completion.
     (when status (corfu--done str status)))) ;; Exit with status
 
 (defun corfu--done (str status)
@@ -1048,7 +1044,7 @@ there hasn't been any input, then quit."
 (defun corfu-insert ()
   "Insert current candidate."
   (interactive)
-  (if (> corfu--total 0)
+  (if (>= corfu--index 0)
       (corfu--insert 'finished)
     (corfu-quit)))
 

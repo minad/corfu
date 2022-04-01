@@ -223,7 +223,7 @@ define the command ~corfu-insert-and-send~ which performs the two steps at once.
     (cond
      ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
       (eshell-send-input))
-     ((derived-mode-p 'comint-mode)
+     ((and (derived-mode-p 'comint-mode) (fboundp 'comint-send-input))
       (comint-send-input))))
 
   (define-key corfu-map "\r" #'+corfu-insert-and-send)
