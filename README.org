@@ -68,13 +68,6 @@
   example in an Elisp buffer or in an Eshell or Shell buffer. For auto
   completion, set ~corfu-auto=t~ before turning on ~corfu-global-mode~.
 
-  If you start to configure the package more deeply, I recommend to give the
-  Orderless completion style a try for filtering. Orderless completion is
-  different from the familiar prefix TAB completion. Corfu can be used with the
-  default completion styles. The use of Orderless is not a necessity. See also
-  the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips. In particular the Lsp-mode
-  configuration is documented in the Wiki.
-
   Here is an example configuration:
 
   #+begin_src emacs-lisp
@@ -102,19 +95,6 @@
       :init
       (corfu-global-mode))
 
-    ;; Optionally use the `orderless' completion style. See `+orderless-dispatch'
-    ;; in the Consult wiki for an advanced Orderless style dispatcher.
-    ;; Enable `partial-completion' for files to allow path expansion.
-    ;; You may prefer to use `initials' instead of `partial-completion'.
-    (use-package orderless
-      :init
-      ;; Configure a custom style dispatcher (see the Consult wiki)
-      ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-      ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-      (setq completion-styles '(orderless basic)
-            completion-category-defaults nil
-            completion-category-overrides '((file (styles . (partial-completion))))))
-
     ;; Use dabbrev with Corfu!
     (use-package dabbrev
       ;; Swap M-/ and C-M-/
@@ -137,7 +117,34 @@
       (setq tab-always-indent 'complete))
   #+end_src
 
-  See also the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips. For more general
+  If you start to configure the package more deeply, I recommend to give the
+  Orderless completion style a try for filtering. Orderless completion is
+  different from the familiar prefix TAB completion. Corfu can be used with the
+  default completion styles. The use of Orderless is not a necessity.
+
+#+begin_src emacs-lisp
+  ;; Optionally use the `orderless' completion style.
+  (use-package orderless
+    :init
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+    (setq completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles . (partial-completion))))))
+#+end_src
+
+  The =basic= completion style is specified as fallback in addition to =orderless=
+  in order to ensure that completion commands which rely on dynamic completion
+  tables, e.g., ~completion-table-dynamic~ or ~completion-table-in-turn~, work
+  correctly. See =+orderless-dispatch= in the [[https://github.com/minad/consult/wiki][Consult wiki]] for an advanced
+  Orderless style dispatcher. Additionally enable =partial-completion= for file
+  path expansion. =partial-completion= is important for file wildcard support.
+  Multiple files can be opened at once with =find-file= if you enter a wildcard.
+  You may also give the =initials= completion style a try.
+
+  See also the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] for additional configuration tips. In particular the
+  Lsp-mode configuration is documented in the wiki. For more general
   documentation read the chapter about completion in the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Completion.html][Emacs manual]]. If you
   want to create your own Capfs, you can find documentation about completion in
   the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
