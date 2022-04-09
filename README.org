@@ -440,7 +440,7 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
     since for example the ~completion-at-point~ command (or the
     ~completion-in-region~ function) does not invoke Company.
 
-  - [[https://gitlab.com/protesilaos/mct][Mct]]: Protesilaos' Minibuffer Confines Transcended package supports both
+  - [[https://git.sr.ht/~protesilaos/mct][Mct]]: Protesilaos' Minibuffer Confines Transcended package supports both
     minibuffer completion and completion in region. It reuses the default
     completion UI for this purpose and installs a timer which live updates the
     completion buffer. The main advantage of Mct is that you work with a regular
