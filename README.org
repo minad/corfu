@@ -465,7 +465,7 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
 
   - Corfu uses child frames to show the popup. For now Corfu falls back to the
     default setting of the ~completion-in-region-function~ on non-graphical
-    displays. You can use one of the alternatives in terminals.
+    displays. You can use one of the [[https://github.com/minad/corfu#alternatives][alternatives]] in terminals.
 
   - Corfu does not sort by history, since ~completion-at-point~ does not
     maintain a history (See branch =history= for a possible solution).
