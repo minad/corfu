@@ -610,7 +610,8 @@ A scroll bar is displayed from LO to LO+BAR."
                (field (substring str (car bounds) (+ pt (cdr bounds))))
                (completing-file (eq (corfu--metadata-get 'category) 'file))
                (`(,all . ,hl) (corfu--all-completions str table pred pt corfu--metadata))
-               (base (or (when-let (z (last all)) (prog1 (cdr z) (setcdr z nil))) 0)))
+               (base (or (when-let (z (last all)) (prog1 (cdr z) (setcdr z nil))) 0))
+               (corfu--base (substring str 0 base)))
     ;; Filter the ignored file extensions. We cannot use modified predicate for this filtering,
     ;; since this breaks the special casing in the `completion-file-name-table' for `file-exists-p'
     ;; and `file-directory-p'.
@@ -620,7 +621,7 @@ A scroll bar is displayed from LO to LO+BAR."
     (when (and completing-file (not (string-suffix-p "/" field)))
       (setq all (corfu--move-to-front (concat field "/") all)))
     (setq all (corfu--move-to-front field all))
-    (list (substring str 0 base) all (length all) hl corfu--metadata
+    (list corfu--base all (length all) hl corfu--metadata
           ;; Select the prompt when the input is a valid completion
           ;; and if it is not equal to the first candidate.
           (if (or (not corfu-preselect-first) (not all)
