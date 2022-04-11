@@ -153,6 +153,10 @@ return a string, possibly an icon."
           (const :tag "By length and alpha" ,#'corfu-sort-length-alpha)
           (function :tag "Custom function")))
 
+(defcustom corfu-sort-override-function nil
+  "Override sort function which overrides the `display-sort-function'."
+  :type '(choice (const nil) function))
+
 (defcustom corfu-auto-prefix 3
   "Minimum length of prefix for auto completion.
 The completion backend can override this with
@@ -588,7 +592,9 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--sort-function ()
   "Return the sorting function."
-  (or (corfu--metadata-get 'display-sort-function) corfu-sort-function))
+  (or corfu-sort-override-function
+      (corfu--metadata-get 'display-sort-function)
+      corfu-sort-function))
 
 (defun corfu--recompute-candidates (str pt table pred)
   "Recompute candidates from STR, PT, TABLE and PRED."
