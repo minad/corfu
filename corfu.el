@@ -372,6 +372,7 @@ The completion backend can override this with
 (defun corfu--make-buffer (content)
   "Create corfu buffer with CONTENT."
   (let ((fr face-remapping-alist)
+        (ls line-spacing)
         (buffer (get-buffer-create " *corfu*")))
     (with-current-buffer buffer
       ;;; XXX HACK install redirect focus hook
@@ -380,7 +381,8 @@ The completion backend can override this with
       (use-local-map corfu--mouse-ignore-map)
       (dolist (var corfu--buffer-parameters)
         (set (make-local-variable (car var)) (cdr var)))
-      (setq-local face-remapping-alist (copy-tree fr))
+      (setq-local face-remapping-alist (copy-tree fr)
+                  line-spacing ls)
       (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
       (let ((inhibit-modification-hooks t)
             (inhibit-read-only t))
@@ -424,7 +426,6 @@ The completion backend can override this with
       (setq corfu--frame (make-frame
                           `((parent-frame . ,(window-frame))
                             (minibuffer . ,(minibuffer-window (window-frame)))
-                            (line-spacing . ,line-spacing)
                             ;; Set `internal-border-width' for Emacs 27
                             (internal-border-width . ,border)
                             ,@corfu--frame-parameters))))
