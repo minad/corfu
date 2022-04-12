@@ -462,8 +462,16 @@ The completion backend can override this with
 WIDTH is the width of the popup.
 The current candidate CURR is highlighted.
 A scroll bar is displayed from LO to LO+BAR."
-  (let* ((ch (default-line-height))
-         (cw (default-font-width))
+  (let* ((ch
+          ;; Use window-font-height instead and multiply with line spacing?
+          (let ((face-remapping-alist (copy-tree face-remapping-alist)))
+            (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
+            (default-line-height)))
+         (cw
+          ;; Use window-font-width instead?
+          (let ((face-remapping-alist (copy-tree face-remapping-alist)))
+            (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
+            (default-font-width)))
          (ml (ceiling (* cw corfu-left-margin-width)))
          (mr (ceiling (* cw corfu-right-margin-width)))
          (bw (ceiling (min mr (* cw corfu-bar-width))))
