@@ -216,21 +216,19 @@ will be invoked. This command does inserts the currently selected candidate, but
 it does not send the prompt input to Eshell or the comint process. Therefore you
 often have to press =RET= twice which feels like an unnecessary double
 confirmation. Fortunately it is easy to improve this! In my configuration I
-define the command ~corfu-insert-and-send~ which performs the two steps at once.
+define the advice ~corfu-send-shell~ which sends the candidate after insertion.
 
 #+begin_src emacs-lisp
-  (defun corfu-insert-and-send ()
-    (interactive)
-    ;; 1. First insert the completed candidate
-    (corfu-insert)
-    ;; 2. Send the entire prompt input to the shell
+  (defun corfu-send-shell (&rest _)
+    "Send completion candidate when inside comint/eshell."
     (cond
      ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
       (eshell-send-input))
-     ((and (derived-mode-p 'comint-mode) (fboundp 'comint-send-input))
+     ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
       (comint-send-input))))
 
-  (define-key corfu-map "\r" #'+corfu-insert-and-send)
+  (advice-add #'corfu-insert :after #'corfu-send-shell)
+  (advice-add #'corfu-quick-insert :after #'corfu-send-shell)
 #+end_src
 
 Shell completion uses the flexible ~pcomplete~ mechanism internally, which allows
