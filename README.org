@@ -56,15 +56,15 @@ default setting of the ~completion-in-region-function~ on non-graphical displays
 
 Corfu is available from [[http://elpa.gnu.org/packages/corfu.html][GNU ELPA]], such that it can be installed directly via
 ~package-install~. After installation, the global minor mode can be enabled with
-=M-x corfu-global-mode=. In order to configure Corfu and other packages in your
+=M-x global-corfu-mode=. In order to configure Corfu and other packages in your
 init.el, you may want to use ~use-package~.
 
 Corfu is highly flexible and customizable via ~corfu-*~ customization variables,
 such that you can adapt it precisely to your requirements. However in order to
 quickly try out the Corfu completion package, it should be sufficient to
-activate ~corfu-global-mode~. Then you experiment with manual completion for
+activate ~global-corfu-mode~. Then you experiment with manual completion for
 example in an Elisp buffer or in an Eshell or Shell buffer. For auto completion,
-set ~corfu-auto=t~ before turning on ~corfu-global-mode~.
+set ~corfu-auto=t~ before turning on ~global-corfu-mode~.
 
 Here is an example configuration:
 
@@ -91,7 +91,7 @@ Here is an example configuration:
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since dabbrev can be used globally (M-/).
     :init
-    (corfu-global-mode))
+    (global-corfu-mode))
 
   ;; Use dabbrev with Corfu!
   (use-package dabbrev
@@ -167,7 +167,7 @@ some want to cycle with TAB and some with the arrow keys...
 ** Completing with Corfu in the minibuffer
 
 Corfu can be used for completion in the minibuffer, since it relies on child
-frames to display the candidates. By default, ~corfu-global-mode~ does not
+frames to display the candidates. By default, ~global-corfu-mode~ does not
 activate ~corfu-mode~ in the minibuffer, to avoid interference with specialised
 minibuffer completion UIs like Vertico or Mct. However you may still want to
 enable Corfu completion for commands like ~M-:~ (~eval-expression~) or ~M-!~
@@ -300,7 +300,7 @@ always use =SPC= to separate the Orderless components.
      ;; Another key binding can be used, such as S-SPC.
      ;; (:map corfu-map ("M-SPC" . corfu-insert-separator))
      :init
-     (corfu-global-mode))
+     (global-corfu-mode))
 
    ;; Manual completion example
    (use-package corfu
@@ -310,7 +310,7 @@ always use =SPC= to separate the Orderless components.
      ;; Configure SPC for separator insertion
      (:map corfu-map ("SPC" . corfu-insert-separator))
      :init
-     (corfu-global-mode))
+     (global-corfu-mode))
 #+end_src
 
 ** TAB-and-Go completion
@@ -337,7 +337,7 @@ force snippet expansion, confirm a candidate explicitly with ~RET~.
           ([backtab] . corfu-previous))
 
     :init
-    (corfu-global-mode))
+    (global-corfu-mode))
 #+end_src
 
 ** Transfer completion to the minibuffer

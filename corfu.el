@@ -111,7 +111,7 @@ separator: Only stay alive if there is no match and
   :type '(choice boolean (const separator)))
 
 (defcustom corfu-excluded-modes nil
-  "List of modes excluded by `corfu-global-mode'."
+  "List of modes excluded by `global-corfu-mode'."
   :type '(repeat symbol))
 
 (defcustom corfu-left-margin-width 0.5
@@ -1215,7 +1215,10 @@ The ORIG function takes the FUN and WHICH arguments."
   (if corfu-mode (corfu--capf-wrapper fun t) (funcall orig fun which)))
 
 ;;;###autoload
-(define-globalized-minor-mode corfu-global-mode corfu-mode corfu--on :group 'corfu)
+(define-obsolete-function-alias 'global-corfu-mode 'global-corfu-mode "0.21")
+
+;;;###autoload
+(define-globalized-minor-mode global-corfu-mode corfu-mode corfu--on :group 'corfu)
 
 (defun corfu--on ()
   "Turn `corfu-mode' on."
