@@ -53,15 +53,15 @@
   (setq cands (cdr cands))
   (let* ((index 0)
          (space #(" " 0 1 (face (:height 0.5 :inherit corfu-indexed))))
-         (fmt
-          (concat space
-                  (propertize
-                   (format "%%%ds" (if (> (length cands) 10) 2 1))
-                   'face 'corfu-indexed)
-                  space))
+         (width (if (> (length cands) 10) 2 1))
+         (fmt (concat space
+                      (propertize (format "%%%ds" width)
+                                  'face 'corfu-indexed)
+                      space))
          (align
-          (propertize "  " 'display
-                      `(space :align-to (+ left ,(if (> (length cands) 10) 3 2))))))
+          (propertize (make-string width ?\s)
+                      'display
+                      `(space :align-to (+ left ,(1+ width))))))
     (dolist (cand cands)
       (setf (cadr cand)
             (concat
