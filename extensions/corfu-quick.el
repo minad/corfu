@@ -108,7 +108,7 @@
                 (cons nil (corfu-quick--affixate (cdr (funcall orig cands))))))
              (corfu-quick--first first)
              (corfu-quick--list))
-    (corfu--candidates-popup (max (line-beginning-position) (- (point) 3)))
+    (corfu--candidates-popup (car completion-in-region--data))
     (alist-get (read-key) corfu-quick--list)))
 
 ;;;###autoload
