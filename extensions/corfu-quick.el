@@ -66,11 +66,10 @@
   "Face used for the second quick key."
   :group 'corfu-faces)
 
-(defvar corfu-quick--list nil)
-(defvar corfu-quick--first nil)
-
-(defun corfu-quick--keys (idx) ;; See vertico-quick--keys
-  "Format keys for IDX."
+(defun corfu-quick--keys (two idx) ;; See vertico-quick--keys
+  "Format quick keys prefix.
+IDX is the current candidate index.
+TWO is non-nil if two keys should be displayed."
   (let* ((fst (length corfu-quick1))
          (snd (length corfu-quick2))
          (len (+ fst snd)))
@@ -78,38 +77,41 @@
         (let ((first (elt corfu-quick2 (mod (/ (- idx fst) len) snd)))
               (second (elt (concat corfu-quick1 corfu-quick2) (mod (- idx fst) len))))
           (cond
-           ((eq first corfu-quick--first)
-            (push (cons second (+ corfu--scroll idx)) corfu-quick--list)
-            (concat " " (propertize (char-to-string second) 'face 'corfu-quick1)))
-           (corfu-quick--first "  ")
+           ((eq first two)
+            (list
+             (concat " " (propertize (char-to-string second) 'face 'corfu-quick1))
+             (cons second (+ corfu--scroll idx))))
+           (two
+            (list "  "))
            (t
-            (push (cons first (list first)) corfu-quick--list)
-            (concat (propertize (char-to-string first) 'face 'corfu-quick1)
-                    (propertize (char-to-string second) 'face 'corfu-quick2)))))
+            (list
+             (concat (propertize (char-to-string first) 'face 'corfu-quick1)
+                     (propertize (char-to-string second) 'face 'corfu-quick2))
+             (cons first (list first))))))
       (let ((first (elt corfu-quick1 (mod idx fst))))
-        (if corfu-quick--first
-            "  "
-          (push (cons first (+ corfu--scroll idx)) corfu-quick--list)
-          (concat (propertize (char-to-string first) 'face 'corfu-quick1) " "))))))
-
-(defun corfu-quick--affixate (cands)
-  "Advice for `corfu--affixate' which prefixes the CANDS with quick keys."
-  (let ((index 0))
-    (dolist (cand cands)
-      (setf (cadr cand) (corfu-quick--keys index))
-      (cl-incf index))
-    cands))
+        (if two
+            (list "  ")
+          (list
+           (concat (propertize (char-to-string first) 'face 'corfu-quick1) " ")
+           (cons first (+ corfu--scroll idx))))))))
 
 (defun corfu-quick--read (&optional first)
   "Read quick key given FIRST pressed key."
-  (cl-letf* ((orig (symbol-function #'corfu--affixate))
+  (cl-letf* ((list nil)
+             (orig (symbol-function #'corfu--affixate))
              ((symbol-function #'corfu--affixate)
               (lambda (cands)
-                (cons nil (corfu-quick--affixate (cdr (funcall orig cands))))))
-             (corfu-quick--first first)
-             (corfu-quick--list))
+                (setq cands (cdr (funcall orig cands)))
+                (let ((index 0))
+                  (dolist (cand cands)
+                    (pcase-let ((`(,keys . ,events) (corfu-quick--keys first index)))
+                      (setq list (nconc events list))
+                      (setf (cadr cand) keys)
+                      (cl-incf index)))
+                  cands)
+                (cons nil cands))))
     (corfu--candidates-popup (car completion-in-region--data))
-    (alist-get (read-key) corfu-quick--list)))
+    (alist-get (read-key) list)))
 
 ;;;###autoload
 (defun corfu-quick-jump ()
