@@ -70,7 +70,8 @@ The value should lie between 0 and corfu-count/2."
 
 (defcustom corfu-continue-commands
   ;; nil is undefined command
-  '(nil ignore "\\`corfu-" "\\`scroll-other-window")
+  '(nil ignore universal-argument universal-argument-more digit-argument
+        "\\`corfu-" "\\`scroll-other-window")
   "Continue Corfu completion after executing these commands."
   :type '(repeat (choice regexp symbol)))
 
