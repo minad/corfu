@@ -872,7 +872,8 @@ there hasn't been any input, then quit."
     (setq corfu--preview-ov nil))
   (when (and (eq corfu-preview-current 'insert)
              (/= corfu--index corfu--preselect)
-             (not (corfu--match-symbol-p corfu-continue-commands this-command)))
+             (not (or overriding-terminal-local-map ;; for example universal-argument-map
+                      (corfu--match-symbol-p corfu-continue-commands this-command))))
     (corfu--insert 'exact)))
 
 (defun corfu-insert-separator ()
@@ -893,9 +894,8 @@ See `corfu-separator' for more details."
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
                       (or
-                       ;; Check if we universal-argument-map is active
-                       prefix-arg
                        ;; Check if it is an explicitly listed continue command
+                       overriding-terminal-local-map ;; for example universal-argument-map
                        (corfu--match-symbol-p corfu-continue-commands this-command)
                        (and
                         ;; Check for empty input
