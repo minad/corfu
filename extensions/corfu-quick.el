@@ -69,33 +69,32 @@
 (defvar corfu-quick--list nil)
 (defvar corfu-quick--first nil)
 
-(defun corfu-quick--keys (index) ;; See vertico-quick--keys
-  "Format keys for INDEX."
+(defun corfu-quick--keys (idx) ;; See vertico-quick--keys
+  "Format keys for IDX."
   (let* ((fst (length corfu-quick1))
          (snd (length corfu-quick2))
          (len (+ fst snd)))
-    (if (>= index fst)
-        (let ((first (elt corfu-quick2 (mod (/ (- index fst) len) snd)))
-              (second (elt (concat corfu-quick1 corfu-quick2) (mod (- index fst) len))))
+    (if (>= idx fst)
+        (let ((first (elt corfu-quick2 (mod (/ (- idx fst) len) snd)))
+              (second (elt (concat corfu-quick1 corfu-quick2) (mod (- idx fst) len))))
           (cond
            ((eq first corfu-quick--first)
-            (push (cons second index) corfu-quick--list)
+            (push (cons second (+ corfu--scroll idx)) corfu-quick--list)
             (concat " " (propertize (char-to-string second) 'face 'corfu-quick1)))
            (corfu-quick--first "  ")
            (t
             (push (cons first (list first)) corfu-quick--list)
             (concat (propertize (char-to-string first) 'face 'corfu-quick1)
                     (propertize (char-to-string second) 'face 'corfu-quick2)))))
-      (let ((first (elt corfu-quick1 (mod index fst))))
+      (let ((first (elt corfu-quick1 (mod idx fst))))
         (if corfu-quick--first
             "  "
-          (push (cons first index) corfu-quick--list)
+          (push (cons first (+ corfu--scroll idx)) corfu-quick--list)
           (concat (propertize (char-to-string first) 'face 'corfu-quick1) " "))))))
 
 (defun corfu-quick--affixate (cands)
   "Advice for `corfu--affixate' which prefixes the CANDS with quick keys."
   (let ((index 0))
-    (setq corfu-quick--list nil)
     (dolist (cand cands)
       (setf (cadr cand) (corfu-quick--keys index))
       (cl-incf index))
@@ -109,7 +108,7 @@
                 (cons nil (corfu-quick--affixate (cdr (funcall orig cands))))))
              (corfu-quick--first first)
              (corfu-quick--list))
-    (corfu--update)
+    (corfu--candidates-popup (max (line-beginning-position) (- (point) 3)))
     (alist-get (read-key) corfu-quick--list)))
 
 ;;;###autoload
