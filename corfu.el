@@ -771,8 +771,8 @@ there hasn't been any input, then quit."
     (corfu--popup-show (+ pos (length corfu--base)) pw width fcands (- corfu--index corfu--scroll)
                        (and (> corfu--total corfu-count) lo) bar)))
 
-(defun corfu--preview-current (beg end str)
-  "Show current candidate as overlay given BEG, END and STR."
+(defun corfu--preview-current (beg end)
+  "Show current candidate as overlay given BEG and END."
   (when-let (cand (and corfu-preview-current (>= corfu--index 0)
                        (/= corfu--index corfu--preselect)
                        (nth corfu--index corfu--candidates)))
@@ -852,7 +852,7 @@ there hasn't been any input, then quit."
      ;; 3) There exist candidates => Show candidates popup.
      (corfu--candidates
       (corfu--candidates-popup beg)
-      (corfu--preview-current beg end str)
+      (corfu--preview-current beg end)
       (corfu--echo-documentation)
       (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup.
