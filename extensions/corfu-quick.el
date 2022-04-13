@@ -98,6 +98,12 @@ TWO is non-nil if two keys should be displayed."
 (defun corfu-quick--read (&optional first)
   "Read quick key given FIRST pressed key."
   (cl-letf* ((list nil)
+             (space1 (propertize " " 'display
+                                 `(space :width
+                                         (+ 0.5 (,(alist-get
+                                                   'child-frame-border-width
+                                                   corfu--frame-parameters))))))
+             (space2 #(" " 0 1 (display (space :width 0.5))))
              (orig (symbol-function #'corfu--affixate))
              ((symbol-function #'corfu--affixate)
               (lambda (cands)
@@ -106,12 +112,12 @@ TWO is non-nil if two keys should be displayed."
                   (dolist (cand cands)
                     (pcase-let ((`(,keys . ,events) (corfu-quick--keys first index)))
                       (setq list (nconc events list))
-                      (setf (cadr cand) keys)
+                      (setf (cadr cand) (concat space1 (propertize " " 'display keys) space2))
                       (cl-incf index)))
                   cands)
-                (cons nil cands)))
+                (cons t cands)))
              ;; Increase minimum width to avoid odd jumping
-             (corfu-min-width (+ 2 corfu-min-width)))
+             (corfu-min-width (+ 3 corfu-min-width)))
     (corfu--candidates-popup (car completion-in-region--data))
     (alist-get (read-key) list)))
 
