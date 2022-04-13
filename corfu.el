@@ -893,6 +893,8 @@ See `corfu-separator' for more details."
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
                       (or
+                       ;; Check if we universal-argument-map is active
+                       prefix-arg
                        ;; Check if it is an explicitly listed continue command
                        (corfu--match-symbol-p corfu-continue-commands this-command)
                        (and
