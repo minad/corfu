@@ -378,11 +378,28 @@ shown. The keymap defines the following remappings and bindings:
 - ~previous-line~, =up=, =M-p= -> ~corfu-previous~
 - ~completion-at-point~, =TAB= -> ~corfu-complete~
 - =RET= -> ~corfu-insert~
-- =M-g= -> ~corfu-show-location~
-- =M-h= -> ~corfu-show-documentation~
+- =M-g= -> ~corfu-info-location~
+- =M-h= -> ~corfu-info-documentation~
 - =M-SPC= -> ~corfu-insert-separator~
 - =C-g= -> ~corfu-quit~
 - ~keyboard-escape-quit~ -> ~corfu-reset~
+
+* Extensions
+:properties:
+:custom_id: extensions
+:end:
+
+We maintain small extension packages to Corfu in this repository in the
+subdirectory [[https://github.com/minad/corfu/tree/main/extensions][extensions/]]. The extensions are installed together with Corfu if
+you pull the package from ELPA. The extensions are inactive by default and can
+be enabled manually if desired. Furthermore it is possible to install all of the
+files separately, both ~corfu.el~ and the ~corfu-*.el~ extensions. Currently the
+following extensions come with the Corfu ELPA package:
+
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-history.el][corfu-history]]: =corfu-history-mode= to remember selected candidates and to improve sorting.
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-indexed.el][corfu-indexed]]: =corfu-indexed-mode= to select indexed candidates with prefix arguments.
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-info.el][corfu-info]]: Candidate actions to access the candidate location and documentation.
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-quick.el][corfu-quick]]: Commands to select using Avy-style quick keys.
 
 * Complementary packages
 
