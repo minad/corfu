@@ -872,7 +872,8 @@ there hasn't been any input, then quit."
     (setq corfu--preview-ov nil))
   (when (and (eq corfu-preview-current 'insert)
              (/= corfu--index corfu--preselect)
-             (not (or overriding-terminal-local-map ;; for example universal-argument-map
+             ;; See the comment about `overriding-local-map' in `corfu--post-command'.
+             (not (or overriding-terminal-local-map
                       (corfu--match-symbol-p corfu-continue-commands this-command))))
     (corfu--insert 'exact)))
 
@@ -894,8 +895,13 @@ See `corfu-separator' for more details."
                         (goto-char beg)
                         (<= (line-beginning-position) pt (line-end-position)))
                       (or
+                       ;; TODO We keep alive Corfu if a `overriding-terminal-local-map' is
+                       ;; installed, for example the `universal-argument-map'. It would be good to
+                       ;; think about a better criterion instead. Unfortunately relying on
+                       ;; `this-command' alone is not sufficient, since the value of `this-command'
+                       ;; gets clobbered in the case of transient keymaps.
+                       overriding-terminal-local-map
                        ;; Check if it is an explicitly listed continue command
-                       overriding-terminal-local-map ;; for example universal-argument-map
                        (corfu--match-symbol-p corfu-continue-commands this-command)
                        (and
                         ;; Check for empty input
