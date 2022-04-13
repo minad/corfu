@@ -35,7 +35,12 @@
 (require 'corfu)
 
 (defface corfu-indexed
-  '((t :height 0.75 :inherit font-lock-comment-face))
+  '((default :height 0.75)
+    (((class color) (min-colors 88) (background dark))
+     :foreground "#f4f4f4" :background "#323232")
+     (((class color) (min-colors 88) (background light))
+     :foreground "#404148" :background "#d7d7d7")
+    (t :background "black"))
   "Face used for the candidate index prefix."
   :group 'corfu-faces)
 
