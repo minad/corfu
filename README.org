@@ -228,7 +228,6 @@ define the advice ~corfu-send-shell~ which sends the candidate after insertion.
       (comint-send-input))))
 
   (advice-add #'corfu-insert :after #'corfu-send-shell)
-  (advice-add #'corfu-quick-insert :after #'corfu-send-shell)
 #+end_src
 
 Shell completion uses the flexible ~pcomplete~ mechanism internally, which allows
