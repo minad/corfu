@@ -47,10 +47,10 @@ default setting of the ~completion-in-region-function~ on non-graphical displays
   arbitrary characters, after inserting a space via =M-SPC= (configurable via
   ~corfu-quit-at-boundary~ and ~corfu-separator~).
 - Deferred completion style highlighting for performance.
-- Jumping to location/documentation of current candidate.
 - Support for candidate annotations and documentation in the echo area.
 - Deprecated candidates are crossed out in the display.
 - Icons can be provided by an external package via margin formatter functions.
+- Extensions: Quick keys, Index keys, Sorting by history, Candidate documentation
 
 * Installation and Configuration
 
