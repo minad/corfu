@@ -1,6 +1,6 @@
-;;; corfu-quick.el --- Completion Overlay Region FUnction -*- lexical-binding: t -*-
+;;; corfu-quick.el --- Quick keys for Corfu -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2022  Free Software Foundation, Inc.
 
 ;; Author: Luis Henriquez-Perez <luis@luishp.xyz>, Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
@@ -26,11 +26,13 @@
 
 ;;; Commentary:
 
-;; This package is a Corfu extension, which prefixes candidates with quick
-;; keys. The term "quick keys" refers to letters displayed in the `corfu' popup
-;; in front each candidate. Typing these quick keys allows you to select the
-;; candidate in front of them. This is designed to be a faster alternative to
-;; selecting a candidate with `corfu-next' and `corfu-previous'.
+;; This package is a Corfu extension, which prefixes candidates with
+;; quick keys. Typing these quick keys allows you to select the
+;; candidate in front of them. This is designed to be a faster
+;; alternative to selecting a candidate with `corfu-next' and
+;; `corfu-previous'.
+;; (define-key corfu-map "\M-q" #'corfu-quick-complete)
+;; (define-key corfu-map "\C-q" #'corfu-quick-exit)
 
 ;;; Code:
 
@@ -48,78 +50,77 @@
 
 (defface corfu-quick1
   '((((class color) (min-colors 88) (background dark))
-     :background "#7042a2" :weight bold :foreground "white")
+     :background "#2a40b8" :weight bold :foreground "white")
     (((class color) (min-colors 88) (background light))
-     :weight bold :background "#d5baff" :foreground "black")
-    (t :background "magenta" :foreground "white"))
+     :background "#77baff" :weight bold :foreground "black")
+    (t :background "blue" :foreground "white"))
   "Face used for the first quick key."
   :group 'corfu-faces)
 
 (defface corfu-quick2
   '((((class color) (min-colors 88) (background dark))
-     :background "#004065" :weight bold :foreground "white")
+     :background "#71206a" :weight bold :foreground "#ffcaf0")
     (((class color) (min-colors 88) (background light))
-     :weight bold :background "#8ae4f2" :foreground "black")
-    (t :background "blue" :foreground "white"))
+     :background "#ffccff" :weight bold :foreground "#770077")
+    (t :background "magenta" :foreground "white"))
   "Face used for the second quick key."
   :group 'corfu-faces)
 
-(defvar-local corfu-quick--alist nil
-  "An alist whose elements are (QUICK-KEYS . INDEX).
-QUICK-KEYS is a string containing the quick keys. INDEX is the index of
-the candidate that corresponds to QUICK-KEYS.")
+(defvar corfu-quick--list nil)
+(defvar corfu-quick--first nil)
 
-(defun corfu-quick--keys (index)
-  "Return `corfu-quick' keys for candidate at INDEX."
-  (let ((length1 (seq-length corfu-quick1))
-        (length2 (seq-length corfu-quick2))
-        (key1 "")
-        (key2 ""))
-    (if (< index length1)
-        (setq key1 (char-to-string (seq-elt corfu-quick1 index)))
-      (setq key1 (char-to-string (seq-elt corfu-quick1 (% (- index length1) length1))))
-      (setq key2 (char-to-string (seq-elt corfu-quick2 (% (- index length1) length2)))))
-    (concat (propertize key2 'face 'corfu-quick1)
-            (propertize key1 'face 'corfu-quick2))))
+(defun corfu-quick--keys (index) ;; See vertico-quick--keys
+  "Format keys for INDEX."
+  (let* ((fst (length corfu-quick1))
+         (snd (length corfu-quick2))
+         (len (+ fst snd)))
+    (if (>= index fst)
+        (let ((first (elt corfu-quick2 (mod (/ (- index fst) len) snd)))
+              (second (elt (concat corfu-quick1 corfu-quick2) (mod (- index fst) len))))
+          (cond
+           ((eq first corfu-quick--first)
+            (push (cons second index) corfu-quick--list)
+            (concat " " (propertize (char-to-string second) 'face 'corfu-quick1)))
+           (corfu-quick--first "  ")
+           (t
+            (push (cons first (list first)) corfu-quick--list)
+            (concat (propertize (char-to-string first) 'face 'corfu-quick1)
+                    (propertize (char-to-string second) 'face 'corfu-quick2)))))
+      (let ((first (elt corfu-quick1 (mod index fst))))
+        (if corfu-quick--first
+            "  "
+          (push (cons first index) corfu-quick--list)
+          (concat (propertize (char-to-string first) 'face 'corfu-quick1) " "))))))
 
-(defun corfu-quick--format-candidates (orig candidates)
-  "Advice for `corfu--format-candidates' that adds quick keys to candidates.
-See `corfu--format-candidates'."
-  (let ((updated-candidates nil)
-        (quick-keys nil)
-        (index 0))
-    (setq corfu-quick--alist nil)
-    (pcase-dolist (`(,candidate ,prefix ,suffix) candidates)
-      (setq quick-keys (corfu-quick--keys index))
-      (push (list candidate (concat quick-keys " " prefix) suffix) updated-candidates)
-      (push (cons (substring-no-properties quick-keys) index) corfu-quick--alist)
+(defun corfu-quick--affixate (cands)
+  "Advice for `corfu--affixate' which prefixes the CANDS with quick keys."
+  (let ((index 0))
+    (setq corfu-quick--list nil)
+    (dolist (cand cands)
+      (setf (cadr cand) (corfu-quick--keys index))
       (cl-incf index))
-    (setq updated-candidates (reverse updated-candidates))
-    (funcall orig updated-candidates)))
+    cands))
 
-(defun corfu-quick--read ()
-  "Read quick keys and return index of candidate specified by quick keys."
-  (cl-letf* ((old-fn (symbol-function #'corfu--format-candidates))
-             (new-fn (apply-partially #'corfu-quick--format-candidates old-fn))
-             ((symbol-function #'corfu--format-candidates) new-fn))
-    (corfu--candidates-popup (point))
-    (let* ((key (read-key))
-           (quick-keys (char-to-string key)))
-      (when (seq-contains-p corfu-quick2 key)
-        (cl-letf* ((orig-fn (symbol-function #'corfu-quick--keys))
-                   ((symbol-function #'corfu-quick--keys) (lambda (index) (seq-rest (funcall orig-fn index)))))
-          (corfu--candidates-popup (point)))
-        (setq quick-keys (char-to-string (read-key))))
-      (or (alist-get quick-keys corfu-quick--alist 0 nil #'string=)
-          (corfu-quick-exit)))))
+(defun corfu-quick--read (&optional first)
+  "Read quick key given FIRST pressed key."
+  (cl-letf* ((orig (symbol-function #'corfu--affixate))
+             ((symbol-function #'corfu--affixate)
+              (lambda (cands)
+                (cons nil (corfu-quick--affixate (cdr (funcall orig cands))))))
+             (corfu-quick--first first)
+             (corfu-quick--list))
+    (corfu--update)
+    (alist-get (read-key) corfu-quick--list)))
 
 ;;;###autoload
 (defun corfu-quick-jump ()
   "Jump to candidate using quick keys."
   (interactive)
-  (if (zerop corfu--total)
+  (if (= corfu--total 0)
       (and (message "No match") nil)
-    (setq corfu--index (or (corfu-quick--read) corfu--index))))
+    (let ((idx (corfu-quick--read)))
+      (when (consp idx) (setq idx (corfu-quick--read (car idx))))
+      (when idx (setq corfu--index idx)))))
 
 ;;;###autoload
 (defun corfu-quick-insert ()
@@ -127,6 +128,17 @@ See `corfu--format-candidates'."
   (interactive)
   (when (corfu-quick-jump)
     (corfu-insert)))
+
+;;;###autoload
+(defun corfu-quick-complete ()
+  "Complete candidate using quick keys."
+  (interactive)
+  (when (corfu-quick-jump)
+    (corfu-complete)))
+
+;; Emacs 28: Do not show Corfu commands in M-X
+(dolist (sym '(corfu-quick-jump corfu-quick-insert corfu-quick-complete))
+  (put sym 'completion-predicate #'ignore))
 
 (provide 'corfu-quick)
 ;;; corfu-quick.el ends here

@@ -4,7 +4,7 @@
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
-;; Created: 2021
+;; Created: 2022
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1") (corfu "0.21"))
 ;; Homepage: https://github.com/minad/corfu
