@@ -1,11 +1,11 @@
-;;; corfu.el --- Completion Overlay Region FUnction -*- lexical-binding: t -*-
+;;; corfu-indexed.el --- Select indexed candidates -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021  Free Software Foundation, Inc.
 
-;; Author: Luis Henriquez-Perez <luis@luishp.xyz>
+;; Author: Luis Henriquez-Perez <luis@luishp.xyz>, Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
-;; Version: 0.19
+;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1"))
 ;; Homepage: https://github.com/minad/corfu
 
@@ -43,29 +43,36 @@
   '(corfu-insert corfu-complete)
   "Commands that should be indexed.")
 
-(defvar corfu-indexed--max 0)
-
-(defun corfu-indexed--format-candidate (orig cands)
-  "Advice for `corfu--format-candidates' that add an index to candidates.
-See `corfu--format-candidates'."
-  (let ((updated-cands nil)
-	(index 0)
-	(index-string nil))
-    (pcase-dolist (`(,prefix ,suffix ,cand) cands)
-      (cl-incf index)
-      (setq index-string (format (format "%%%ds " (if (> corfu-count 10) 2 1)) index))
-      (setq prefix (concat (propertize index-string 'face 'corfu-indexed) prefix))
-      (push (list prefix suffix cand) updated-cands))
-    (setq corfu-indexed--max index)
-    (funcall orig (reverse updated-cands))))
+(defun corfu-indexed--affixate (cands)
+  "Advice for `corfu--affixate' which prefixes the CANDS with an index."
+  (setq cands (cdr cands))
+  (let* ((index 0)
+         (space #(" " 0 1 (face (:height 0.5 :inherit corfu-indexed))))
+         (fmt
+          (concat space
+                  (propertize
+                   (format "%%%ds" (if (> (length cands) 10) 2 1))
+                   'face 'corfu-indexed)
+                  space))
+         (align
+          (propertize "  " 'display
+                      `(space :align-to (+ left ,(if (> (length cands) 10) 3 2))))))
+    (dolist (cand cands)
+      (setf (cadr cand)
+            (concat
+             (propertize " " 'display (format fmt index))
+             align
+             (cadr cand)))
+      (cl-incf index))
+    (cons t cands)))
 
 (defun corfu-indexed--handle-prefix (orig &rest args)
   "Handle prefix argument before calling ORIG function with ARGS."
   (if (and current-prefix-arg (called-interactively-p t))
-      (let ((corfu--index (+ 0 (prefix-numeric-value current-prefix-arg))))
+      (let ((corfu--index (+ corfu--scroll (prefix-numeric-value current-prefix-arg))))
         (if (or (< corfu--index 0)
-                (> corfu--index corfu-indexed--max)
-                (= corfu--total 0))
+                (>= corfu--index corfu--total)
+                (>= corfu--index (+ corfu--scroll corfu-count)))
             (message "Out of range")
           (funcall orig)))
     (apply orig args)))
@@ -76,11 +83,11 @@ See `corfu--format-candidates'."
   :global t :group 'corfu
   (cond
    (corfu-indexed-mode
-    (advice-add #'corfu--format-candidates :around #'corfu-indexed--format-candidate)
+    (advice-add #'corfu--affixate :filter-return #'corfu-indexed--affixate)
     (dolist (cmd corfu-indexed--commands)
       (advice-add cmd :around #'corfu-indexed--handle-prefix)))
    (t
-    (advice-remove #'corfu--format-candidates #'corfu-indexed--format-candidate)
+    (advice-remove #'corfu--affixate #'corfu-indexed--affixate)
     (dolist (cmd corfu-indexed--commands)
       (advice-remove cmd #'corfu-indexed--handle-prefix)))))
 
