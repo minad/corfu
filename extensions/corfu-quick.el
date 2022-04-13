@@ -109,7 +109,9 @@ TWO is non-nil if two keys should be displayed."
                       (setf (cadr cand) keys)
                       (cl-incf index)))
                   cands)
-                (cons nil cands))))
+                (cons nil cands)))
+             ;; Increase minimum width to avoid odd jumping
+             (corfu-min-width (+ 2 corfu-min-width)))
     (corfu--candidates-popup (car completion-in-region--data))
     (alist-get (read-key) list)))
 
