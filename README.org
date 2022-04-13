@@ -456,17 +456,6 @@ enhance your setup.
   your completions in the minibuffer ~consult-completion-in-region~ is your best
   option.
 
-* Caveats
-
-Corfu is robust in most scenarios. There are a few known technical caveats.
-
-- Corfu uses child frames to show the popup. For now Corfu falls back to the
-  default setting of the ~completion-in-region-function~ on non-graphical
-  displays. You can use one of the alternatives in terminals.
-
-- Corfu does not sort by history, since ~completion-at-point~ does not maintain a
-  history (See branch =history= for a possible solution).
-
 * Contributions
 
 Since this package is part of [[http://elpa.gnu.org/packages/corfu.html][GNU ELPA]] contributions require a copyright
