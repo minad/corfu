@@ -34,6 +34,8 @@
 ;;; Code:
 
 (require 'corfu)
+(eval-when-compile
+  (require 'cl-lib))
 
 (defcustom corfu-history-length nil
   "Corfu history length."
@@ -48,34 +50,30 @@
 
 (defun corfu-history--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
-  (or (< (cdr x) (cdr y))
-      (and (= (cdr x) (cdr y))
-           (string< (car x) (car y)))))
+  (pcase-let ((`(,sx . ,hx) x)
+              (`(,sy . ,hy) y))
+    (or (< hx hy)
+      (and (= hx hy)
+           (or (< (length sx) (length sy))
+               (and (= (length sx) (length sy))
+                    (string< sx sy)))))))
 
 (defun corfu-history--sort (candidates)
   "Sort CANDIDATES by history."
   (unless corfu-history--hash
-    (let ((index 0))
-      (setq corfu-history--hash (make-hash-table :test #'equal :size (length corfu-history)))
-      (dolist (elt corfu-history)
-        (unless (gethash elt corfu-history--hash)
-          (puthash elt index corfu-history--hash))
-        (setq index (1+ index)))))
+    (setq corfu-history--hash (make-hash-table :test #'equal :size (length corfu-history)))
+    (cl-loop for elem in corfu-history for index from 0 do
+             (unless (gethash elem corfu-history--hash)
+               (puthash elem index corfu-history--hash))))
   ;; Decorate each candidate with (index<<13) + length. This way we sort first by index and then by
   ;; length. We assume that the candidates are shorter than 2**13 characters and that the history is
   ;; shorter than 2**16 entries.
-  (let ((cand candidates))
-    (while cand
-      (setcar cand (cons (car cand)
-                         (+ (lsh (gethash (car cand) corfu-history--hash #xFFFF) 13)
-                            (length (car cand)))))
-      (pop cand)))
+  (cl-loop for cand on candidates do
+           (setcar cand (cons (car cand)
+                              (+ (lsh (gethash (car cand) corfu-history--hash #xFFFF) 13)
+                                 (length (car cand))))))
   (setq candidates (sort candidates #'corfu-history--sort-predicate))
-  ;; Drop decoration from the candidates
-  (let ((cand candidates))
-    (while cand
-      (setcar cand (caar cand))
-      (pop cand)))
+  (cl-loop for cand on candidates do (setcar cand (caar cand)))
   candidates)
 
 (defun corfu-history--insert (&rest _)

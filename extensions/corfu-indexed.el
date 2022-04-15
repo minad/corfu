@@ -33,6 +33,8 @@
 ;;; Code:
 
 (require 'corfu)
+(eval-when-compile
+  (require 'cl-lib))
 
 (defface corfu-indexed
   '((default :height 0.75)
@@ -51,8 +53,7 @@
 (defun corfu-indexed--affixate (cands)
   "Advice for `corfu--affixate' which prefixes the CANDS with an index."
   (setq cands (cdr cands))
-  (let* ((index 0)
-         (space #(" " 0 1 (face (:height 0.5 :inherit corfu-indexed))))
+  (let* ((space #(" " 0 1 (face (:height 0.5 :inherit corfu-indexed))))
          (width (if (> (length cands) 10) 2 1))
          (fmt (concat space
                       (propertize (format "%%%ds" width)
@@ -62,13 +63,12 @@
           (propertize (make-string width ?\s)
                       'display
                       `(space :align-to (+ left ,(1+ width))))))
-    (dolist (cand cands)
+    (cl-loop for cand in cands for index from 0 do
       (setf (cadr cand)
             (concat
              (propertize " " 'display (format fmt index))
              align
-             (cadr cand)))
-      (cl-incf index))
+             (cadr cand))))
     (cons t cands)))
 
 (defun corfu-indexed--handle-prefix (orig &rest args)

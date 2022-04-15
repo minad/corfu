@@ -37,6 +37,8 @@
 ;;; Code:
 
 (require 'corfu)
+(eval-when-compile
+  (require 'cl-lib))
 
 (defcustom corfu-quick1 "asdfgh"
   "First level quick keys."
@@ -108,13 +110,10 @@ TWO is non-nil if two keys should be displayed."
              ((symbol-function #'corfu--affixate)
               (lambda (cands)
                 (setq cands (cdr (funcall orig cands)))
-                (let ((index 0))
-                  (dolist (cand cands)
-                    (pcase-let ((`(,keys . ,events) (corfu-quick--keys first index)))
-                      (setq list (nconc events list))
-                      (setf (cadr cand) (concat space1 (propertize " " 'display keys) space2))
-                      (cl-incf index)))
-                  cands)
+                (cl-loop for cand in cands for index from 0 do
+                         (pcase-let ((`(,keys . ,events) (corfu-quick--keys first index)))
+                           (setq list (nconc events list))
+                           (setf (cadr cand) (concat space1 (propertize " " 'display keys) space2))))
                 (cons t cands)))
              ;; Increase minimum width to avoid odd jumping
              (corfu-min-width (+ 3 corfu-min-width)))
