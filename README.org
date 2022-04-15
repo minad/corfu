@@ -26,8 +26,10 @@ not include its own completion backends. The Emacs built-in Capfs and the Capfs
 provided by other programming language packages are usually sufficient. A few
 additional Capfs and completion utilities are provided by the [[https://github.com/minad/cape][Cape]] package.
 
-*NOTE*: Corfu uses child frames to show the popup. For now Corfu falls back to the
-default setting of the ~completion-in-region-function~ on non-graphical displays.
+*NOTE*: Corfu uses child frames to show the popup and falls back to the default
+setting of the ~completion-in-region-function~ on non-graphical displays. There is
+a [[https://codeberg.org/akib/emacs-corfu-popup][package in the works]] which uses overlays for the popup such that Corfu can be
+used when Emacs is running in a terminal.
 
 [[https://github.com/minad/corfu/blob/screenshots/light.png?raw=true]]
 
