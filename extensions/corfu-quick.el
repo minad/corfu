@@ -52,9 +52,9 @@
 
 (defface corfu-quick1
   '((((class color) (min-colors 88) (background dark))
-     :background "#2a40b8" :weight bold :foreground "white")
+     :background "#203448" :weight bold :foreground "#c6eaff")
     (((class color) (min-colors 88) (background light))
-     :background "#77baff" :weight bold :foreground "black")
+     :background "#dde3f4" :weight bold :foreground "#093060")
     (t :background "blue" :foreground "white"))
   "Face used for the first quick key."
   :group 'corfu-faces)
