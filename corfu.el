@@ -893,7 +893,8 @@ See `corfu-separator' for more details."
                       (<= beg pt end)
                       (save-excursion
                         (goto-char beg)
-                        (<= (line-beginning-position) pt (line-end-position)))
+                        (let ((inhibit-field-text-motion t))
+                          (<= (line-beginning-position) pt (line-end-position))))
                       (or
                        ;; TODO We keep alive Corfu if a `overriding-terminal-local-map' is
                        ;; installed, for example the `universal-argument-map'. It would be good to
