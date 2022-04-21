@@ -1083,8 +1083,8 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
         (`(,newstr . ,newpt)
          (pcase-let ((`(,base ,candidates ,total . ,_)
                       (corfu--recompute-candidates str pt table pred)))
-           (setq beg (copy-marker beg)
-                 end (copy-marker end t)
+           (unless (markerp beg) (setq beg (copy-marker beg)))
+           (setq end (copy-marker end t)
                  completion-in-region--data (list beg end table pred))
            (unless (equal str newstr)
              (completion--replace beg end (concat newstr)))
@@ -1139,7 +1139,9 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
               (lambda () (eq beg (car-safe (funcall fun)))))
              (completion-extra-properties plist))
          (setq completion-in-region--data
-               (list (copy-marker beg) (copy-marker end t) table
+               (list (if (markerp beg) beg (copy-marker beg))
+                     (copy-marker end t)
+                     table
                      (plist-get plist :predicate)))
          (corfu--setup)
          (corfu--update))))))
