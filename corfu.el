@@ -1218,9 +1218,6 @@ The ORIG function takes the FUN and WHICH arguments."
   (if corfu-mode (corfu--capf-wrapper fun t) (funcall orig fun which)))
 
 ;;;###autoload
-(define-obsolete-function-alias 'corfu-global-mode 'global-corfu-mode "0.21")
-
-;;;###autoload
 (define-globalized-minor-mode global-corfu-mode corfu-mode corfu--on :group 'corfu)
 
 (defun corfu--on ()
