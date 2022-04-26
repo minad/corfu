@@ -818,8 +818,9 @@ there hasn't been any input, then quit."
         (corfu--echo-show))
     (corfu--echo-show)))
 
-(defun corfu--update ()
-  "Refresh Corfu UI."
+(defun corfu--update (&optional auto)
+  "Refresh Corfu UI.
+AUTO is non-nil when called by auto completion."
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
@@ -840,11 +841,16 @@ there hasn't been any input, then quit."
      ;; 1) Initializing, no candidates => Quit. Happens during auto completion.
      ((and initializing (not corfu--candidates))
       (corfu-quit))
-     ;; 2) Single exactly matching candidate and no further completion is possible.
+     
+     ;; 2) Exactly matching candidate during auto initialization,
+     ;; or single candidate with no further completion possible.
      ((and (not (equal str ""))
-           (equal (car corfu--candidates) str) (not (cdr corfu--candidates))
-           (not (consp (completion-try-completion str table pred pt corfu--metadata)))
-           (or initializing corfu-on-exact-match))
+           (equal (car corfu--candidates) str)
+	   (or (and initializing auto)
+	       (and (not (cdr corfu--candidates))
+		    (not (consp (completion-try-completion
+				 str table pred pt corfu--metadata)))
+		    (or initializing corfu-on-exact-match))))
       ;; Quit directly when initializing. This happens during auto completion.
       (if (or initializing (eq corfu-on-exact-match 'quit))
           (corfu-quit)
@@ -1144,7 +1150,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                      table
                      (plist-get plist :predicate)))
          (corfu--setup)
-         (corfu--update))))))
+         (corfu--update t))))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
