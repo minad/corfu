@@ -96,15 +96,6 @@ Here is an example configuration:
     :init
     (global-corfu-mode))
 
-  ;; Use Dabbrev with Corfu!
-  (use-package dabbrev
-    ;; Swap M-/ and C-M-/
-    :bind (("M-/" . dabbrev-completion)
-           ("C-M-/" . dabbrev-expand))
-    ;; Other useful Dabbrev configurations.
-    :custom
-    (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
-
   ;; A few more useful configurations...
   (use-package emacs
     :init
@@ -119,6 +110,22 @@ Here is an example configuration:
     ;; Enable indentation+completion using the TAB key.
     ;; `completion-at-point' is often bound to M-TAB.
     (setq tab-always-indent 'complete))
+#+end_src
+
+Dabbrev completion is based on =completion-in-region= and can be used with Corfu.
+You may want to swap the =dabbrev-completion= with the =dabbrev-expand= key for
+easier access, if you prefer completion. Also take a look at the =cape-dabbrev=
+completion at point function provided by my [[https://github.com/minad/cape][Cape]] package.
+
+#+begin_src emacs-lisp
+  ;; Use Dabbrev with Corfu!
+  (use-package dabbrev
+    ;; Swap M-/ and C-M-/
+    :bind (("M-/" . dabbrev-completion)
+           ("C-M-/" . dabbrev-expand))
+    ;; Other useful Dabbrev configurations.
+    :custom
+    (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 #+end_src
 
 If you start to configure the package more deeply, I recommend to give the
