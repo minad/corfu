@@ -85,21 +85,25 @@ Here is an example configuration:
     ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
     ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
-    ;; You may want to enable Corfu only for certain modes.
+    ;; Enable Corfu only for certain modes.
     ;; :hook ((prog-mode . corfu-mode)
     ;;        (shell-mode . corfu-mode)
     ;;        (eshell-mode . corfu-mode))
 
     ;; Recommended: Enable Corfu globally.
-    ;; This is recommended since dabbrev can be used globally (M-/).
+    ;; This is recommended since Dabbrev can be used globally (M-/).
+    ;; See also `corfu-excluded-modes'.
     :init
     (global-corfu-mode))
 
-  ;; Use dabbrev with Corfu!
+  ;; Use Dabbrev with Corfu!
   (use-package dabbrev
     ;; Swap M-/ and C-M-/
     :bind (("M-/" . dabbrev-completion)
-           ("C-M-/" . dabbrev-expand)))
+           ("C-M-/" . dabbrev-expand))
+    ;; Other useful Dabbrev configurations.
+    :custom
+    (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 
   ;; A few more useful configurations...
   (use-package emacs
