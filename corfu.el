@@ -1104,9 +1104,8 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                (corfu--cycle-candidates total candidates (+ (length base) beg) end)
                ;; Do not show Corfu when "trivially" cycling, i.e.,
                ;; when the completion is finished after the candidate.
-               (unless (equal (completion-boundaries
-                               (buffer-substring-no-properties beg end)
-                               table pred "") '(0 . 0))
+               (unless (equal (completion-boundaries (car candidates) table pred "")
+                              '(0 . 0))
                  (corfu--setup)))))
          t)))))
 
