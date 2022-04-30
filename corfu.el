@@ -965,24 +965,40 @@ If a candidate is selected, insert it."
   (pcase-let ((`(,beg ,end ,table ,pred) completion-in-region--data))
     (if (>= corfu--index 0)
         ;; Continue completion with selected candidate
-        (corfu--insert nil)
+        (progn
+          (corfu--insert nil)
+          ;; Exit with status 'finished if input is a valid match and no further
+          ;; completion is possible. Furthermore treat the completion as
+          ;; finished if we are at the end of a boundary, even if other longer
+          ;; candidates would still match, since the user invoked `corfu-complete'
+          ;; with an explicitly selected candidate!
+          (let ((newstr (buffer-substring-no-properties beg end)))
+            (when (and (test-completion newstr table pred)
+                       (or
+                        (not (consp (completion-try-completion
+                                     newstr table pred (length newstr)
+                                     (completion-metadata newstr table pred))))
+                        (equal (completion-boundaries newstr table pred "") '(0 . 0))))
+              (corfu--done newstr 'finished))))
       ;; Try to complete the current input string
       (let* ((pt (max 0 (- (point) beg)))
              (str (buffer-substring-no-properties beg end))
              (metadata (completion-metadata (substring str 0 pt) table pred)))
         (pcase (completion-try-completion str table pred pt metadata)
+          ('t
+           (goto-char end)
+           (corfu--done str 'finished))
           (`(,newstr . ,newpt)
            (unless (equal str newstr)
              (completion--replace beg end (concat newstr)))
-           (goto-char (+ beg newpt))))))
-    ;; No further completion is possible and the current string is a valid
-    ;; match, exit with status 'finished.
-    (let* ((pt (max 0 (- (point) beg)))
-           (str (buffer-substring-no-properties beg end))
-           (metadata (completion-metadata (substring str 0 pt) table pred)))
-      (when (and (not (consp (completion-try-completion str table pred pt metadata)))
-                 (test-completion str table pred))
-        (corfu--done str 'finished)))))
+           (goto-char (+ beg newpt))
+           ;; Exit with status 'finished if input is a valid match
+           ;; and no further completion is possible.
+           (when (and (test-completion newstr table pred)
+                      (not (consp (completion-try-completion
+                                   newstr table pred newpt
+                                   (completion-metadata newstr table pred)))))
+             (corfu--done newstr 'finished))))))))
 
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
