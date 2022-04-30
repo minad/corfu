@@ -1090,12 +1090,14 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
              (completion--replace beg end (concat newstr)))
            (goto-char (+ beg newpt))
            (if (= total 1)
-               (when exit
-                 (funcall exit newstr
-                          ;; If completion is finished and cannot be further completed,
-                          ;; return 'finished. Otherwise return 'exact.
-                          (if (eq (try-completion (car candidates) table pred) t)
-                              'finished 'exact)))
+               ;; If completion is finished and cannot be further completed,
+               ;; return 'finished. Otherwise setup the Corfu popup.
+               (cond
+                ((consp (completion-try-completion
+                         newstr table pred newpt
+                         (completion-metadata newstr table pred)))
+                 (corfu--setup))
+                (exit (funcall exit newstr 'finished)))
              (if (or (= total 0) (not threshold)
                      (and (not (eq threshold t)) (< threshold total)))
                  (corfu--setup)
