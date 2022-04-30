@@ -235,14 +235,14 @@ The completion backend can override this with
     ;; XXX [tab] is bound because of org-mode
     ;; The binding should be removed from org-mode-map.
     (define-key map [tab] #'corfu-complete)
-    (define-key map "\en" #'corfu-next)
-    (define-key map "\ep" #'corfu-previous)
+    (define-key map "\M-n" #'corfu-next)
+    (define-key map "\M-p" #'corfu-previous)
     (define-key map "\C-g" #'corfu-quit)
     (define-key map "\r" #'corfu-insert)
     (define-key map "\t" #'corfu-complete)
-    (define-key map "\eg" 'corfu-info-location)
-    (define-key map "\eh" 'corfu-info-documentation)
-    (define-key map (concat "\e" " ") #'corfu-insert-separator) ;; Avoid ugly warning
+    (define-key map "\M-g" 'corfu-info-location)
+    (define-key map "\M-h" 'corfu-info-documentation)
+    (define-key map "\M- " #'corfu-insert-separator)
     map)
   "Corfu keymap used when popup is shown.")
 
