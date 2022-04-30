@@ -996,7 +996,7 @@ If a candidate is selected, insert it."
     ;; *Completions* buffer. See bug#48356.
     (setq str (concat corfu--base
                       (substring-no-properties (nth corfu--index corfu--candidates))))
-    (completion--replace beg end str)
+    (completion--replace beg end (concat str))
     (corfu--goto -1) ;; Reset selection, but continue completion.
     (when status (corfu--done str status)))) ;; Exit with status
 
