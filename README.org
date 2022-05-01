@@ -64,7 +64,7 @@ init.el, you may want to use ~use-package~.
 Corfu is highly flexible and customizable via ~corfu-*~ customization variables,
 such that you can adapt it precisely to your requirements. However in order to
 quickly try out the Corfu completion package, it should be sufficient to
-activate ~global-corfu-mode~. Then you experiment with manual completion for
+activate ~global-corfu-mode~. You can experiment with manual completion for
 example in an Elisp buffer or in an Eshell or Shell buffer. For auto completion,
 set ~corfu-auto=t~ before turning on ~global-corfu-mode~.
 
@@ -424,13 +424,12 @@ enhance your setup.
   [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering expressions are separated by
   spaces or another character (see ~corfu-separator~).
 
-- [[https://github.com/minad/cape][Cape]]: I collect additional Capf backends and =completion-in-region= commands
-  in my [[https://github.com/minad/cape][Cape]] package. The package provides a file path, a dabbrev completion
-  backend and a backend which allows you to enter unicode characters in the
-  form of TeX commands. Cape provides an adapter to reuse Company backends in
-  Corfu. Furthermore the function ~cape-super-capf~ can merge/groups multiple
-  Capfs, such that the candidates of multiple Capfs are displayed together at
-  the same time.
+- [[https://github.com/minad/cape][Cape]]: Additional Capf backends and =completion-in-region= commands
+  are provided by the [[https://github.com/minad/cape][Cape]] package. Among others, the package supplies a file
+  path and a dabbrev completion backend. Cape provides the ~cape-company-to-capf~
+  adapter to reuse Company backends in Corfu. Furthermore the function
+  ~cape-super-capf~ can merge multiple Capfs, such that the candidates of multiple
+  Capfs are displayed together at the same time.
 
 - [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via an external package. For example
   the [[https://github.com/jdtsmith/kind-icon][kind-icon]] package provides beautifully styled SVG icons based on
@@ -455,14 +454,14 @@ enhance your setup.
 - [[https://github.com/company-mode/company-mode][Company]]: Company is a widely used and mature completion package, which
   implements a similar interaction model and popup UI as Corfu. While Corfu
   relies exclusively on the standard Emacs completion API (Capfs), Company
-  defines its own API for the backends. Furthermore Company includes its
-  completion backends, which are incompatible with the Emacs completion
-  infrastructure. As a result of this design, Company is a more complex package
-  than Corfu. Company by default uses overlays to display the popup in contrast
-  to the child frames used by Corfu. Overall both packages work well. Company is
-  more mature but the integration into Emacs is a bit less tight, since for
-  example the ~completion-at-point~ command (or the ~completion-in-region~ function)
-  does not invoke Company.
+  defines its own API for the backends. Company includes its completion
+  backends, which are incompatible with the Emacs completion infrastructure. As
+  a result of this design, Company is a more complex package than Corfu. Company
+  by default uses overlays for the popup in contrast to the child frames used by
+  Corfu. Overall both packages work well, but Company integrates less tightly
+  with Emacs. The ~completion-styles~ support is more limited and the
+  ~completion-at-point~ command and the ~completion-in-region~ function do not
+  invoke Company.
 
 - [[https://git.sr.ht/~protesilaos/mct][Mct]]: Protesilaos' Minibuffer Confines Transcended package supports both
   minibuffer completion and completion in region. It reuses the default
