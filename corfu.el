@@ -998,6 +998,7 @@ If a candidate is selected, insert it."
            (corfu--done str 'finished))
           (`(,newstr . ,newpt)
            (unless (equal str newstr)
+             ;; bug#55205: completion--replace removes properties!
              (completion--replace beg end (concat newstr)))
            (goto-char (+ beg newpt))
            ;; Exit with status 'finished if input is a valid match
@@ -1020,6 +1021,7 @@ If a candidate is selected, insert it."
     ;; *Completions* buffer. See bug#48356.
     (setq str (concat corfu--base (substring-no-properties
                                    (nth corfu--index corfu--candidates))))
+    ;; bug#55205: completion--replace removes properties!
     (completion--replace beg end (concat str))
     (corfu--goto -1) ;; Reset selection, but continue completion.
     (when status (corfu--done str status)))) ;; Exit with status
@@ -1112,6 +1114,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
            (setq end (copy-marker end t)
                  completion-in-region--data (list beg end table pred))
            (unless (equal str newstr)
+             ;; bug#55205: completion--replace removes properties!
              (completion--replace beg end (concat newstr)))
            (goto-char (+ beg newpt))
            (if (= total 1)
@@ -1145,6 +1148,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
          (map (make-sparse-keymap))
          (replace (lambda ()
                     (interactive)
+                    ;; bug#55205: completion--replace removes properties!
                     (completion--replace beg end (concat (nth idx cands)))
                     (corfu--message "Cycling %d/%d..." (1+ idx) total)
                     (setq idx (mod (1+ idx) total))
