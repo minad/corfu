@@ -645,7 +645,8 @@ A scroll bar is displayed from LO to LO+BAR."
   ;; corresponding vertico#89.
   (redisplay)
   (pcase
-      ;; Bind non-essential=t to prevent Tramp from opening new connections.
+      ;; Bind non-essential=t to prevent Tramp from opening new connections,
+      ;; without the user explicitly requesting it via M-TAB.
       (let ((non-essential t))
         (while-no-input (corfu--recompute-candidates str pt table pred)))
     ('nil (keyboard-quit))
