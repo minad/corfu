@@ -644,7 +644,10 @@ A scroll bar is displayed from LO to LO+BAR."
   ;; expensive candidate recomputation is performed (Issue #48). See also
   ;; corresponding vertico#89.
   (redisplay)
-  (pcase (while-no-input (corfu--recompute-candidates str pt table pred))
+  (pcase
+      ;; Bind non-essential=t to prevent Tramp from opening new connections.
+      (let ((non-essential t))
+        (while-no-input (corfu--recompute-candidates str pt table pred)))
     ('nil (keyboard-quit))
     (`(,base ,candidates ,total ,hl ,metadata ,preselect)
      (setq corfu--input (cons str pt)
