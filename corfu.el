@@ -866,8 +866,7 @@ there hasn't been any input, then quit."
       (corfu--candidates-popup beg)
       (corfu--preview-current beg end)
       (corfu--echo-documentation)
-      (redisplay 'force) ;; XXX HACK Ensure that popup is redisplayed
-      (x-focus-frame (selected-frame))) ;; XXX HACK Try to fix focus (Lucid/Athena)
+      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup.
      ((and (not corfu--candidates)
            (pcase-exhaustive corfu-quit-no-match
@@ -875,8 +874,7 @@ there hasn't been any input, then quit."
              ('nil t)
              ('separator (seq-contains-p (car corfu--input) corfu-separator))))
       (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic))))
-      (redisplay 'force) ;; XXX HACK Ensure that popup is redisplayed
-      (x-focus-frame (selected-frame))) ;; XXX HACK Try to fix focus (Lucid/Athena)
+      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
      (t (corfu-quit)))))
 
 (defun corfu--pre-command ()
