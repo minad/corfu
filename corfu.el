@@ -449,7 +449,7 @@ The completion backend can override this with
       (set-window-buffer win buffer)
       ;; Mark window as dedicated to prevent frame reuse (#60)
       (set-window-dedicated-p win t))
-    (set-frame-size corfu--frame width height t)
+    (fit-frame-to-buffer-1 corfu--frame nil nil nil nil nil)
     (if (frame-visible-p corfu--frame)
         ;; XXX HACK Avoid flicker when frame is already visible.
         ;; Redisplay, wait for resize and then move the frame.
