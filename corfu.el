@@ -368,8 +368,7 @@ The completion backend can override this with
 
 (defun corfu--popup-redirect-focus ()
   "Redirect focus from popup."
-  (when (and (frame-live-p corfu--frame) (eq (selected-frame) corfu--frame))
-    (redirect-frame-focus corfu--frame (frame-parent corfu--frame))))
+  (redirect-frame-focus corfu--frame (frame-parent corfu--frame)))
 
 (defun corfu--make-buffer (content)
   "Create corfu buffer with CONTENT."
@@ -377,6 +376,8 @@ The completion backend can override this with
         (ls line-spacing)
         (buffer (get-buffer-create " *corfu*")))
     (with-current-buffer buffer
+      ;;; XXX HACK install redirect focus hook
+      (add-hook 'pre-command-hook #'corfu--popup-redirect-focus nil 'local)
       ;;; XXX HACK install mouse ignore map
       (use-local-map corfu--mouse-ignore-map)
       (dolist (var corfu--buffer-parameters)
@@ -1212,9 +1213,7 @@ Auto completion is only performed if the tick did not change."
     ;; advice is active *globally*.
     (advice-add #'completion--capf-wrapper :around #'corfu--capf-wrapper-advice)
     (advice-add #'eldoc-display-message-no-interference-p :before-while #'corfu--allow-eldoc)
-    ;;; XXX HACK install redirect focus hook
-    (add-function :after after-focus-change-function #'corfu--popup-redirect-focus)
-    (when corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
+    (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
     (setq-local completion-in-region-function #'corfu--in-region))
    (t
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
