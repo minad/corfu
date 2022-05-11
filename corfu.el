@@ -369,10 +369,7 @@ The completion backend can override this with
 (defun corfu--popup-redirect-focus ()
   "Redirect focus from popup."
   (when (and (frame-live-p corfu--frame) (eq (selected-frame) corfu--frame))
-    ;; I don't understand what I am doing...
-    ;; Why is this even necessary? The frame is marked with no-accept-focus!!!
-    (redirect-frame-focus corfu--frame (frame-parent corfu--frame))
-    (x-focus-frame (frame-parent corfu--frame))))
+    (redirect-frame-focus corfu--frame (frame-parent corfu--frame))))
 
 (defun corfu--make-buffer (content)
   "Create corfu buffer with CONTENT."
