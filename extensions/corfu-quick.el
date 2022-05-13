@@ -32,7 +32,7 @@
 ;; alternative to selecting a candidate with `corfu-next' and
 ;; `corfu-previous'.
 ;; (define-key corfu-map "\M-q" #'corfu-quick-complete)
-;; (define-key corfu-map "\C-q" #'corfu-quick-exit)
+;; (define-key corfu-map "\C-q" #'corfu-quick-insert)
 
 ;;; Code:
 

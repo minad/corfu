@@ -26,8 +26,10 @@
 
 ;;; Commentary:
 
-;; This Corfu extension provides commands to show additional information
-;; to the candidates in a separate buffer.
+;; This Corfu extension provides commands to show additional information to the
+;; candidates in a separate buffer. The commands `corfu-info-location' and
+;; `corfu-info-documentation' are bound by default in the `corfu-map' to M-g and
+;; M-h respectively.
 
 ;;; Code:
 
