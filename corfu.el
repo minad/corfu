@@ -873,6 +873,13 @@ there hasn't been any input, then quit."
       (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
      (t (corfu-quit)))))
 
+(defun corfu--unread-this-command-keys ()
+  (when (> (length (this-command-keys)) 0)
+    (setq unread-command-events (nconc
+                                 (listify-key-sequence (this-command-keys))
+                                 unread-command-events))
+    (clear-this-command-keys t)))
+
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
   (when corfu--preview-ov
@@ -883,7 +890,8 @@ there hasn't been any input, then quit."
              ;; See the comment about `overriding-local-map' in `corfu--post-command'.
              (not (or overriding-terminal-local-map
                       (corfu--match-symbol-p corfu-continue-commands this-command))))
-    (corfu--insert 'exact)))
+    (corfu--unread-this-command-keys)
+    (setq this-command 'corfu-insert)))
 
 (defun corfu-insert-separator ()
   "Insert a separator character, inhibiting quit on completion boundary.
