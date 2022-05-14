@@ -892,6 +892,13 @@ there hasn't been any input, then quit."
       (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
      (t (corfu-quit)))))
 
+(defun corfu--unread-this-command-keys ()
+  (when (> (length (this-command-keys)) 0)
+    (setq unread-command-events (nconc
+                                 (listify-key-sequence (this-command-keys))
+                                 unread-command-events))
+    (clear-this-command-keys t)))
+
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
   (when corfu--preview-ov
@@ -902,7 +909,8 @@ there hasn't been any input, then quit."
              ;; See the comment about `overriding-local-map' in `corfu--post-command'.
              (not (or overriding-terminal-local-map
                       (corfu--match-symbol-p corfu-continue-commands this-command))))
-    (corfu--insert 'exact)))
+    (corfu--unread-this-command-keys)
+    (setq this-command 'corfu-insert-exact)))
 
 (defun corfu-insert-separator ()
   "Insert a separator character, inhibiting quit on completion boundary.
@@ -1062,6 +1070,14 @@ Quit if no candidate is selected."
   (interactive)
   (if (>= corfu--index 0)
       (corfu--insert 'finished)
+    (corfu-quit)))
+
+(defun corfu-insert-exact ()
+  "Insert current candidate with the `exact' status.
+Quit if no candidate is selected."
+  (interactive)
+  (if (>= corfu--index 0)
+      (corfu--insert 'exact)
     (corfu-quit)))
 
 (defun corfu--setup ()
@@ -1284,8 +1300,8 @@ The ORIG function takes the FUN and WHICH arguments."
 
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-next corfu-previous corfu-first corfu-last corfu-quit corfu-reset
-               corfu-complete corfu-insert corfu-scroll-up corfu-scroll-down
-               corfu-insert-separator))
+               corfu-complete corfu-insert corfu-insert-exact corfu-scroll-up
+               corfu-scroll-down corfu-insert-separator))
   (put sym 'completion-predicate #'ignore))
 
 (provide 'corfu)
