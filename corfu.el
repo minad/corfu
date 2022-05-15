@@ -186,8 +186,7 @@ The completion backend can override this with
   '((((class color) (min-colors 88) (background dark)) :background "#191a1b")
     (((class color) (min-colors 88) (background light)) :background "#f0f0f0")
     (t :background "gray"))
-  "Default face used for the popup, in particular the background
-  and foreground color.")
+  "Default face, foreground and background colors used for the popup.")
 
 (defface corfu-current
   '((((class color) (min-colors 88) (background dark))
@@ -1080,62 +1079,63 @@ Quit if no candidate is selected."
   (accept-change-group corfu--change-group)
   (mapc #'kill-local-variable corfu--state-vars))
 
-(defun corfu--in-region (beg end table &optional pred)
-  "Corfu completion in region function.
-See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
+(defun corfu--in-region (&rest args)
+  "Corfu completion in region function called with ARGS."
+  ;; XXX We can get an endless loop when `completion-in-region-function' is set
+  ;; globally to `corfu--in-region'. This should never happen.
+  (apply (if (display-graphic-p) #'corfu--in-region-1
+           (default-value 'completion-in-region-function))
+         args))
+
+(defun corfu--in-region-1 (beg end table &optional pred)
+  "Complete in region, see `completion-in-region' for BEG, END, TABLE, PRED."
   (barf-if-buffer-read-only)
-  (if (not (display-graphic-p))
-      ;; XXX Warning this can result in an endless loop when
-      ;; `completion-in-region-function' is set *globally* to
-      ;; `corfu--in-region'. This should never happen.
-      (funcall (default-value 'completion-in-region-function) beg end table pred)
-    ;; Restart the completion. This can happen for example if C-M-/
-    ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
-    (when completion-in-region-mode (corfu-quit))
-    (let* ((pt (max 0 (- (point) beg)))
-           (str (buffer-substring-no-properties beg end))
-           (before (substring str 0 pt))
-           (metadata (completion-metadata before table pred))
-           (exit (plist-get completion-extra-properties :exit-function))
-           (threshold (completion--cycle-threshold metadata))
-           (completion-in-region-mode-predicate
-            (or completion-in-region-mode-predicate (lambda () t))))
-      (pcase (completion-try-completion str table pred pt metadata)
-        ('nil (corfu--message "No match") nil)
-        ('t
-         (goto-char end)
-         (corfu--message "Sole match")
-         (when exit (funcall exit str 'finished))
-         t)
-        (`(,newstr . ,newpt)
-         (pcase-let ((`(,base ,candidates ,total . ,_)
-                      (corfu--recompute-candidates str pt table pred)))
-           (unless (markerp beg) (setq beg (copy-marker beg)))
-           (setq end (copy-marker end t)
-                 completion-in-region--data (list beg end table pred))
-           (unless (equal str newstr)
-             ;; bug#55205: completion--replace removes properties!
-             (completion--replace beg end (concat newstr)))
-           (goto-char (+ beg newpt))
-           (if (= total 1)
-               ;; If completion is finished and cannot be further completed,
-               ;; return 'finished. Otherwise setup the Corfu popup.
-               (cond
-                ((consp (completion-try-completion
-                         newstr table pred newpt
-                         (completion-metadata newstr table pred)))
-                 (corfu--setup))
-                (exit (funcall exit newstr 'finished)))
-             (if (or (= total 0) (not threshold)
-                     (and (not (eq threshold t)) (< threshold total)))
-                 (corfu--setup)
-               (corfu--cycle-candidates total candidates (+ (length base) beg) end)
-               ;; Do not show Corfu when "trivially" cycling, i.e.,
-               ;; when the completion is finished after the candidate.
-               (unless (equal (completion-boundaries (car candidates) table pred "")
-                              '(0 . 0))
-                 (corfu--setup)))))
-         t)))))
+  ;; Restart the completion. This can happen for example if C-M-/
+  ;; (`dabbrev-completion') is pressed while the Corfu popup is already open.
+  (when completion-in-region-mode (corfu-quit))
+  (let* ((pt (max 0 (- (point) beg)))
+         (str (buffer-substring-no-properties beg end))
+         (before (substring str 0 pt))
+         (metadata (completion-metadata before table pred))
+         (exit (plist-get completion-extra-properties :exit-function))
+         (threshold (completion--cycle-threshold metadata))
+         (completion-in-region-mode-predicate
+          (or completion-in-region-mode-predicate (lambda () t))))
+    (pcase (completion-try-completion str table pred pt metadata)
+      ('nil (corfu--message "No match") nil)
+      ('t (goto-char end)
+          (corfu--message "Sole match")
+          (when exit (funcall exit str 'finished))
+          t)
+      (`(,newstr . ,newpt)
+       (pcase-let ((`(,base ,candidates ,total . ,_)
+                    (corfu--recompute-candidates str pt table pred)))
+         (unless (markerp beg) (setq beg (copy-marker beg)))
+         (setq end (copy-marker end t)
+               completion-in-region--data (list beg end table pred))
+         (unless (equal str newstr)
+           ;; bug#55205: completion--replace removes properties!
+           (completion--replace beg end (concat newstr)))
+         (goto-char (+ beg newpt))
+         (if (= total 1)
+             ;; If completion is finished and cannot be further completed,
+             ;; return 'finished. Otherwise setup the Corfu popup.
+             (cond
+              ((consp (completion-try-completion
+                       newstr table pred newpt
+                       (completion-metadata newstr table pred)))
+               (corfu--setup))
+              (exit (funcall exit newstr 'finished)))
+           (if (or (= total 0) (not threshold)
+                   (and (not (eq threshold t)) (< threshold total)))
+               (corfu--setup)
+             (corfu--cycle-candidates total candidates (+ (length base) beg) end)
+             ;; Do not show Corfu when "trivially" cycling, i.e.,
+             ;; when the completion is finished after the candidate.
+             (unless (equal (completion-boundaries (car candidates) table pred "")
+                            '(0 . 0))
+               (corfu--setup)))))
+       t))))
 
 (defun corfu--message (&rest msg)
   "Show completion MSG."
