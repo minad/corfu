@@ -497,6 +497,10 @@ A scroll bar is displayed from LO to LO+BAR."
       (let ((inhibit-read-only t))
         (erase-buffer)))))
 
+(defun corfu--popup-support-p ()
+  "Return non-nil if child frames are supported."
+  (display-graphic-p))
+
 (defun corfu--move-to-front (elem list)
   "Move ELEM to front of LIST."
   (if-let (found (member elem list))
@@ -1083,7 +1087,7 @@ Quit if no candidate is selected."
   "Corfu completion in region function called with ARGS."
   ;; XXX We can get an endless loop when `completion-in-region-function' is set
   ;; globally to `corfu--in-region'. This should never happen.
-  (apply (if (display-graphic-p) #'corfu--in-region-1
+  (apply (if (corfu--popup-support-p) #'corfu--in-region-1
            (default-value 'completion-in-region-function))
          args))
 
@@ -1184,7 +1188,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   (when (and (not completion-in-region-mode)
              (not defining-kbd-macro)
              (corfu--match-symbol-p corfu-auto-commands this-command)
-             (display-graphic-p))
+             (corfu--popup-support-p))
     ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
     ;; in particular if flyspell-mode is enabled.
     (setq corfu--auto-timer
