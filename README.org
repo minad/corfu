@@ -27,9 +27,9 @@ provided by other programming language packages are usually sufficient. A few
 additional Capfs and completion utilities are provided by the [[https://github.com/minad/cape][Cape]] package.
 
 *NOTE*: Corfu uses child frames to show the popup and falls back to the default
-setting of the ~completion-in-region-function~ on non-graphical displays. There is
-a [[https://codeberg.org/akib/emacs-corfu-popup][package in the works]] which uses overlays for the popup such that Corfu can be
-used when Emacs is running in a terminal.
+setting of the ~completion-in-region-function~ on non-graphical displays. If you
+want to use Corfu in the terminal, install the package [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]], which
+provides an alternative overlay-based display.
 
 [[https://github.com/minad/corfu/blob/screenshots/light.png?raw=true]]
 
@@ -422,6 +422,12 @@ Corfu works well together with all packages providing code completion via the
 out of the box. Nevertheless you may want to look into complementary packages to
 enhance your setup.
 
+- [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]]: The corfu-terminal package provides an overlay-based display
+  for Corfu, such that you can use Corfu in terminal Emacs.
+
+- [[https://github.com/galeo/corfu-doc][corfu-doc]]: The corfu-doc package displays the candidate documentation in a
+  popup next to the Corfu popup, similar to =company-quickhelp=.
+
 - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced
   [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering expressions are separated by
   spaces or another character (see ~corfu-separator~).
@@ -436,9 +442,6 @@ enhance your setup.
 - [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via an external package. For example
   the [[https://github.com/jdtsmith/kind-icon][kind-icon]] package provides beautifully styled SVG icons based on
   monochromatic icon sets like material design.
-
-- [[https://github.com/galeo/corfu-doc][corfu-doc]]: The corfu-doc package displays the candidate documentation in a
-  popup next to the Corfu popup, similar to =company-quickhelp=.
 
 - [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]]: Extend the Eshell/Shell Pcomplete mechanism with support for many
   more commands. Similar to the Fish shell, Pcomplete uses man page parsing to
