@@ -603,6 +603,11 @@ A scroll bar is displayed from LO to LO+BAR."
       (corfu--metadata-get 'display-sort-function)
       corfu-sort-function))
 
+(defun corfu--sort-candicates (candicates)
+  "Sort CANDICATES according the appropriate rule."
+  (delete-consecutive-dups
+   (funcall (or (corfu--sort-function) #'identity) candicates)))
+
 (defun corfu--recompute-candidates (str pt table pred)
   "Recompute candidates from STR, PT, TABLE and PRED."
   (pcase-let* ((before (substring str 0 pt))
@@ -623,7 +628,7 @@ A scroll bar is displayed from LO to LO+BAR."
     ;; this filtering, since this breaks the special casing in the
     ;; `completion-file-name-table' for `file-exists-p' and `file-directory-p'.
     (when completing-file (setq all (corfu--filter-files all)))
-    (setq all (delete-consecutive-dups (funcall (or (corfu--sort-function) #'identity) all)))
+    (setq all (corfu--sort-candicates all))
     (setq all (corfu--move-prefix-candidates-to-front field all))
     (when (and completing-file (not (string-suffix-p "/" field)))
       (setq all (corfu--move-to-front (concat field "/") all)))
