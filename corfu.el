@@ -446,11 +446,13 @@ The created frame can be accessed via FRAME."
     ;; frame flickers on Mac.
     ;; XXX HACK We have to apply the face background before adjusting the frame
     ;; parameter, otherwise the border is not updated (BUG!).
-    (let* ((face (if (facep 'child-frame-border) 'child-frame-border 'internal-border))
-           (new (face-attribute 'corfu-border :background nil 'default)))
+    (let ((face (if (facep 'child-frame-border) 'child-frame-border 'internal-border))
+          (new (face-attribute 'corfu-border :background nil 'default)))
       (unless (equal (face-attribute face :background frame 'default) new)
         (set-face-background face new frame)))
     (let ((new (face-attribute 'corfu-default :background nil 'default)))
+      (unless (equal (face-attribute 'fringe :background frame 'default) new)
+        (set-face-background 'fringe new frame))
       (unless (equal (frame-parameter frame 'background-color) new)
         (set-frame-parameter frame 'background-color new)))
     (let ((win (frame-root-window frame)))
