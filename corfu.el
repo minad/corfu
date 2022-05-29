@@ -392,11 +392,9 @@ CONTENT-HANDLER is a function called with the inserted buffer content."
         (goto-char (point-min))))
     buffer))
 
-;; Function adapted from posframe.el by tumashu
-(defun corfu--make-frame (x y width height content
-                          buffer-name frame frame-params
-                          &optional content-handler)
-  "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT.
+(defun corfu--make-frame-1 (content buffer-name frame frame-params
+                            &optional content-handler)
+  "Make child frame with CONTENT.
 
 The BUFFER-NAME and CONTENT-HANDLER parameters are the same as
 the corresponding parameters in the `corfu--make-buffer' function.
@@ -435,8 +433,6 @@ The created frame can be accessed via FRAME."
       (set-window-buffer win buffer)
       ;; Mark window as dedicated to prevent frame reuse (#60)
       (set-window-dedicated-p win t))
-    (corfu--set-frame-position frame x y width height)
-    (redirect-frame-focus frame parent)
     frame))
 
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
@@ -470,6 +466,22 @@ The created frame can be accessed via FRAME."
       (set-frame-position frame x y)
       (redisplay 'force)
       (make-frame-visible frame))))
+
+;; Function adapted from posframe.el by tumashu
+(defun corfu--make-frame (x y width height content
+                          buffer-name frame frame-params
+                          &optional content-handler)
+  "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT.
+
+The rest of the parameters are the same as the corresponding parameters
+in `corfu--make-frame-1'."
+  (let ((parent (window-frame))
+        (frame
+          (corfu--make-frame-1
+           content buffer-name frame frame-params content-handler)))
+    (corfu--set-frame-position frame x y width height 'hack-redisplay)
+    (redirect-frame-focus frame parent)
+    frame))
 
 (defun corfu--popup-show (pos off width lines &optional curr lo bar)
   "Show LINES as popup at POS - OFF.
