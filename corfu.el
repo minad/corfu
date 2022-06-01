@@ -60,6 +60,14 @@ The value should lie between 0 and corfu-count/2."
   "Popup maximum width in characters."
   :type 'integer)
 
+(defcustom corfu-max-suffix-width nil
+  "The maximum width of suffix shown.
+Non-nil means corfu will try to display this many characters of
+suffix, and truncate the candidate if needed. The value of it
+should be set such that together with `corfu-max-width', the
+candidate can have enough space to show."
+  :type 'integer)
+
 (defcustom corfu-cycle nil
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
@@ -730,30 +738,64 @@ there hasn't been any input, then quit."
                           (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s))))
   (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
          (pw (cl-loop for x in cands maximize (string-width (cadr x))))
-         (sw (cl-loop for x in cands maximize (string-width (caddr x))))
-         (width (+ pw cw sw))
          ;; -4 because of margins and some additional safety
          (max-width (min corfu-max-width (- (frame-width) 4))))
-    (when (> width max-width)
-      (setq sw (max 0 (- max-width pw cw))
-            width (+ pw cw sw)))
-    (when (< width corfu-min-width)
-      (setq cw (+ cw (- corfu-min-width width))
-            width corfu-min-width))
-    (setq width (min width max-width))
-    (list pw width
-          (cl-loop for (cand prefix suffix) in cands collect
-                   (truncate-string-to-width
-                    (concat prefix
-                            (make-string (max 0 (- pw (string-width prefix))) ?\s)
-                            cand
-                            (when (/= sw 0)
-                              (make-string
-                               (+ (max 0 (- cw (string-width cand)))
-                                  (max 0 (- sw (string-width suffix))))
-                               ?\s))
-                            suffix)
-                    width)))))
+    (if (and corfu-max-suffix-width 10 (< (+ 4 pw corfu-max-suffix-width) max-width))
+        ;; when corfu-max-suffix-width is not nil, we prioritize suffix over cand if possible
+        (progn
+          (let*
+              ((sw (cl-loop for x in cands maximize (min corfu-max-suffix-width (string-width (caddr x)))))
+               (width (+ pw cw sw)))
+            (when (> width max-width)
+              (setq cw (- max-width pw sw)
+                    width (+ pw cw sw)))
+            (when (< width corfu-min-width)
+              (setq cw (+ cw (- corfu-min-width width))
+                    width corfu-min-width))
+            (setq width (min width max-width))
+            (list pw width
+                  (cl-loop for (cand prefix suffix) in cands collect
+                           (progn
+                             (when (> (string-width cand) cw)
+                               (setq cand (truncate-string-to-width cand (- cw 2)))
+                               (setq cand (concat cand "..")))
+                             (setq suffix (truncate-string-to-width suffix corfu-max-suffix-width))
+                             (truncate-string-to-width
+                              (concat prefix
+                                      (make-string (max 0 (- pw (string-width prefix))) ?\s)
+                                      cand
+                                      (when (/= sw 0)
+                                        (make-string
+                                         (+ (max 0 (- cw (string-width cand)))
+                                            (max 0 (- sw (string-width suffix))))
+                                         ?\s))
+                                      suffix)
+                              width))))))
+      (let*
+          ((sw (cl-loop for x in cands maximize (string-width (caddr x))))
+           (width (+ pw cw sw))
+           ;; -4 because of margins and some additional safety
+           (max-width (min corfu-max-width (- (frame-width) 4))))
+        (when (> width max-width)
+          (setq sw (max 0 (- max-width pw cw))
+                width (+ pw cw sw)))
+        (when (< width corfu-min-width)
+          (setq cw (+ cw (- corfu-min-width width))
+                width corfu-min-width))
+        (setq width (min width max-width))
+        (list pw width
+              (cl-loop for (cand prefix suffix) in cands collect
+                       (truncate-string-to-width
+                        (concat prefix
+                                (make-string (max 0 (- pw (string-width prefix))) ?\s)
+                                cand
+                                (when (/= sw 0)
+                                  (make-string
+                                   (+ (max 0 (- cw (string-width cand)))
+                                      (max 0 (- sw (string-width suffix))))
+                                   ?\s))
+                                suffix)
+                        width)))))))
 
 (defun corfu--update-scroll ()
   "Update scroll position."
