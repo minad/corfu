@@ -492,10 +492,15 @@ A scroll bar is displayed from LO to LO+BAR."
 (defun corfu--popup-hide ()
   "Hide Corfu popup."
   (when (frame-live-p corfu--frame)
-    (make-frame-invisible corfu--frame)
-    (with-current-buffer (window-buffer (frame-root-window corfu--frame))
-      (let ((inhibit-read-only t))
-        (erase-buffer)))))
+    ;; Redisplay such that the input becomes immediately visible before the popup
+    ;; hiding, which is slow (Issue #48). See also corresponding vertico#89.
+    (redisplay)
+    (run-at-time 0 nil (lambda ()
+                         (when (frame-live-p corfu--frame)
+                           (make-frame-invisible corfu--frame)
+                           (with-current-buffer (window-buffer (frame-root-window corfu--frame))
+                             (let ((inhibit-read-only t))
+                               (erase-buffer))))))))
 
 (defun corfu--popup-support-p ()
   "Return non-nil if child frames are supported."
@@ -1071,9 +1076,6 @@ Quit if no candidate is selected."
 
 (defun corfu--teardown ()
   "Teardown Corfu."
-  ;; Redisplay such that the input becomes immediately visible before the popup
-  ;; hiding, which is slow (Issue #48). See also corresponding vertico#89.
-  (redisplay)
   (corfu--popup-hide)
   (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
   (remove-hook 'post-command-hook #'corfu--post-command)
