@@ -369,7 +369,7 @@ The completion backend can override this with
     map)
   "Ignore all mouse clicks.")
 
-(defun corfu--make-buffer (content buffer-name &optional content-handler)
+(defun corfu--make-buffer (content buffer-name)
   "Create buffer with CONTENT and a specified BUFFER-NAME.
 
 CONTENT-HANDLER is a function called with the inserted buffer content."
@@ -388,12 +388,10 @@ CONTENT-HANDLER is a function called with the inserted buffer content."
             (inhibit-read-only t))
         (erase-buffer)
         (insert content)
-        (when content-handler (funcall content-handler))
         (goto-char (point-min))))
     buffer))
 
-(defun corfu--make-frame-1 (content buffer-name frame frame-params
-                            &optional content-handler)
+(defun corfu--make-frame-1 (content buffer-name frame frame-params)
   "Make child frame with CONTENT.
 
 The BUFFER-NAME and CONTENT-HANDLER parameters are the same as
@@ -404,7 +402,7 @@ The extra frame parameters can be specified with FRMAE-PARAMS.
 The created frame can be accessed via FRAME."
   (let* ((after-make-frame-functions)
          (border (alist-get 'child-frame-border-width frame-params))
-         (buffer (corfu--make-buffer content buffer-name content-handler))
+         (buffer (corfu--make-buffer content buffer-name))
          (parent (window-frame)))
     (unless (and (frame-live-p frame)
                  (eq (frame-parent frame) parent))
@@ -469,8 +467,7 @@ The created frame can be accessed via FRAME."
 
 ;; Function adapted from posframe.el by tumashu
 (defun corfu--make-frame (x y width height content
-                          buffer-name frame frame-params
-                          &optional content-handler)
+                          buffer-name frame frame-params)
   "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT.
 
 The rest of the parameters are the same as the corresponding parameters
@@ -478,7 +475,7 @@ in `corfu--make-frame-1'."
   (let ((parent (window-frame))
         (frame
           (corfu--make-frame-1
-           content buffer-name frame frame-params content-handler)))
+           content buffer-name frame frame-params)))
     (corfu--set-frame-position frame x y width height 'hack-redisplay)
     (redirect-frame-focus frame parent)
     frame))
