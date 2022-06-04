@@ -1191,6 +1191,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
     (setq corfu--auto-timer nil))
   (when (and (not completion-in-region-mode)
              (not defining-kbd-macro)
+             (not buffer-read-only)
              (corfu--match-symbol-p corfu-auto-commands this-command)
              (corfu--popup-support-p))
     ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
