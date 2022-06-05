@@ -356,7 +356,6 @@ The completion backend can override this with
     (fringes-outside-margins . 0)
     (fringe-indicator-alist . nil)
     (indicate-empty-lines . nil)
-    (indicate-unused-lines . nil)
     (indicate-buffer-boundaries . nil)
     (buffer-read-only . t))
   "Default child frame buffer parameters.")
