@@ -368,11 +368,11 @@ The completion backend can override this with
     map)
   "Ignore all mouse clicks.")
 
-(defun corfu--make-buffer (name content)
-  "Create buffer with NAME and CONTENT."
+(defun corfu--make-buffer (content)
+  "Create corfu buffer with CONTENT."
   (let ((fr face-remapping-alist)
         (ls line-spacing)
-        (buffer (get-buffer-create name)))
+        (buffer (get-buffer-create " *corfu*")))
     (with-current-buffer buffer
       ;;; XXX HACK install mouse ignore map
       (use-local-map corfu--mouse-ignore-map)
@@ -388,70 +388,76 @@ The completion backend can override this with
         (goto-char (point-min))))
     buffer))
 
+;; Function adapted from posframe.el by tumashu
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
-(defun corfu--make-frame (frame params buffer) ;; Adapted from posframe.el by tumashu
-  "Make child frame from BUFFER.
-PARAMS are frame parameters and FRAME is the existing frame."
-  (let ((after-make-frame-functions)
-        (parent (window-frame))
-        (x-gtk-resize-child-frames
-         (let ((case-fold-search t))
-           (and
-            ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
-            ;; More information:
-            ;; * https://github.com/minad/corfu/issues/17
-            ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
-            ;; * https://lists.gnu.org/archive/html/emacs-devel/2020-02/msg00001.html
-            (string-match-p "gtk3" system-configuration-features)
-            (string-match-p "gnome\\|cinnamon"
-                            (or (getenv "XDG_CURRENT_DESKTOP")
-                                (getenv "DESKTOP_SESSION") ""))
-            'resize-mode))))
-    (unless (and (frame-live-p frame)
-                 (eq (frame-parent frame) parent))
-      (when frame (delete-frame frame))
-      (setq frame (make-frame
-                   `((parent-frame . ,parent)
-                     (minibuffer . ,(minibuffer-window parent))
-                     ;; Set `internal-border-width' for Emacs 27
-                     (internal-border-width . ,(alist-get 'child-frame-border-width params))
-                     ,@params))))
+(defun corfu--make-frame (x y width height content)
+  "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT."
+  (let* ((window-min-height 1)
+         (window-min-width 1)
+         (x-gtk-resize-child-frames
+          (let ((case-fold-search t))
+            (and
+             ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
+             ;; More information:
+             ;; * https://github.com/minad/corfu/issues/17
+             ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
+             ;; * https://lists.gnu.org/archive/html/emacs-devel/2020-02/msg00001.html
+             (string-match-p "gtk3" system-configuration-features)
+             (string-match-p "gnome\\|cinnamon"
+                             (or (getenv "XDG_CURRENT_DESKTOP")
+                                 (getenv "DESKTOP_SESSION") ""))
+             'resize-mode)))
+         (after-make-frame-functions)
+         (edge (window-inside-pixel-edges))
+         (ch (default-line-height))
+         (border (alist-get 'child-frame-border-width corfu--frame-parameters))
+         (x (max border (min (+ (car edge) x (- border))
+                             (- (frame-pixel-width) width))))
+         (yb (+ (cadr edge) (window-tab-line-height) y ch))
+         (y (if (> (+ yb (* corfu-count ch) ch ch) (frame-pixel-height))
+                (- yb height ch 1)
+              yb))
+         (buffer (corfu--make-buffer content))
+         (parent (window-frame)))
+    (unless (and (frame-live-p corfu--frame)
+                 (eq (frame-parent corfu--frame) parent))
+      (when corfu--frame (delete-frame corfu--frame))
+      (setq corfu--frame (make-frame
+                          `((parent-frame . ,parent)
+                            (minibuffer . ,(minibuffer-window parent))
+                            ;; Set `internal-border-width' for Emacs 27
+                            (internal-border-width . ,border)
+                            ,@corfu--frame-parameters))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check explicitly before applying the setting. Without the check, the
-    ;; frame flickers on Mac. We have to apply the face background before
-    ;; adjusting the frame parameter, otherwise the border is not updated.
-    (let ((face (if (facep 'child-frame-border) 'child-frame-border 'internal-border))
-          (new (face-attribute 'corfu-border :background nil 'default)))
-      (unless (equal (face-attribute face :background frame 'default) new)
-        (set-face-background face new frame)))
+    ;; frame flickers on Mac.
+    ;; XXX HACK We have to apply the face background before adjusting the frame
+    ;; parameter, otherwise the border is not updated (BUG!).
+    (let* ((face (if (facep 'child-frame-border) 'child-frame-border 'internal-border))
+           (new (face-attribute 'corfu-border :background nil 'default)))
+      (unless (equal (face-attribute face :background corfu--frame 'default) new)
+        (set-face-background face new corfu--frame)))
     (let ((new (face-attribute 'corfu-default :background nil 'default)))
-      (unless (equal (face-attribute 'fringe :background frame 'default) new)
-        (set-face-background 'fringe new frame))
-      (unless (equal (frame-parameter frame 'background-color) new)
-        (set-frame-parameter frame 'background-color new)))
-    (let ((win (frame-root-window frame)))
+      (unless (equal (frame-parameter corfu--frame 'background-color) new)
+        (set-frame-parameter corfu--frame 'background-color new)))
+    (let ((win (frame-root-window corfu--frame)))
       (set-window-buffer win buffer)
       ;; Mark window as dedicated to prevent frame reuse (#60)
       (set-window-dedicated-p win t))
-    (redirect-frame-focus frame parent)
-    frame))
-
-(defun corfu--move-frame (frame x y width height) ;; Adapted from posframe.el by tumashu
-  "Show FRAME at X/Y with WIDTH/HEIGHT."
-  (let ((window-min-height 1) (window-min-width 1))
-    (set-frame-size frame width height t))
-  (if (frame-visible-p frame)
-      ;; XXX HACK Avoid flicker when frame is already visible.
-      ;; Redisplay, wait for resize and then move the frame.
-      (unless (equal (frame-position frame) (cons x y))
-        (redisplay 'force)
-        (sleep-for 0.01)
-        (set-frame-position frame x y))
-    ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not
-    ;; display content.
-    (set-frame-position frame x y)
-    (redisplay 'force)
-    (make-frame-visible frame)))
+    (set-frame-size corfu--frame width height t)
+    (if (frame-visible-p corfu--frame)
+        ;; XXX HACK Avoid flicker when frame is already visible.
+        ;; Redisplay, wait for resize and then move the frame.
+        (unless (equal (frame-position corfu--frame) (cons x y))
+          (redisplay 'force)
+          (sleep-for 0.01)
+          (set-frame-position corfu--frame x y))
+      ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not
+      ;; display content.
+      (set-frame-position corfu--frame x y)
+      (redisplay 'force)
+      (make-frame-visible corfu--frame))
+    (redirect-frame-focus corfu--frame parent)))
 
 (defun corfu--popup-show (pos off width lines &optional curr lo bar)
   "Show LINES as popup at POS - OFF.
@@ -469,33 +475,22 @@ A scroll bar is displayed from LO to LO+BAR."
                  (concat (propertize " " 'display `(space :align-to (- right (,mr))))
                          (propertize " " 'display `(space :width (,(- mr bw))))
                          (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
-         (pos (posn-x-y (posn-at-point pos)))
-         (width (+ (* width cw) ml mr))
-         (height (* (length lines) ch))
-         (edge (window-inside-pixel-edges))
-         (border (alist-get 'child-frame-border-width corfu--frame-parameters))
-         (x (max border (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
-                             (- (frame-pixel-width) width))))
-         (yb (+ (cadr edge) (window-tab-line-height) (or (cdr pos) 0) ch))
-         (y (if (> (+ yb (* corfu-count ch) ch ch) (frame-pixel-height))
-                (- yb height ch 1)
-              yb))
          (row 0)
-         (buffer (corfu--make-buffer
-                  " *corfu*"
-                  (mapconcat (lambda (line)
-                               (let ((str (concat marginl line
-                                                  (if (and lo (<= lo row (+ lo bar)))
-                                                      sbar
-                                                    marginr))))
-                                 (when (eq row curr)
-                                   (add-face-text-property
-                                    0 (length str) 'corfu-current 'append str))
-                                 (setq row (1+ row))
-                                 str))
-                             lines "\n"))))
-    (setq corfu--frame (corfu--make-frame corfu--frame corfu--frame-parameters buffer))
-    (corfu--move-frame corfu--frame x y width height)))
+         (pos (posn-x-y (posn-at-point pos)))
+         (x (or (car pos) 0))
+         (y (or (cdr pos) 0)))
+    (corfu--make-frame
+     (- x ml (* cw off)) y
+     (+ (* width cw) ml mr) (* (length lines) ch)
+     (mapconcat (lambda (line)
+                  (let ((str (concat marginl line
+                                     (if (and lo (<= lo row (+ lo bar))) sbar marginr))))
+                    (when (eq row curr)
+                      (add-face-text-property
+                       0 (length str) 'corfu-current 'append str))
+                    (setq row (1+ row))
+                    str))
+                lines "\n"))))
 
 (defun corfu--popup-hide ()
   "Hide Corfu popup."
