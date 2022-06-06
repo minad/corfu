@@ -388,11 +388,25 @@ The completion backend can override this with
         (goto-char (point-min))))
     buffer))
 
+(defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
 (defun corfu--make-frame (frame params buffer) ;; Adapted from posframe.el by tumashu
   "Make child frame from BUFFER.
 PARAMS are frame parameters and FRAME is the existing frame."
   (let ((after-make-frame-functions)
-        (parent (window-frame)))
+        (parent (window-frame))
+        (x-gtk-resize-child-frames
+         (let ((case-fold-search t))
+           (and
+            ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
+            ;; More information:
+            ;; * https://github.com/minad/corfu/issues/17
+            ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
+            ;; * https://lists.gnu.org/archive/html/emacs-devel/2020-02/msg00001.html
+            (string-match-p "gtk3" system-configuration-features)
+            (string-match-p "gnome\\|cinnamon"
+                            (or (getenv "XDG_CURRENT_DESKTOP")
+                                (getenv "DESKTOP_SESSION") ""))
+            'resize-mode))))
     (unless (and (frame-live-p frame)
                  (eq (frame-parent frame) parent))
       (when frame (delete-frame frame))
@@ -422,37 +436,22 @@ PARAMS are frame parameters and FRAME is the existing frame."
     (redirect-frame-focus frame parent)
     frame))
 
-(defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
 (defun corfu--move-frame (frame x y width height) ;; Adapted from posframe.el by tumashu
   "Show FRAME at X/Y with WIDTH/HEIGHT."
-  (let ((window-min-height 1)
-        (window-min-width 1)
-        (x-gtk-resize-child-frames
-         (let ((case-fold-search t))
-           (and
-            ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
-            ;; More information:
-            ;; * https://github.com/minad/corfu/issues/17
-            ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
-            ;; * https://lists.gnu.org/archive/html/emacs-devel/2020-02/msg00001.html
-            (string-match-p "gtk3" system-configuration-features)
-            (string-match-p "gnome\\|cinnamon"
-                            (or (getenv "XDG_CURRENT_DESKTOP")
-                                (getenv "DESKTOP_SESSION") ""))
-            'resize-mode))))
-    (set-frame-size frame width height t)
-    (if (frame-visible-p frame)
-        ;; XXX HACK Avoid flicker when frame is already visible.
-        ;; Redisplay, wait for resize and then move the frame.
-        (unless (equal (frame-position frame) (cons x y))
-          (redisplay 'force)
-          (sleep-for 0.01)
-          (set-frame-position frame x y))
-      ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not
-      ;; display content.
-      (set-frame-position frame x y)
-      (redisplay 'force)
-      (make-frame-visible frame))))
+  (let ((window-min-height 1) (window-min-width 1))
+    (set-frame-size frame width height t))
+  (if (frame-visible-p frame)
+      ;; XXX HACK Avoid flicker when frame is already visible.
+      ;; Redisplay, wait for resize and then move the frame.
+      (unless (equal (frame-position frame) (cons x y))
+        (redisplay 'force)
+        (sleep-for 0.01)
+        (set-frame-position frame x y))
+    ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not
+    ;; display content.
+    (set-frame-position frame x y)
+    (redisplay 'force)
+    (make-frame-visible frame)))
 
 (defun corfu--popup-show (pos off width lines &optional curr lo bar)
   "Show LINES as popup at POS - OFF.
