@@ -391,10 +391,14 @@ The completion backend can override this with
 
 ;; Function adapted from posframe.el by tumashu
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
-(defun corfu--make-frame (frame params buffer x y width height)
+(defun corfu--make-frame (frame params buffer x y width height
+                                &optional hack-redisplay-p)
   "Make child frame from BUFFER and show it at X/Y with WIDTH/HEIGHT.
 
-PARAMS are frame parameters and FRAME is the existing frame."
+PARAMS are frame parameters and FRAME is the existing frame.
+
+If the optional argument HACK-REDISPLAY-P is non-nil,
+hack redisplay to avoid flicker."
   (when corfu--frame-timer
     (cancel-timer corfu--frame-timer)
     (setq corfu--frame-timer nil))
@@ -450,8 +454,9 @@ PARAMS are frame parameters and FRAME is the existing frame."
         ;; XXX HACK Avoid flicker when frame is already visible.
         ;; Redisplay, wait for resize and then move the frame.
         (unless (equal (frame-position frame) (cons x y))
-          (redisplay 'force)
-          (sleep-for 0.01)
+          (when hack-redisplay-p
+            (redisplay 'force)
+            (sleep-for 0.01))
           (set-frame-position frame x y))
       ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not
       ;; display content.
@@ -504,7 +509,8 @@ A scroll bar is displayed from LO to LO+BAR."
                              lines "\n"))))
     (setq corfu--frame
           (corfu--make-frame corfu--frame corfu--frame-parameters buffer
-                             x y width height))))
+                             x y width height
+                             'hack-redisplay))))
 
 (defun corfu--hide-frame-deferred ()
   "Deferred frame hiding."
