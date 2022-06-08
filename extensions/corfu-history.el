@@ -84,7 +84,8 @@
   "Advice for `corfu--insert'."
   (when (>= corfu--index 0)
     (add-to-history 'corfu-history
-                    (nth corfu--index corfu--candidates)
+                    (substring-no-properties
+                     (nth corfu--index corfu--candidates))
                     corfu-history-length)
     (setq corfu-history--hash nil)))
 
