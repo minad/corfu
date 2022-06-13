@@ -504,7 +504,8 @@ A scroll bar is displayed from LO to LO+BAR."
          (redisplay)
          (make-frame-invisible corfu--frame)
          (with-current-buffer (window-buffer (frame-root-window corfu--frame))
-           (let ((inhibit-read-only t))
+           (let ((inhibit-modification-hooks t)
+                 (inhibit-read-only t))
              (erase-buffer))))))))
 
 (defun corfu--popup-support-p ()
