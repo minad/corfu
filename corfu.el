@@ -1193,8 +1193,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   (when corfu--auto-timer
     (cancel-timer corfu--auto-timer)
     (setq corfu--auto-timer nil))
-  (when (and (not completion-in-region-mode)
-             (not defining-kbd-macro)
+  (when (and (not defining-kbd-macro)
              (not buffer-read-only)
              (corfu--match-symbol-p corfu-auto-commands this-command)
              (corfu--popup-support-p))
