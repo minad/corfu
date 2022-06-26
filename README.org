@@ -181,7 +181,7 @@ In case you like aggressive auto completion settings, where the completion popup
 appears immediately, I recommend to use a cheap completion style like =basic=,
 which performs prefix filtering. In this case Corfu completion should still be
 very fast in buffers with efficient completion backends. You can try the
-following settings in an Elisp buffer.
+following settings in an Elisp buffer or the Emacs scratch buffer.
 
 #+begin_src emacs-lisp
   ;; Aggressive completion, cheap prefix filtering.
@@ -213,7 +213,7 @@ code for further details.
               completion-styles '(orderless-fast))
 #+end_src
 
-** Completing with Corfu in the minibuffer
+** Completing in the minibuffer
 
 Corfu can be used for completion in the minibuffer, since it relies on child
 frames to display the candidates. By default, ~global-corfu-mode~ does not
@@ -247,7 +247,7 @@ completion UI, the following snippet should yield the desired result.
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
 #+end_src
 
-** Completing with Corfu in the Eshell or Shell
+** Completing in the Eshell or Shell
 
 When completing in the Eshell I recommend conservative local settings without
 auto completion, such that the completion behavior is similar to widely used
