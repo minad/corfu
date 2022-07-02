@@ -135,8 +135,8 @@ delay."
                  (const :tag "Instant" t)
                  (number :tag "Delay in seconds")
                  (cons :tag "Two Delays"
-                       (choice :tag "Initial   " number))
-                       (choice :tag "Subsequent" number)))
+                       (choice :tag "Initial   " number)
+                       (choice :tag "Subsequent" number))))
 
 (defcustom corfu-margin-formatters nil
   "Registry for margin formatter functions.
