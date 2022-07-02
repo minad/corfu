@@ -807,14 +807,14 @@ there hasn't been any input, then quit."
                  (if (= beg end) 'after-string 'display)
                  (concat corfu--base cand))))
 
-(defun corfu--echo-refresh ()
-  "Refresh echo message to prevent flicker during redisplay."
+(defun corfu--echo-cancel (&optional msg)
+  "Cancel echo timer and refresh MSG to prevent flicker during redisplay."
   (when corfu--echo-timer
     (cancel-timer corfu--echo-timer)
     (setq corfu--echo-timer nil))
-  (corfu--echo-show corfu--echo-message))
+  (corfu--echo-show msg))
 
-(defun corfu--echo-show (&optional msg)
+(defun corfu--echo-show (msg)
   "Show MSG in echo area."
   (when (or msg corfu--echo-message)
     (setq msg (or msg "")
@@ -834,13 +834,12 @@ there hasn't been any input, then quit."
                        (nth corfu--index corfu--candidates))))
       (if (or (eq delay t) (<= delay 0))
           (corfu--echo-show (funcall fun cand))
-        (when corfu--echo-timer (cancel-timer corfu--echo-timer))
+        (corfu--echo-cancel)
         (setq corfu--echo-timer
               (run-at-time delay nil
                            (lambda ()
-                             (corfu--echo-show (funcall fun cand)))))
-        (corfu--echo-show))
-    (corfu--echo-show)))
+                             (corfu--echo-show (funcall fun cand))))))
+    (corfu--echo-cancel)))
 
 (defun corfu--update ()
   "Refresh Corfu UI."
@@ -851,7 +850,7 @@ there hasn't been any input, then quit."
     (when corfu--frame-timer
       (cancel-timer corfu--frame-timer)
       (setq corfu--frame-timer nil))
-    (corfu--echo-refresh)
+    (corfu--echo-cancel corfu--echo-message)
     (cond
      ;; XXX Guard against errors during candidate generation.
      ;; Turn off completion immediately if there are errors
@@ -1092,8 +1091,7 @@ Quit if no candidate is selected."
   (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
   (remove-hook 'post-command-hook #'corfu--post-command)
   (when corfu--preview-ov (delete-overlay corfu--preview-ov))
-  (when corfu--echo-timer (cancel-timer corfu--echo-timer))
-  (corfu--echo-show)
+  (corfu--echo-cancel)
   (accept-change-group corfu--change-group)
   (mapc #'kill-local-variable corfu--state-vars))
 
