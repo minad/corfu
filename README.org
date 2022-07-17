@@ -280,9 +280,9 @@ define the advice ~corfu-send-shell~ which sends the candidate after insertion.
   (advice-add #'corfu-insert :after #'corfu-send-shell)
 #+end_src
 
-Shell completion uses the flexible ~pcomplete~ mechanism internally, which allows
+Shell completion uses the flexible ~Pcomplete~ mechanism internally, which allows
 you to program the completions per shell command. If you want to know more, look
-into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure pcomplete for git commands. I
+into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure Pcomplete for git commands. I
 recommend the [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]] package which extends Pcomplete with completion support
 and helpful annotation support for more commands. Similar to the Fish shell,
 pcmpl-args uses man page parsing and --help output parsing to dynamically
@@ -290,7 +290,7 @@ generate completions. This package brings Eshell completion to another level!
 
 Unfortunately Pcomplete has a few technical issues, which we can work around
 with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers,
-which sanitize the pcomplete function. Ideally the bugs in pcomplete should be
+which sanitize the Pcomplete function. Ideally the bugs in Pcomplete should be
 fixed upstream. *For now these two advices are strongly recommended to achieve a
 sane Eshell experience.*
 
@@ -471,7 +471,7 @@ enhance your setup.
 
 - [[https://github.com/minad/cape][Cape]]: Additional Capf backends and =completion-in-region= commands
   are provided by the [[https://github.com/minad/cape][Cape]] package. Among others, the package supplies a file
-  path and a dabbrev completion backend. Cape provides the ~cape-company-to-capf~
+  path and a Dabbrev completion backend. Cape provides the ~cape-company-to-capf~
   adapter to reuse Company backends in Corfu. Furthermore the function
   ~cape-super-capf~ can merge multiple Capfs, such that the candidates of multiple
   Capfs are displayed together at the same time.
