@@ -124,8 +124,7 @@ TWO is non-nil if two keys should be displayed."
 (defun corfu-quick-jump ()
   "Jump to candidate using quick keys."
   (interactive)
-  (setq corfu--echo-message "")
-  (corfu--echo-refresh)
+  (corfu--echo-cancel)
   (if (= corfu--total 0)
       (and (message "No match") nil)
     (let ((idx (corfu-quick--read)))
