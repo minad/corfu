@@ -29,9 +29,9 @@ setting of the ~completion-in-region-function~ on non-graphical displays. If you
 want to use Corfu in the terminal, install the package [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]], which
 provides an alternative overlay-based display.
 
-[[https://github.com/minad/corfu/blob/screenshots/light.png?raw=true]]
+#+html: <img src="https://github.com/minad/corfu/blob/screenshots/light.png?raw=true">
 
-[[https://github.com/minad/corfu/blob/screenshots/dark.png?raw=true]]
+#+html: <img src="https://github.com/minad/corfu/blob/screenshots/dark.png?raw=true">
 
 #+toc: headlines 8
 
