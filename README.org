@@ -10,8 +10,6 @@
 #+html: <a href="http://elpa.gnu.org/packages/corfu.html"><img alt="GNU ELPA" src="https://elpa.gnu.org/packages/corfu.svg"/></a>
 #+html: <a href="http://elpa.gnu.org/devel/corfu.html"><img alt="GNU-devel ELPA" src="https://elpa.gnu.org/devel/corfu.svg"/></a>
 
-* Introduction
-
 Corfu enhances completion at point with a small completion popup. The current
 candidates are shown in a popup below or above the point. Corfu is the
 minimalistic ~completion-in-region~ counterpart of the [[https://github.com/minad/vertico][Vertico]] minibuffer UI.
@@ -34,6 +32,8 @@ provides an alternative overlay-based display.
 [[https://github.com/minad/corfu/blob/screenshots/light.png?raw=true]]
 
 [[https://github.com/minad/corfu/blob/screenshots/dark.png?raw=true]]
+
+#+toc: headlines 8
 
 * Features
 
