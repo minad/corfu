@@ -462,7 +462,10 @@ enhance your setup.
 - [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]]: The corfu-terminal package provides an overlay-based display
   for Corfu, such that you can use Corfu in terminal Emacs.
 
-- [[https://github.com/galeo/corfu-doc][corfu-doc]]: The corfu-doc package displays the candidate documentation in a
+- [[https://codeberg.org/akib/emacs-corfu-doc-terminal][corfu-doc-terminal]]: The corfu-doc-terminal package provides similar functionality
+  to =corfu=doc=, but in the terminal.
+  
+  - [[https://github.com/galeo/corfu-doc][corfu-doc]]: The corfu-doc package displays the candidate documentation in a
   popup next to the Corfu popup, similar to =company-quickhelp=.
 
 - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced
