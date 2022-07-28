@@ -514,7 +514,8 @@ enhance your setup.
   movement such that you can quickly switch between the completions buffer and
   the minibuffer or the region which is being completed. Mct does not support
   timer-based auto completion, but the integration into Emacs is naturally
-  tight.
+  tight. Note that Mct development is currently [[https://protesilaos.com/codelog/2022-04-14-emacs-discontinue-mct/][discontinued]] due to recent
+  changes of the default completion UI on the Emacs master branch.
 
 - [[https://github.com/minad/consult][consult-completion-in-region]]: The Consult package provides the function
   ~consult-completion-in-region~ which can be set as ~completion-in-region-function~
