@@ -74,7 +74,7 @@
   ;; shorter than 2**16 entries.
   (cl-loop for cand on candidates do
            (setcar cand (cons (car cand)
-                              (+ (lsh (gethash (car cand) corfu-history--hash #xFFFF) 13)
+                              (+ (ash (gethash (car cand) corfu-history--hash #xFFFF) 13)
                                  (length (car cand))))))
   (setq candidates (sort candidates #'corfu-history--sort-predicate))
   (cl-loop for cand on candidates do (setcar cand (caar cand)))
