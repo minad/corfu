@@ -205,7 +205,7 @@ code for further details.
          `(orderless-regexp . ,(concat "^" (regexp-quote word)))))
 
   (orderless-define-completion-style orderless-fast
-    (orderless-dispatch '(orderless-fast-dispatch))
+    (orderless-style-dispatchers '(orderless-fast-dispatch))
     (orderless-matching-styles '(orderless-literal orderless-regexp)))
 
   (setq-local corfu-auto t
