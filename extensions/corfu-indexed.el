@@ -47,6 +47,11 @@
   "Face used for the candidate index prefix."
   :group 'corfu-faces)
 
+(defcustom corfu-indexed-start 0
+  "Start of the indexing."
+  :group 'corfu
+  :type 'integer)
+
 (defvar corfu-indexed--commands
   '(corfu-insert corfu-complete)
   "Commands that should be indexed.")
@@ -55,7 +60,7 @@
   "Advice for `corfu--affixate' which prefixes the CANDS with an index."
   (setq cands (cdr cands))
   (let* ((space #(" " 0 1 (face (:height 0.5 :inherit corfu-indexed))))
-         (width (if (> (length cands) 10) 2 1))
+         (width (if (> (+ corfu-indexed-start (length cands)) 10) 2 1))
          (fmt (concat space
                       (propertize (format "%%%ds" width)
                                   'face 'corfu-indexed)
@@ -64,7 +69,7 @@
           (propertize (make-string width ?\s)
                       'display
                       `(space :align-to (+ left ,(1+ width))))))
-    (cl-loop for cand in cands for index from 0 do
+    (cl-loop for cand in cands for index from corfu-indexed-start do
       (setf (cadr cand)
             (concat
              (propertize " " 'display (format fmt index))
@@ -75,7 +80,9 @@
 (defun corfu-indexed--handle-prefix (orig &rest args)
   "Handle prefix argument before calling ORIG function with ARGS."
   (if (and current-prefix-arg (called-interactively-p t))
-      (let ((corfu--index (+ corfu--scroll (prefix-numeric-value current-prefix-arg))))
+      (let ((corfu--index (+ corfu--scroll
+                             (- (prefix-numeric-value current-prefix-arg)
+                                corfu-indexed-start))))
         (if (or (< corfu--index 0)
                 (>= corfu--index corfu--total)
                 (>= corfu--index (+ corfu--scroll corfu-count)))
