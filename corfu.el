@@ -494,7 +494,8 @@ A scroll bar is displayed from LO to LO+BAR."
                        0 (length str) 'corfu-current 'append str))
                     (setq row (1+ row))
                     str))
-                lines "\n"))))
+                lines "\n"))
+    (redisplay 'force)))  ;; XXX HACK Ensure that popup is redisplayed
 
 (defun corfu--hide-frame-deferred ()
   "Deferred frame hiding."
@@ -656,7 +657,8 @@ A scroll bar is displayed from LO to LO+BAR."
   ;; Redisplay such that the input becomes immediately visible before the
   ;; expensive candidate recomputation is performed (Issue #48). See also
   ;; corresponding vertico#89.
-  (redisplay)
+  (unless corfu-preview-current ;; TODO no redisplay if overlay is active!
+    (redisplay))
   (pcase
       ;; Bind non-essential=t to prevent Tramp from opening new connections,
       ;; without the user explicitly requesting it via M-TAB.
@@ -798,14 +800,29 @@ there hasn't been any input, then quit."
 
 (defun corfu--preview-current (beg end)
   "Show current candidate as overlay given BEG and END."
-  (when-let (cand (and corfu-preview-current (>= corfu--index 0)
-                       (/= corfu--index corfu--preselect)
-                       (nth corfu--index corfu--candidates)))
-    (setq beg (+ beg (length corfu--base))
-          corfu--preview-ov (make-overlay beg end nil))
-    (overlay-put corfu--preview-ov 'priority 1000)
-    (overlay-put corfu--preview-ov 'window (selected-window))
-    (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display) cand)))
+  ;; TODO hl-line issue
+  (when (and corfu-preview-current (>= corfu--index 0))
+    (let ((cand (nth corfu--index corfu--candidates))
+          (end-base (+ beg (length corfu--base))))
+      (setq corfu--preview-ov (make-overlay end-base end nil t t))
+      (overlay-put corfu--preview-ov 'priority 1000)
+      (overlay-put corfu--preview-ov 'window (selected-window))
+      (if (and (eq corfu-preview-current 'insert) (/= corfu--index corfu--preselect))
+          (overlay-put corfu--preview-ov
+                       (if (= end-base end) 'after-string 'display)
+                       (propertize cand
+                                   'face '(:inherit (hl-line shadow underline))
+                                   ))
+        (let ((str (buffer-substring-no-properties end-base end)))
+          (move-overlay corfu--preview-ov end end)
+          (overlay-put corfu--preview-ov 'after-string
+                       (propertize (if (string-prefix-p str cand)
+                                       (substring cand (length str))
+                                     (format "{%s}" cand))
+                                   'cursor t
+                                   'face '(:inherit (hl-line shadow underline))
+
+                                   )))))))
 
 (defun corfu--echo-cancel (&optional msg)
   "Cancel echo timer and refresh MSG to prevent flicker during redisplay."
@@ -877,18 +894,31 @@ there hasn't been any input, then quit."
         (corfu--done str 'finished)))
      ;; 3) There exist candidates => Show candidates popup.
      (corfu--candidates
-      (corfu--candidates-popup beg)
       (corfu--preview-current beg end)
       (corfu--echo-documentation)
-      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
+      ;; TODO unobtrusive mode
+      ;; (when (or (not corfu-preview-current)
+      ;;           (frame-visible-p corfu--frame)
+      ;;           (< corfu--index 0)
+      ;;           (/= corfu--index corfu--preselect))
+      ;;   (corfu--candidates-popup beg))
+      (corfu--candidates-popup beg)
+      )
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup.
      ((and (not corfu--candidates)
            (pcase-exhaustive corfu-quit-no-match
              ('t nil)
              ('nil t)
              ('separator (seq-contains-p (car corfu--input) corfu-separator))))
-      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic))))
-      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
+      (corfu--popup-hide)
+      (setq corfu--preview-ov (make-overlay end end nil t t))
+      (overlay-put corfu--preview-ov 'priority 1000)
+      (overlay-put corfu--preview-ov 'window (selected-window))
+      (overlay-put corfu--preview-ov 'after-string
+                   (propertize "[No match]"
+                               'cursor t
+                               'face '(:inherit (hl-line shadow underline))
+                               )))
      (t (corfu-quit)))))
 
 (defun corfu--pre-command ()
