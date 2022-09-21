@@ -894,7 +894,8 @@ there hasn't been any input, then quit."
         (corfu--done str 'finished)))
      ;; 3) There exist candidates => Show candidates popup.
      (corfu--candidates
-      (corfu--preview-current beg end)
+      (when (or (not (cdr corfu--candidates)) (/= corfu--index corfu--preselect))
+        (corfu--preview-current beg end))
       (corfu--echo-documentation)
       ;; TODO unobtrusive mode
       ;; (when (or (not corfu-preview-current)
@@ -902,7 +903,10 @@ there hasn't been any input, then quit."
       ;;           (< corfu--index 0)
       ;;           (/= corfu--index corfu--preselect))
       ;;   (corfu--candidates-popup beg))
-      (corfu--candidates-popup beg)
+      (if (cdr corfu--candidates)
+          (corfu--candidates-popup beg)
+        (corfu--popup-hide))
+
       )
      ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup.
      ((and (not corfu--candidates)
