@@ -801,12 +801,11 @@ there hasn't been any input, then quit."
   (when-let (cand (and corfu-preview-current (>= corfu--index 0)
                        (/= corfu--index corfu--preselect)
                        (nth corfu--index corfu--candidates)))
-    (setq corfu--preview-ov (make-overlay beg end nil t t))
+    (setq beg (+ beg (length corfu--base))
+          corfu--preview-ov (make-overlay beg end nil))
     (overlay-put corfu--preview-ov 'priority 1000)
     (overlay-put corfu--preview-ov 'window (selected-window))
-    (overlay-put corfu--preview-ov
-                 (if (= beg end) 'after-string 'display)
-                 (concat corfu--base cand))))
+    (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display) cand)))
 
 (defun corfu--echo-cancel (&optional msg)
   "Cancel echo timer and refresh MSG to prevent flicker during redisplay."
