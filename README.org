@@ -7,8 +7,8 @@
 #+texinfo_dir_desc: Completion Overlay Region FUnction
 
 #+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://github.com/minad/corfu/blob/screenshots/emacs.svg?raw=true"/></a>
-#+html: <a href="http://elpa.gnu.org/packages/corfu.html"><img alt="GNU ELPA" src="https://elpa.gnu.org/packages/corfu.svg"/></a>
-#+html: <a href="http://elpa.gnu.org/devel/corfu.html"><img alt="GNU-devel ELPA" src="https://elpa.gnu.org/devel/corfu.svg"/></a>
+#+html: <a href="https://elpa.gnu.org/packages/corfu.html"><img alt="GNU ELPA" src="https://elpa.gnu.org/packages/corfu.svg"/></a>
+#+html: <a href="https://elpa.gnu.org/devel/corfu.html"><img alt="GNU-devel ELPA" src="https://elpa.gnu.org/devel/corfu.svg"/></a>
 
 Corfu enhances completion at point with a small completion popup. The current
 candidates are shown in a popup below or above the point. Corfu is the
@@ -56,7 +56,7 @@ provides an alternative overlay-based display.
 
 * Installation and Configuration
 
-Corfu is available from [[http://elpa.gnu.org/packages/corfu.html][GNU ELPA]], such that it can be installed directly via
+Corfu is available from [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]], such that it can be installed directly via
 ~package-install~. After installation, the global minor mode can be enabled with
 =M-x global-corfu-mode=. In order to configure Corfu and other packages in your
 init.el, you may want to use ~use-package~.
@@ -527,5 +527,5 @@ enhance your setup.
 
 * Contributions
 
-Since this package is part of [[http://elpa.gnu.org/packages/corfu.html][GNU ELPA]] contributions require a copyright
+Since this package is part of [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]] contributions require a copyright
 assignment to the FSF.
