@@ -658,21 +658,36 @@ A scroll bar is displayed from LO to LO+BAR."
                                         (test-completion str table pred)))
                                -1 0)))))
 
-(defun corfu--update-state (str pt table pred)
-  "Interruptibly update state from STR, PT, TABLE and PRED."
-  ;; Redisplay such that the input becomes immediately visible before the
-  ;; expensive candidate recomputation is performed (Issue #48). See also
-  ;; corresponding vertico#89.
-  (redisplay)
-  ;; Bind non-essential=t to prevent Tramp from opening new connections,
-  ;; without the user explicitly requesting it via M-TAB.
-  (pcase (let ((non-essential t))
-           (while-no-input (corfu--recompute-state str pt table pred)))
-    ('nil (keyboard-quit))
-    ((and state (pred consp))
-     (dolist (s state) (set (car s) (cdr s)))
-     (setq corfu--input (cons str pt)
-           corfu--index corfu--preselect))))
+(defun corfu--update-state (&optional interruptible)
+  "Update state, optionally INTERRUPTIBLE."
+  (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
+               (pt (- (point) beg))
+               (str (buffer-substring-no-properties beg end))
+               (input (cons str pt)))
+    (unless (equal corfu--input input)
+      ;; Redisplay such that the input becomes immediately visible before the
+      ;; expensive candidate recomputation is performed (Issue #48). See also
+      ;; corresponding vertico#89.
+      (when interruptible (redisplay))
+      ;; Bind non-essential=t to prevent Tramp from opening new connections,
+      ;; without the user explicitly requesting it via M-TAB.
+      (pcase (let ((non-essential t))
+               ;; XXX Guard against errors during candidate generation.
+               ;; For example dabbrev throws error "No dynamic expansion ... found".
+               ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
+               (condition-case err
+                   (if interruptible
+                       (while-no-input (corfu--recompute-state str pt table pred))
+                     (corfu--recompute-state str pt table pred))
+                 (error
+                  (message "Corfu completion error: %s" (error-message-string err))
+                  t)))
+        ('nil (keyboard-quit))
+        ((and state (pred consp))
+         (dolist (s state) (set (car s) (cdr s)))
+         (setq corfu--input input
+               corfu--index corfu--preselect))))
+    input))
 
 (defun corfu--match-symbol-p (pattern sym)
   "Return non-nil if SYM is matching an element of the PATTERN list."
@@ -842,51 +857,36 @@ there hasn't been any input, then quit."
                              (corfu--echo-show (funcall fun cand))))))
     (corfu--echo-cancel)))
 
-(defun corfu--update ()
-  "Refresh Corfu UI."
-  (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
-               (pt (- (point) beg))
-               (str (buffer-substring-no-properties beg end))
-               (initializing (not corfu--input)))
+(defun corfu--update (&optional auto)
+  "Refresh Corfu UI.
+AUTO is non-nil when initializing auto completion."
+  (pcase-let ((`(,beg ,end ,table ,pred) completion-in-region--data)
+              (`(,str . ,pt) (corfu--update-state 'interruptible)))
     (cond
-     ;; XXX Guard against errors during candidate generation.
-     ;; Turn off completion immediately if there are errors
-     ;; For example dabbrev throws error "No dynamic expansion ... found".
-     ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
-     ((condition-case err
-          ;; Only recompute when input changed
-          (unless (equal corfu--input (cons str pt))
-            (corfu--update-state str pt table pred)
-            nil)
-        (error (corfu-quit)
-               (message "Corfu completion error: %s" (error-message-string err)))))
-     ;; 1) Initializing, no candidates => Quit. Happens during auto completion.
-     ((and initializing (not corfu--candidates))
-      (corfu-quit))
-     ;; 2) Single exactly matching candidate and no further completion is possible.
+     ;; 1) Single exactly matching candidate and no further completion is possible.
      ((and (not (equal str ""))
            (equal (car corfu--candidates) str) (not (cdr corfu--candidates))
            (not (consp (completion-try-completion str table pred pt corfu--metadata)))
-           (or initializing corfu-on-exact-match))
-      ;; Quit directly when initializing. This happens during auto completion.
-      (if (or initializing (eq corfu-on-exact-match 'quit))
+           (or auto corfu-on-exact-match))
+      ;; Quit directly when initializing auto completion.
+      (if (or auto (eq corfu-on-exact-match 'quit))
           (corfu-quit)
         (corfu--done str 'finished)))
-     ;; 3) There exist candidates => Show candidates popup.
+     ;; 2) There exist candidates => Show candidates popup.
      (corfu--candidates
       (corfu--candidates-popup beg)
       (corfu--preview-current beg end)
       (corfu--echo-documentation)
       (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
-     ;; 4) There are no candidates & corfu-quit-no-match => Confirmation popup.
-     ((and (not corfu--candidates)
-           (pcase-exhaustive corfu-quit-no-match
-             ('t nil)
-             ('nil t)
-             ('separator (seq-contains-p (car corfu--input) corfu-separator))))
+     ;; 3) No candidates & corfu-quit-no-match & initialized => Confirmation popup.
+     ((pcase-exhaustive corfu-quit-no-match
+        ('t nil)
+        ('nil corfu--input)
+        ('separator (seq-contains-p (car corfu--input) corfu-separator)))
       (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic))))
       (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
-     (t (corfu-quit)))))
+     ;; 4) No candidates & auto completing or initialized => Quit.
+     ((or auto corfu--input) (corfu-quit)))))
 
 (defun corfu--pre-command ()
   "Insert selected candidate unless command is marked to continue completion."
@@ -894,6 +894,9 @@ there hasn't been any input, then quit."
     (delete-overlay corfu--preview-ov)
     (setq corfu--preview-ov nil))
   (corfu--echo-cancel corfu--echo-message)
+  ;; Ensure that state is initialized before next Corfu command
+  (when (and (symbolp this-command) (string-prefix-p "corfu-" (symbol-name this-command)))
+    (corfu--update-state))
   (when (and (eq corfu-preview-current 'insert)
              (/= corfu--index corfu--preselect)
              ;; See the comment about `overriding-local-map' in `corfu--post-command'.
@@ -1191,7 +1194,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                      table
                      (plist-get plist :predicate)))
          (corfu--setup)
-         (corfu--update))))))
+         (corfu--update 'auto))))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
