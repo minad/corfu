@@ -393,6 +393,9 @@ The completion backend can override this with
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
 (defun corfu--make-frame (x y width height content)
   "Show child frame at X/Y with WIDTH/HEIGHT and CONTENT."
+  (when corfu--frame-timer
+    (cancel-timer corfu--frame-timer)
+    (setq corfu--frame-timer nil))
   (let* ((window-min-height 1)
          (window-min-width 1)
          (x-gtk-resize-child-frames
@@ -845,10 +848,6 @@ there hasn't been any input, then quit."
                (pt (- (point) beg))
                (str (buffer-substring-no-properties beg end))
                (initializing (not corfu--input)))
-    (when corfu--frame-timer
-      (cancel-timer corfu--frame-timer)
-      (setq corfu--frame-timer nil))
-    (corfu--echo-cancel corfu--echo-message)
     (cond
      ;; XXX Guard against errors during candidate generation.
      ;; Turn off completion immediately if there are errors
@@ -894,6 +893,7 @@ there hasn't been any input, then quit."
   (when corfu--preview-ov
     (delete-overlay corfu--preview-ov)
     (setq corfu--preview-ov nil))
+  (corfu--echo-cancel corfu--echo-message)
   (when (and (eq corfu-preview-current 'insert)
              (/= corfu--index corfu--preselect)
              ;; See the comment about `overriding-local-map' in `corfu--post-command'.
