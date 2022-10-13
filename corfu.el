@@ -642,14 +642,18 @@ A scroll bar is displayed from LO to LO+BAR."
     (when (and completing-file (not (string-suffix-p "/" field)))
       (setq all (corfu--move-to-front (concat field "/") all)))
     (setq all (corfu--move-to-front field all))
-    (list corfu--base all (length all) hl corfu--metadata
-          ;; Select the prompt when the input is a valid completion
-          ;; and if it is not equal to the first candidate.
-          (if (or (not corfu-preselect-first) (not all)
-                  (and (not (equal field (car all)))
-                       (not (and completing-file (equal (concat field "/") (car all))))
-                       (test-completion str table pred)))
-              -1 0))))
+    `((corfu--base . ,corfu--base)
+      (corfu--metadata . ,corfu--metadata)
+      (corfu--candidates . ,all)
+      (corfu--total . ,(length all))
+      (corfu--highlight . ,hl)
+      ;; Select the prompt when the input is a valid completion
+      ;; and if it is not equal to the first candidate.
+      (corfu--preselect . ,(if (or (not corfu-preselect-first) (not all)
+                                   (and (not (equal field (car all)))
+                                        (not (and completing-file (equal (concat field "/") (car all))))
+                                        (test-completion str table pred)))
+                               -1 0)))))
 
 (defun corfu--update-state (str pt table pred)
   "Interruptibly update state from STR, PT, TABLE and PRED."
@@ -657,21 +661,15 @@ A scroll bar is displayed from LO to LO+BAR."
   ;; expensive candidate recomputation is performed (Issue #48). See also
   ;; corresponding vertico#89.
   (redisplay)
-  (pcase
-      ;; Bind non-essential=t to prevent Tramp from opening new connections,
-      ;; without the user explicitly requesting it via M-TAB.
-      (let ((non-essential t))
-        (while-no-input (corfu--recompute-state str pt table pred)))
+  ;; Bind non-essential=t to prevent Tramp from opening new connections,
+  ;; without the user explicitly requesting it via M-TAB.
+  (pcase (let ((non-essential t))
+           (while-no-input (corfu--recompute-state str pt table pred)))
     ('nil (keyboard-quit))
-    (`(,base ,candidates ,total ,hl ,metadata ,preselect)
+    ((and state (pred consp))
+     (dolist (s state) (set (car s) (cdr s)))
      (setq corfu--input (cons str pt)
-           corfu--candidates candidates
-           corfu--base base
-           corfu--total total
-           corfu--preselect preselect
-           corfu--index preselect
-           corfu--highlight hl
-           corfu--metadata metadata))))
+           corfu--index corfu--preselect))))
 
 (defun corfu--match-symbol-p (pattern sym)
   "Return non-nil if SYM is matching an element of the PATTERN list."
@@ -1124,8 +1122,10 @@ Quit if no candidate is selected."
           (when exit (funcall exit str 'finished))
           t)
       (`(,newstr . ,newpt)
-       (pcase-let ((`(,base ,candidates ,total . ,_)
-                    (corfu--recompute-state str pt table pred)))
+       (let* ((state (corfu--recompute-state str pt table pred))
+              (base (alist-get 'corfu--base state))
+              (total (alist-get 'corfu--total state))
+              (candidates (alist-get 'corfu--candidates state)))
          (unless (markerp beg) (setq beg (copy-marker beg)))
          (setq end (copy-marker end t)
                completion-in-region--data (list beg end table pred))
