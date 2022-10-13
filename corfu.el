@@ -617,8 +617,8 @@ A scroll bar is displayed from LO to LO+BAR."
       (corfu--metadata-get 'display-sort-function)
       corfu-sort-function))
 
-(defun corfu--recompute-candidates (str pt table pred)
-  "Recompute candidates from STR, PT, TABLE and PRED."
+(defun corfu--recompute-state (str pt table pred)
+  "Recompute state from STR, PT, TABLE and PRED."
   (pcase-let* ((before (substring str 0 pt))
                (after (substring str pt))
                (corfu--metadata (completion-metadata before table pred))
@@ -651,8 +651,8 @@ A scroll bar is displayed from LO to LO+BAR."
                        (test-completion str table pred)))
               -1 0))))
 
-(defun corfu--update-candidates (str pt table pred)
-  "Update candidates from STR, PT, TABLE and PRED."
+(defun corfu--update-state (str pt table pred)
+  "Interruptibly update state from STR, PT, TABLE and PRED."
   ;; Redisplay such that the input becomes immediately visible before the
   ;; expensive candidate recomputation is performed (Issue #48). See also
   ;; corresponding vertico#89.
@@ -661,7 +661,7 @@ A scroll bar is displayed from LO to LO+BAR."
       ;; Bind non-essential=t to prevent Tramp from opening new connections,
       ;; without the user explicitly requesting it via M-TAB.
       (let ((non-essential t))
-        (while-no-input (corfu--recompute-candidates str pt table pred)))
+        (while-no-input (corfu--recompute-state str pt table pred)))
     ('nil (keyboard-quit))
     (`(,base ,candidates ,total ,hl ,metadata ,preselect)
      (setq corfu--input (cons str pt)
@@ -859,7 +859,7 @@ there hasn't been any input, then quit."
      ((condition-case err
           ;; Only recompute when input changed
           (unless (equal corfu--input (cons str pt))
-            (corfu--update-candidates str pt table pred)
+            (corfu--update-state str pt table pred)
             nil)
         (error (corfu-quit)
                (message "Corfu completion error: %s" (error-message-string err)))))
@@ -1125,7 +1125,7 @@ Quit if no candidate is selected."
           t)
       (`(,newstr . ,newpt)
        (pcase-let ((`(,base ,candidates ,total . ,_)
-                    (corfu--recompute-candidates str pt table pred)))
+                    (corfu--recompute-state str pt table pred)))
          (unless (markerp beg) (setq beg (copy-marker beg)))
          (setq end (copy-marker end t)
                completion-in-region--data (list beg end table pred))
