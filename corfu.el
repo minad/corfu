@@ -620,7 +620,7 @@ A scroll bar is displayed from LO to LO+BAR."
       (corfu--metadata-get 'display-sort-function)
       corfu-sort-function))
 
-(defun corfu--recompute-state (str pt table pred)
+(defun corfu--recompute (str pt table pred)
   "Recompute state from STR, PT, TABLE and PRED."
   (pcase-let* ((before (substring str 0 pt))
                (after (substring str pt))
@@ -658,7 +658,7 @@ A scroll bar is displayed from LO to LO+BAR."
                                         (test-completion str table pred)))
                                -1 0)))))
 
-(defun corfu--update-state (&optional interruptible)
+(defun corfu--update (&optional interruptible)
   "Update state, optionally INTERRUPTIBLE."
   (pcase-let* ((`(,beg ,end ,table ,pred) completion-in-region--data)
                (pt (- (point) beg))
@@ -677,8 +677,8 @@ A scroll bar is displayed from LO to LO+BAR."
                ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
                (condition-case err
                    (if interruptible
-                       (while-no-input (corfu--recompute-state str pt table pred))
-                     (corfu--recompute-state str pt table pred))
+                       (while-no-input (corfu--recompute str pt table pred))
+                     (corfu--recompute str pt table pred))
                  (error
                   (message "Corfu completion error: %s" (error-message-string err))
                   t)))
@@ -785,8 +785,8 @@ there hasn't been any input, then quit."
                             suffix)
                     width)))))
 
-(defun corfu--update-scroll ()
-  "Update scroll position."
+(defun corfu--compute-scroll ()
+  "Compute new scroll position."
   (let ((off (max (min corfu-scroll-margin (/ corfu-count 2)) 0))
         (corr (if (= corfu-scroll-margin (/ corfu-count 2)) (1- (mod corfu-count 2)) 0)))
     (setq corfu--scroll (min (max 0 (- corfu--total corfu-count))
@@ -795,7 +795,7 @@ there hasn't been any input, then quit."
 
 (defun corfu--candidates-popup (pos)
   "Show candidates popup at POS."
-  (corfu--update-scroll)
+  (corfu--compute-scroll)
   (pcase-let* ((last (min (+ corfu--scroll corfu-count) corfu--total))
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
                (lo (min (- corfu-count bar 1) (floor (* corfu-count corfu--scroll) corfu--total)))
@@ -857,11 +857,11 @@ there hasn't been any input, then quit."
                              (corfu--echo-show (funcall fun cand))))))
     (corfu--echo-cancel)))
 
-(defun corfu--update (&optional auto)
-  "Refresh Corfu UI.
+(defun corfu--exhibit (&optional auto)
+  "Exhibit Corfu UI.
 AUTO is non-nil when initializing auto completion."
   (pcase-let ((`(,beg ,end ,table ,pred) completion-in-region--data)
-              (`(,str . ,pt) (corfu--update-state 'interruptible)))
+              (`(,str . ,pt) (corfu--update 'interruptible)))
     (cond
      ;; 1) Single exactly matching candidate and no further completion is possible.
      ((and (not (equal str ""))
@@ -896,7 +896,7 @@ AUTO is non-nil when initializing auto completion."
   (corfu--echo-cancel corfu--echo-message)
   ;; Ensure that state is initialized before next Corfu command
   (when (and (symbolp this-command) (string-prefix-p "corfu-" (symbol-name this-command)))
-    (corfu--update-state))
+    (corfu--update))
   (when (and (eq corfu-preview-current 'insert)
              (/= corfu--index corfu--preselect)
              ;; See the comment about `overriding-local-map' in `corfu--post-command'.
@@ -941,7 +941,7 @@ See `corfu-separator' for more details."
                                      ;; with separator, any further chars allowed
                                      (seq-contains-p (car corfu--input) corfu-separator)))
                             (funcall completion-in-region-mode--predicate))))))
-           (corfu--update)
+           (corfu--exhibit)
            t)))
       (corfu-quit))
   (when corfu-auto (corfu--auto-post-command)))
@@ -1125,7 +1125,7 @@ Quit if no candidate is selected."
           (when exit (funcall exit str 'finished))
           t)
       (`(,newstr . ,newpt)
-       (let* ((state (corfu--recompute-state str pt table pred))
+       (let* ((state (corfu--recompute str pt table pred))
               (base (alist-get 'corfu--base state))
               (total (alist-get 'corfu--total state))
               (candidates (alist-get 'corfu--candidates state)))
@@ -1194,7 +1194,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                      table
                      (plist-get plist :predicate)))
          (corfu--setup)
-         (corfu--update 'auto))))))
+         (corfu--exhibit 'auto))))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
