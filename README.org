@@ -427,8 +427,8 @@ shown. The keymap defines the following remappings and bindings:
 - ~previous-line~, =up=, =M-p= -> ~corfu-previous~
 - ~completion-at-point~, =TAB= -> ~corfu-complete~
 - =RET= -> ~corfu-insert~
-- =M-g= -> ~corfu-info-location~
-- =M-h= -> ~corfu-info-documentation~
+- =M-g= -> ~corfu-doc-buffer-location~
+- =M-h= -> ~corfu-doc-buffer-documentation~
 - =M-SPC= -> ~corfu-insert-separator~
 - =C-g= -> ~corfu-quit~
 - ~keyboard-escape-quit~ -> ~corfu-reset~
@@ -447,7 +447,7 @@ following extensions come with the Corfu ELPA package:
 
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-history.el][corfu-history]]: =corfu-history-mode= to remember selected candidates and to improve sorting.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-indexed.el][corfu-indexed]]: =corfu-indexed-mode= to select indexed candidates with prefix arguments.
-- [[https://github.com/minad/corfu/blob/main/extensions/corfu-info.el][corfu-info]]: Actions to access the candidate location and documentation.
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-doc-buffer.el][corfu-doc-buffer]]: Actions to access the candidate location and documentation.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-quick.el][corfu-quick]]: Commands to select using Avy-style quick keys.
 
 See the Commentary of those files for configuration details.
