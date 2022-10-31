@@ -1054,7 +1054,6 @@ If a candidate is selected, insert it."
     ;; such that completion can be undone in a single step.
     (undo-amalgamate-change-group corfu--change-group)
     (corfu-quit)
-    ;; XXX Is the :exit-function handling sufficient?
     (when exit (funcall exit str status))))
 
 (defun corfu-insert ()
