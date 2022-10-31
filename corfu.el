@@ -923,11 +923,11 @@ See `corfu-separator' for more details."
            (let ((inhibit-field-text-motion t))
              (<= (line-beginning-position) pt (line-end-position))))
          (or
-          ;; TODO We keep alive Corfu if a `overriding-terminal-local-map' is
-          ;; installed, for example the `universal-argument-map'. It would be good to
+          ;; We keep Corfu alive if a `overriding-terminal-local-map' is
+          ;; installed, e.g., the `universal-argument-map'. It would be good to
           ;; think about a better criterion instead. Unfortunately relying on
-          ;; `this-command' alone is not sufficient, since the value of `this-command'
-          ;; gets clobbered in the case of transient keymaps.
+          ;; `this-command' alone is insufficient, since the value of
+          ;; `this-command' gets clobbered in the case of transient keymaps.
           overriding-terminal-local-map
           ;; Check if it is an explicitly listed continue command
           (corfu--match-symbol-p corfu-continue-commands this-command)
