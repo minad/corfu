@@ -94,14 +94,15 @@
 (define-minor-mode corfu-indexed-mode
   "Prefix candidates with indices."
   :global t :group 'corfu
-  (if corfu-indexed-mode
-      (progn
-        (advice-add #'corfu--affixate :filter-return #'corfu-indexed--affixate)
-        (dolist (cmd corfu-indexed--commands)
-          (advice-add cmd :around #'corfu-indexed--handle-prefix)))
+  (cond
+   (corfu-indexed-mode
+    (advice-add #'corfu--affixate :filter-return #'corfu-indexed--affixate)
+    (dolist (cmd corfu-indexed--commands)
+      (advice-add cmd :around #'corfu-indexed--handle-prefix)))
+   (t
     (advice-remove #'corfu--affixate #'corfu-indexed--affixate)
     (dolist (cmd corfu-indexed--commands)
-      (advice-remove cmd #'corfu-indexed--handle-prefix))))
+      (advice-remove cmd #'corfu-indexed--handle-prefix)))))
 
 (provide 'corfu-indexed)
 ;;; corfu-indexed.el ends here
