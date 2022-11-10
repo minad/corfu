@@ -566,13 +566,13 @@ A scroll bar is displayed from LO to LO+BAR."
           (cons (apply #'completion-all-completions args) hl))
       (cons (apply #'completion-all-completions args) hl))))
 
-(defun corfu--sort-predicate (x y)
-  "Sorting predicate which compares X and Y."
+(defsubst corfu--length-string< (x y)
+  "Sorting predicate which compares X and Y first by length then by `string<'."
   (or (< (length x) (length y)) (and (= (length x) (length y)) (string< x y))))
 
 (defun corfu-sort-length-alpha (list)
   "Sort LIST by length and alphabetically."
-  (sort list #'corfu--sort-predicate))
+  (sort list #'corfu--length-string<))
 
 (defmacro corfu--partition! (list form)
   "Evaluate FORM for every element and partition LIST."

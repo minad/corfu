@@ -54,13 +54,9 @@
 
 (defun corfu-history--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
-  (pcase-let ((`(,sx . ,hx) x)
-              (`(,sy . ,hy) y))
-    (or (< hx hy)
-      (and (= hx hy)
-           (or (< (length sx) (length sy))
-               (and (= (length sx) (length sy))
-                    (string< sx sy)))))))
+  (or (< (cdr x) (cdr y))
+      (and (= (cdr x) (cdr y))
+           (corfu--length-string< (car x) (car y)))))
 
 (defun corfu-history--sort (candidates)
   "Sort CANDIDATES by history."
