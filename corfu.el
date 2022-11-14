@@ -1027,7 +1027,7 @@ If a candidate is selected, insert it."
            (when (and (test-completion newstr table pred)
                       (not (consp (completion-try-completion
                                    newstr table pred newpt
-                                   (completion-metadata newstr table pred)))))
+                                   (completion-metadata (substring newstr 0 newpt) table pred)))))
              (corfu--done newstr 'finished))))))))
 
 (defun corfu--insert (status)
@@ -1112,8 +1112,7 @@ Quit if no candidate is selected."
   (when completion-in-region-mode (corfu-quit))
   (let* ((pt (max 0 (- (point) beg)))
          (str (buffer-substring-no-properties beg end))
-         (before (substring str 0 pt))
-         (metadata (completion-metadata before table pred))
+         (metadata (completion-metadata (substring str 0 pt) table pred))
          (exit (plist-get completion-extra-properties :exit-function))
          (threshold (completion--cycle-threshold metadata))
          (completion-in-region-mode-predicate
