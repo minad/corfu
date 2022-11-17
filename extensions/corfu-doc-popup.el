@@ -35,19 +35,16 @@
 (eval-when-compile
   (require 'subr-x))
 
-(defgroup corfu-doc-popup nil
-  "Display documentation popup alongside corfu."
-  :group 'corfu
-  :prefix "corfu-doc-popup-")
-
 (defcustom corfu-doc-popup-auto t
   "Display documentation popup automatically."
+  :group 'corfu
   :type 'boolean)
 
 (defcustom corfu-doc-popup-delay 0.1
   "The number of seconds to wait before displaying the documentation popup.
 
 The value of nil means no delay."
+  :group 'corfu
   :type '(choice (const :tag "never (nil)" nil)
           (const :tag "immediate (0)" 0)
           (number :tag "seconds")))
@@ -70,22 +67,26 @@ when brwosing candidates.
 It is recommended to select the corresponding transition method
 according to the value of `corfu-doc-popup-delay' to reduce flicker or
 documentation update delay."
+  :group 'corfu
   :type '(choice (const :tag "no transition (nil)" nil)
           (const :tag "clear content" clear)
           (const :tag "hide popup" hide)))
 
 (defcustom corfu-doc-popup-max-width 80
   "The max width of the corfu doc popup in characters."
+  :group 'corfu
   :type 'integer)
 
 (defcustom corfu-doc-popup-max-height 10
   "The max height of the corfu doc popup in characters."
+  :group 'corfu
   :type 'integer)
 
 (defcustom corfu-doc-popup-resize-frame t
   "Non-nil means resize the corfu doc popup automatically.
 
 If this is nil, do not resize corfu doc popup automatically."
+  :group 'corfu
   :type 'boolean)
 
 (defvar corfu-doc-popup--frame nil
