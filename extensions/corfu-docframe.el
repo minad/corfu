@@ -96,7 +96,7 @@ If this is nil, do not resize corfu doc popup automatically."
 (defvar-local corfu-docframe--candidate nil
   "Completion candidate for the doc popup.")
 
-(defvar-local corfu-docframe--popup-edges nil
+(defvar-local corfu-docframe--edges nil
   "Coordinates of the corfu popup's edges.
 
 The coordinates list has the form (LEFT TOP RIGHT BOTTOM) where all
@@ -111,7 +111,7 @@ See `frame-edges' for details.")
 
 (defconst corfu-docframe--state-vars
   '(corfu-docframe--candidate
-    corfu-docframe--popup-edges
+    corfu-docframe--edges
     corfu-docframe--direction)
   "Buffer-local state variables used by corfu-docframe.")
 
@@ -337,7 +337,7 @@ it should be compared with the value recorded by `corfu--index'."
             ;; check if the coordinates of the corfu popup have changed
             (cfp-edges-changed-p
              (not (equal (frame-edges corfu--frame 'inner-edges)
-                         corfu-docframe--popup-edges))))
+                         corfu-docframe--edges))))
         (if (not should-update-doc-p)
             (when (and (not (string-empty-p
                              (string-trim
@@ -380,10 +380,10 @@ it should be compared with the value recorded by `corfu--index'."
                   corfu-docframe--direction area-d)))
         (if doc-updated-p
             (setq corfu-docframe--candidate candidate
-                  corfu-docframe--popup-edges
+                  corfu-docframe--edges
                   (frame-edges corfu--frame 'inner-edges))
           (when cfp-edges-changed-p
-            (setq corfu-docframe--popup-edges
+            (setq corfu-docframe--edges
                   (frame-edges corfu--frame 'inner-edges))))))))
 
 (defun corfu-docframe--hide ()
