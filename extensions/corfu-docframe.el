@@ -329,13 +329,12 @@ it should be compared with the value recorded by `corfu--index'."
                            (nth corfu--index corfu--candidates))))
     (if (not candidate)
         (corfu-docframe--hide)
-      (let ((should-update-doc-p
-             (not (and (corfu-docframe--visible-p)
-                       (equal candidate corfu-docframe--candidate))))
-            ;; check if the coordinates of the corfu popup have changed
-            (cfp-edges-changed-p
-             (not (equal (frame-edges corfu--frame 'inner-edges)
-                         corfu-docframe--edges))))
+      (let* ((should-update-doc-p
+              (not (and (corfu-docframe--visible-p)
+                        (equal candidate corfu-docframe--candidate))))
+             ;; check if the coordinates of the corfu popup have changed
+             (new-edges (frame-edges corfu--frame 'inner-edges))
+             (cfp-edges-changed-p (not (equal new-edges corfu-docframe--edges))))
         (when should-update-doc-p
           (if-let* ((doc (corfu-docframe--get-doc)))
               ;; turn on word wrap and hide fringe indicators
@@ -368,8 +367,7 @@ it should be compared with the value recorded by `corfu--index'."
                                      (get-buffer " *corfu-docframe*"))
                   corfu-docframe--direction area-d)))
         (setq corfu-docframe--candidate candidate
-              corfu-docframe--edges
-              (frame-edges corfu--frame 'inner-edges))))))
+              corfu-docframe--edges new-edges)))))
 
 (defun corfu-docframe--hide ()
   "Clear the doc popup buffer content and hide it."
