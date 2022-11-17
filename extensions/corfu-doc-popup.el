@@ -387,15 +387,7 @@ it should be compared with the value recorded by `corfu--index'."
 
 (defun corfu-doc-popup--hide ()
   "Clear the doc popup buffer content and hide it."
-  (when (frame-live-p corfu-doc-popup--frame)
-    (make-frame-invisible corfu-doc-popup--frame)
-    (corfu-doc-popup--clear-buffer)))
-
-(defun corfu-doc-popup--clear-buffer ()
-  "Clear the doc popup buffer content."
-  (with-current-buffer (get-buffer " *corfu-doc-popup*")
-    (let ((inhibit-read-only t))
-      (erase-buffer))))
+  (corfu--hide-frame corfu-doc-popup--frame))
 
 (defun corfu-doc-popup--transition ()
   "Transition when updating the doc popup."
@@ -403,7 +395,7 @@ it should be compared with the value recorded by `corfu--index'."
     (when (and (not (null corfu-doc-popup-delay))
                (> corfu-doc-popup-delay 0))
       (if corfu-doc-popup-hide
-          (make-frame-invisible corfu-doc-popup--frame)
+          (corfu--hide-frame corfu-doc-popup--frame)
         (corfu-doc-popup--show corfu-doc-popup--candidate)))))
 
 (defun corfu-doc-popup-scroll-up (&optional n)
