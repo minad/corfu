@@ -333,7 +333,7 @@ it should be compared with the value recorded by `corfu--index'."
     (if (not candidate)
         (corfu-docframe--hide)
       (let ((should-update-doc-p
-              (not (string= candidate corfu-docframe--candidate)))
+              (not (equal candidate corfu-docframe--candidate)))
             doc-updated-p
             ;; check if the coordinates of the corfu popup have changed
             (cfp-edges-changed-p
@@ -463,7 +463,7 @@ corfu doc mode is turned on and `corfu-docframe-auto' is set to Non-nil."
           (when corfu-docframe--auto-timer
             (cancel-timer corfu-docframe--auto-timer)
             (setq corfu-docframe--auto-timer nil))
-          (if (and (string= candidate corfu-docframe--candidate)
+          (if (and (equal candidate corfu-docframe--candidate)
                    (eq (selected-window) corfu-docframe--window)
                    (frame-live-p corfu-docframe--frame))
               (corfu-docframe--show candidate)
@@ -502,7 +502,7 @@ To display the doc popup for the preselected completion candidate."
                                (nth corfu--index corfu--candidates))))
                     (unless
                         (and completion-in-region-mode
-                             (string= candidate corfu-docframe--candidate)
+                             (equal candidate corfu-docframe--candidate)
                              (eq (selected-window) corfu-docframe--window)
                              (frame-live-p corfu-docframe--frame))
                       (remove-hook 'post-command-hook sym 'local)
