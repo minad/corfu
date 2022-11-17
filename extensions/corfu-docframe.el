@@ -378,10 +378,9 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
 If ARG is omitted or nil, scroll upward by a near full screen.
 See `scroll-up' for details."
   (interactive "p")
-  (when-let ((cf-doc-buf (and (corfu-docframe--visible-p)
-                              (get-buffer " *corfu-docframe*"))))
+  (when (corfu-docframe--visible-p)
     (with-selected-frame corfu-docframe--frame
-      (with-current-buffer cf-doc-buf
+      (with-current-buffer (get-buffer " *corfu-docframe*")
         (scroll-up n)))))
 
 (defun corfu-docframe-scroll-down (&optional n)
