@@ -70,7 +70,7 @@ The value of nil means no delay."
   :group 'corfu
   :type 'integer)
 
-(defcustom corfu-docframe-resize-frame t
+(defcustom corfu-docframe-resize t
   "Non-nil means resize the corfu doc popup automatically.
 
 If this is nil, do not resize corfu doc popup automatically."
@@ -163,7 +163,7 @@ If WIDTH and HEIGHT is speicified, just return (WIDTH HEIGHT)."
           ((lfw (alist-get 'left-fringe corfu-docframe--frame-parameters))
            (rfw (alist-get 'right-fringe corfu-docframe--frame-parameters))
            (`(,popup-width ,popup-height)
-             (if (not corfu-docframe-resize-frame)
+             (if (not corfu-docframe-resize)
                  (list (or width
                            ;; left margin + inner width + right margin
                            (+ lfw max-width rfw))
