@@ -373,8 +373,8 @@ it should be compared with the value recorded by `corfu--index'."
             (setq corfu-doc-popup--frame
                   (corfu--make-frame corfu-doc-popup--frame
                                      corfu-doc-popup--frame-parameters
-                                     (get-buffer " *corfu-doc-popup*")
-                                     area-x area-y area-w area-h)
+                                     area-x area-y area-w area-h
+                                     (get-buffer " *corfu-doc-popup*"))
                   corfu-doc-popup--direction area-d)))
         (if doc-updated-p
             (setq corfu-doc-popup--candidate candidate

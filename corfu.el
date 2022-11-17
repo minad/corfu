@@ -388,9 +388,8 @@ The completion backend can override this with
 
 ;; Function adapted from posframe.el by tumashu
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
-(defun corfu--make-frame (frame params buffer x y width height)
-  "Make child frame from BUFFER and show it at X/Y with WIDTH/HEIGHT.
-
+(defun corfu--make-frame (frame params x y width height buffer)
+  "Show BUFFER in child frame at X/Y with WIDTH/HEIGHT.
 PARAMS are frame parameters and FRAME is the existing frame."
   (when-let (timer (and frame (frame-parameter frame 'corfu--hide-timer)))
     (cancel-timer timer)
@@ -485,23 +484,24 @@ A scroll bar is displayed from LO to LO+BAR."
          (y (if (> (+ yb (* corfu-count ch) ch ch) (frame-pixel-height))
                 (- yb height ch 1)
               yb))
-         (row 0)
-         (buffer (corfu--make-buffer
-                  " *corfu*"
-                  (mapconcat (lambda (line)
-                               (let ((str (concat marginl line
-                                                  (if (and lo (<= lo row (+ lo bar)))
-                                                      sbar
-                                                    marginr))))
-                                 (when (eq row curr)
-                                   (add-face-text-property
-                                    0 (length str) 'corfu-current 'append str))
-                                 (setq row (1+ row))
-                                 str))
-                             lines "\n"))))
+         (row 0))
     (setq corfu--frame
-          (corfu--make-frame corfu--frame corfu--frame-parameters buffer
-                             x y width height))))
+          (corfu--make-frame
+           corfu--frame corfu--frame-parameters
+           x y width height
+           (corfu--make-buffer
+            " *corfu*"
+            (mapconcat (lambda (line)
+                         (let ((str (concat marginl line
+                                            (if (and lo (<= lo row (+ lo bar)))
+                                                sbar
+                                              marginr))))
+                           (when (eq row curr)
+                             (add-face-text-property
+                              0 (length str) 'corfu-current 'append str))
+                           (setq row (1+ row))
+                           str))
+                       lines "\n"))))))
 
 (defun corfu--hide-frame-deferred (frame)
   "Deferred hiding of child FRAME."
