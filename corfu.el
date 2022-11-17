@@ -391,7 +391,8 @@ The completion backend can override this with
 (defun corfu--make-frame (frame params x y width height buffer)
   "Show BUFFER in child frame at X/Y with WIDTH/HEIGHT.
 PARAMS are frame parameters and FRAME is the existing frame."
-  (when-let (timer (and frame (frame-parameter frame 'corfu--hide-timer)))
+  (when-let (timer (and (frame-live-p frame)
+                        (frame-parameter frame 'corfu--hide-timer)))
     (cancel-timer timer)
     (set-frame-parameter frame 'corfu--hide-timer nil))
   (let* ((window-min-height 1)
