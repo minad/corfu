@@ -411,8 +411,7 @@ PARAMS are frame parameters and FRAME is the existing frame."
              'resize-mode)))
          (after-make-frame-functions)
          (parent (window-frame)))
-    (unless (and (frame-live-p frame)
-                 (eq (frame-parent frame) parent))
+    (unless (and (frame-live-p frame) (eq (frame-parent frame) parent))
       (when frame (delete-frame frame))
       (setq frame (make-frame
                    `((parent-frame . ,parent)
@@ -421,10 +420,9 @@ PARAMS are frame parameters and FRAME is the existing frame."
                      (internal-border-width . ,(alist-get 'child-frame-border-width params))
                      ,@params))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
-    ;; Check explicitly before applying the setting. Without the check, the
-    ;; frame flickers on Mac.
-    ;; XXX HACK We have to apply the face background before adjusting the frame
-    ;; parameter, otherwise the border is not updated (BUG!).
+    ;; Check before applying the setting. Without the check, the frame flickers
+    ;; on Mac. We have to apply the face background before adjusting the frame
+    ;; parameter, otherwise the border is not updated (BUG?).
     (let* ((face (if (facep 'child-frame-border) 'child-frame-border 'internal-border))
            (new (face-attribute 'corfu-border :background nil 'default)))
       (unless (equal (face-attribute face :background frame 'default) new)
@@ -499,7 +497,7 @@ A scroll bar is displayed from LO to LO+BAR."
                            (when (eq row curr)
                              (add-face-text-property
                               0 (length str) 'corfu-current 'append str))
-                           (setq row (1+ row))
+                           (cl-incf row)
                            str))
                        lines "\n"))))))
 

@@ -4,8 +4,8 @@
 
 ;; Author: Yuwei Tian <fishtai0@gmail.com>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
-;; Created: 2021
-;; Version: 0.9
+;; Created: 2022
+;; Version: 0.1
 ;; Keywords: corfu popup documentation convenience
 ;; Package-Requires: ((emacs "27.1") (corfu "0.28"))
 ;; Homepage: https://github.com/minad/corfu
@@ -408,7 +408,7 @@ See `scroll-up' for details."
                               (get-buffer " *corfu-doc-popup*"))))
     (with-selected-frame corfu-doc-popup--frame
       (with-current-buffer cf-doc-buf
-        (funcall #'scroll-up n)))))
+        (scroll-up n)))))
 
 (defun corfu-doc-popup-scroll-down (&optional n)
   "Scroll text of doc popup window down N lines.
