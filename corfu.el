@@ -294,9 +294,6 @@ The completion backend can override this with
 (defvar corfu--frame nil
   "Popup frame.")
 
-(defvar corfu--frame-timer nil
-  "Frame hide timer.")
-
 (defconst corfu--state-vars
   '(corfu--base
     corfu--candidates
@@ -395,9 +392,9 @@ The completion backend can override this with
   "Make child frame from BUFFER and show it at X/Y with WIDTH/HEIGHT.
 
 PARAMS are frame parameters and FRAME is the existing frame."
-  (when corfu--frame-timer
-    (cancel-timer corfu--frame-timer)
-    (setq corfu--frame-timer nil))
+  (when-let (timer (and frame (frame-parameter frame 'corfu--hide-timer)))
+    (cancel-timer timer)
+    (set-frame-parameter frame 'corfu--hide-timer nil))
   (let* ((window-min-height 1)
          (window-min-width 1)
          (x-gtk-resize-child-frames
@@ -508,8 +505,8 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--hide-frame-deferred ()
   "Deferred frame hiding."
-  (setq corfu--frame-timer nil)
   (when (frame-live-p corfu--frame)
+    (set-frame-parameter corfu--frame 'corfu--frame-timer nil)
     (make-frame-invisible corfu--frame)
     (with-current-buffer (window-buffer (frame-root-window corfu--frame))
       (let ((inhibit-modification-hooks t)
@@ -518,8 +515,10 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--popup-hide ()
   "Hide Corfu popup."
-  (when (and (frame-live-p corfu--frame) (not corfu--frame-timer))
-    (setq corfu--frame-timer (run-at-time 0 nil #'corfu--hide-frame-deferred))))
+  (when (and (frame-live-p corfu--frame)
+             (not (frame-parameter corfu--frame 'corfu--hide-timer)))
+    (set-frame-parameter corfu--frame 'corfu--hide-timer
+                         (run-at-time 0 nil #'corfu--hide-frame-deferred))))
 
 (defun corfu--popup-support-p ()
   "Return non-nil if child frames are supported."
