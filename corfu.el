@@ -485,8 +485,7 @@ A scroll bar is displayed from LO to LO+BAR."
          (row 0))
     (setq corfu--frame
           (corfu--make-frame
-           corfu--frame corfu--frame-parameters
-           x y width height
+           corfu--frame corfu--frame-parameters x y width height
            (corfu--make-buffer
             " *corfu*"
             (mapconcat (lambda (line)
