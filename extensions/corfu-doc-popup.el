@@ -40,7 +40,7 @@
   :group 'corfu
   :type 'boolean)
 
-(defcustom corfu-doc-popup-delay 0.1
+(defcustom corfu-doc-popup-delay 1.0
   "The number of seconds to wait before displaying the documentation popup.
 
 The value of nil means no delay."
