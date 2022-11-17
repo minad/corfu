@@ -445,9 +445,12 @@ be enabled manually if desired. Furthermore it is possible to install all of the
 files separately, both ~corfu.el~ and the ~corfu-*.el~ extensions. Currently the
 following extensions come with the Corfu ELPA package:
 
-- [[https://github.com/minad/corfu/blob/main/extensions/corfu-doc-popup.el][corfu-doc-popup]]: Display candidate documentation in a popup.
-- [[https://github.com/minad/corfu/blob/main/extensions/corfu-history.el][corfu-history]]: =corfu-history-mode= to remember selected candidates and to improve sorting.
-- [[https://github.com/minad/corfu/blob/main/extensions/corfu-indexed.el][corfu-indexed]]: =corfu-indexed-mode= to select indexed candidates with prefix arguments.
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-docframe.el][corfu-docframe]]: Display candidate documentation in a popup frame next to the
+  candidate menu.
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-history.el][corfu-history]]: =corfu-history-mode= remembers selected candidates and sorts the
+  candidates by their history position.
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-indexed.el][corfu-indexed]]: =corfu-indexed-mode= allows you to select indexed candidates with
+  prefix arguments.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-info.el][corfu-info]]: Actions to access the candidate location and documentation.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-quick.el][corfu-quick]]: Commands to select using Avy-style quick keys.
 
