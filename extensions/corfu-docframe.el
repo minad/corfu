@@ -30,10 +30,13 @@
 ;; NOTE: This extension has been added recently to Corfu. It is still
 ;; experimental. The public interface may change any time.
 ;;
-;; Display a documentation popup for completion candidate when using Corfu.
+;; Display a documentation popup for completion candidate when using
+;; Corfu. The `corfu-docframe-mode' must be enabled globally. Set
+;; `corfu-docframe-auto' if you want the documentation popup to be
+;; displayed automatically. If you prefer manual toggling bind
+;; `corfu-docframe-toggle' to a key in `corfu-map':
 ;;
-;; Enable `corfu-docframe-mode':
-;;   (add-hook 'corfu-mode-hook #'corfu-docframe-mode).
+;; (define-key corfu-map "\M-d" #'corfu-docframe-toggle)
 
 ;;; Code:
 
@@ -47,11 +50,9 @@
   :type 'boolean)
 
 (defcustom corfu-docframe-delay 1.0
-  "The number of seconds to wait before displaying the documentation popup.
-The value of nil means no delay."
+  "The number of seconds to wait before displaying the documentation popup."
   :group 'corfu
-  :type '(choice (const :tag "never" nil)
-                 (const :tag "immediate" 0)
+  :type '(choice (const :tag "immediate" 0)
                  (number :tag "seconds")))
 
 (defcustom corfu-docframe-hide t
@@ -73,6 +74,9 @@ The value of nil means no delay."
   "Resize the corfu doc popup automatically if non-nil."
   :group 'corfu
   :type 'boolean)
+
+(defvar-local corfu-docframe--toggle t
+  "Local docframe toggle state.")
 
 (defvar corfu-docframe--frame nil
   "Doc frame.")
@@ -307,24 +311,18 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
               (list v-x v-y v-w v-h v-d)
             (list h-x h-y h-w h-h h-d))))))))
 
-(defun corfu-docframe--show (&optional candidate candidate-index)
-  "Show the doc popup.
-
-The optional CANDIDATE is the completion candidate for the doc popup.
-
-The optional CANDIDATE-INDEX is the the current completion candidate index,
-it should be compared with the value recorded by `corfu--index'."
+(defun corfu-docframe--show ()
+  "Show the doc popup."
+  (when corfu-docframe--auto-timer
+    (cancel-timer corfu-docframe--auto-timer)
+    (setq corfu-docframe--auto-timer nil))
   (when (and (corfu--popup-support-p)
              (frame-live-p corfu--frame)
-             (frame-visible-p corfu--frame)
-             (or (not candidate-index)
-                 (equal candidate-index corfu--index)))
-    (when (not candidate)
-      (setq candidate (and (> corfu--total 0) (>= corfu--index 0)
-                           (nth corfu--index corfu--candidates))))
-    (if (not candidate)
+             (frame-visible-p corfu--frame))
+    (if (< corfu--index 0)
         (corfu-docframe--hide)
-      (let* ((doc-changed
+      (let* ((candidate (nth corfu--index corfu--candidates))
+             (doc-changed
               (not (and (corfu-docframe--visible-p)
                         (equal candidate corfu-docframe--candidate))))
              ;; check if the coordinates of the corfu popup have changed
@@ -366,16 +364,8 @@ it should be compared with the value recorded by `corfu--index'."
 
 (defun corfu-docframe--hide ()
   "Clear the doc popup buffer content and hide it."
-  (corfu--hide-frame corfu-docframe--frame))
-
-(defun corfu-docframe--transition ()
-  "Transition when updating the doc popup."
-  (when (and (corfu-docframe--visible-p)
-             corfu-docframe-delay
-             (> corfu-docframe-delay 0))
-    (if corfu-docframe-hide
-        (corfu--hide-frame corfu-docframe--frame)
-      (corfu-docframe--show corfu-docframe--candidate))))
+  (corfu--hide-frame corfu-docframe--frame)
+  (mapc #'kill-local-variable corfu-docframe--state-vars))
 
 (defun corfu-docframe-scroll-up (&optional n)
   "Scroll text of doc popup window upward N lines.
@@ -396,87 +386,47 @@ If ARG is omitted or nil, scroll down by a near full screen."
   (interactive "p")
   (corfu-docframe-scroll-up (- (or n 1))))
 
-;;;###autoload
-(define-minor-mode corfu-docframe-mode
-  "Corfu doc popup minor mode."
-  :global nil
-  :group 'corfu
-  (cond
-   (corfu-docframe-mode
-    (corfu-docframe--show)
-    (add-hook 'completion-in-region-mode-hook #'corfu-docframe--setup))
-   (t
-    (corfu-docframe--teardown)
-    (remove-hook 'completion-in-region-mode-hook #'corfu-docframe--setup))))
-
 (defun corfu-docframe-toggle ()
   "Toggle the doc popup display or hide.
 
 When using this command to manually hide the doc popup, it will
-not be displayed until this command is called again. Even if the
-corfu doc mode is turned on and `corfu-docframe-auto' is set to Non-nil."
+not be displayed until this command is called again, even if
+`corfu-docframe-auto' is non-nil."
   (interactive)
-  (when corfu-docframe-mode
-    (if (corfu-docframe--visible-p)
-        (progn
-          (corfu-docframe--teardown)
-          (remove-hook 'completion-in-region-mode-hook
-                       #'corfu-docframe--setup))
+  (if (setq corfu-docframe--toggle (not (corfu-docframe--visible-p)))
       (corfu-docframe--show)
-      (corfu-docframe--setup)
-      (add-hook 'completion-in-region-mode-hook #'corfu-docframe--setup))))
+    (corfu-docframe--hide)))
 
 (defun corfu-docframe--exhibit (&rest _)
-  "Update the doc popup after last command."
-  (when (and (frame-live-p corfu--frame)
-             (frame-visible-p corfu--frame))
-    (if-let ((candidate
-              (and (> corfu--total 0) (>= corfu--index 0)
-                   (nth corfu--index corfu--candidates))))
-        (progn
-          (when corfu-docframe--auto-timer
-            (cancel-timer corfu-docframe--auto-timer)
-            (setq corfu-docframe--auto-timer nil))
-          (if (and (equal candidate corfu-docframe--candidate)
-                   (frame-live-p corfu-docframe--frame))
-              (corfu-docframe--show candidate)
-            (corfu-docframe--transition)
-            (setq corfu-docframe--auto-timer
-                  (run-with-timer
-                   corfu-docframe-delay nil
-                   #'corfu-docframe--show nil corfu--index))))
-      (corfu-docframe--hide))))
+  "Update the doc frame."
+  (if (and (frame-live-p corfu--frame)
+           (frame-visible-p corfu--frame)
+           (>= corfu--index 0))
+      (when (and corfu-docframe-auto corfu-docframe--toggle)
+        (when corfu-docframe--auto-timer
+          (cancel-timer corfu-docframe--auto-timer)
+          (setq corfu-docframe--auto-timer nil))
+        (if (or (= corfu-docframe-delay 0)
+                (equal (nth corfu--index corfu--candidates)
+                       corfu-docframe--candidate))
+            (corfu-docframe--show)
+          (when corfu-docframe-hide
+            (corfu--hide-frame corfu-docframe--frame))
+          (setq corfu-docframe--auto-timer
+                (run-at-time corfu-docframe-delay nil #'corfu-docframe--show))))
+    (corfu-docframe--hide)))
 
-(defun corfu-docframe--setup ()
-  "Setup corfu-docframe."
-  (if (not completion-in-region-mode)
-      (corfu-docframe--teardown)
-    (when corfu-docframe-mode
-      (if corfu-docframe-auto
-          (advice-add #'corfu--exhibit :after #'corfu-docframe--exhibit)
-        (let ((sym (make-symbol "corfu-docframe--teardown"))
-              (buf (current-buffer)))
-          (fset sym
-                (lambda ()
-                  (let ((candidate
-                         (and (> corfu--total 0) (>= corfu--index 0)
-                              (nth corfu--index corfu--candidates))))
-                    (unless
-                        (and completion-in-region-mode
-                             (equal candidate corfu-docframe--candidate)
-                             (frame-live-p corfu-docframe--frame))
-                      (remove-hook 'post-command-hook sym 'local)
-                      (with-current-buffer (if (buffer-live-p buf)
-                                               buf
-                                             (current-buffer))
-                        (corfu-docframe--teardown))))))
-          (add-hook 'post-command-hook sym 'append 'local))))))
-
-(defun corfu-docframe--teardown ()
-  "Teardown corfu-docframe."
-  (advice-remove #'corfu--exhibit #'corfu-docframe--exhibit)
-  (corfu-docframe--hide)
-  (mapc #'kill-local-variable corfu-docframe--state-vars))
+;;;###autoload
+(define-minor-mode corfu-docframe-mode
+  "Corfu doc popup minor mode."
+  :global t :group 'corfu
+  (cond
+   (corfu-docframe-mode
+    (advice-add #'corfu--exhibit :after #'corfu-docframe--exhibit)
+    (advice-add #'corfu--teardown :before #'corfu-docframe--hide))
+   (t
+    (advice-remove #'corfu--exhibit #'corfu-docframe--exhibit)
+    (advice-remove #'corfu--teardown #'corfu-docframe--hide))))
 
 (provide 'corfu-docframe)
 ;;; corfu-docframe.el ends here
