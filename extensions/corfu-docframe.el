@@ -93,7 +93,7 @@ If this is nil, do not resize corfu doc popup automatically."
 (defvar-local corfu-docframe--candidate nil
   "Completion candidate for the doc popup.")
 
-(defvar-local corfu-docframe--cf-popup-edges nil
+(defvar-local corfu-docframe--popup-edges nil
   "Coordinates of the corfu popup's edges.
 
 The coordinates list has the form (LEFT TOP RIGHT BOTTOM) where all
@@ -103,7 +103,7 @@ relative to LEFT and TOP which are both zero.
 
 See `frame-edges' for details.")
 
-(defvar corfu-docframe--cf-window nil
+(defvar corfu-docframe--window nil
   "Window where the corfu popup is located.")
 
 (defvar-local corfu-docframe--direction nil
@@ -111,8 +111,8 @@ See `frame-edges' for details.")
 
 (defconst corfu-docframe--state-vars
   '(corfu-docframe--candidate
-    corfu-docframe--cf-popup-edges
-    corfu-docframe--cf-window
+    corfu-docframe--popup-edges
+    corfu-docframe--window
     corfu-docframe--direction)
   "Buffer-local state variables used by corfu-docframe.")
 
@@ -338,7 +338,7 @@ it should be compared with the value recorded by `corfu--index'."
             ;; check if the coordinates of the corfu popup have changed
             (cfp-edges-changed-p
               (not (equal (frame-edges corfu--frame 'inner-edges)
-                          corfu-docframe--cf-popup-edges))))
+                          corfu-docframe--popup-edges))))
         (if (not should-update-doc-p)
             (when (and (not (string-empty-p
                              (string-trim
@@ -381,11 +381,11 @@ it should be compared with the value recorded by `corfu--index'."
                   corfu-docframe--direction area-d)))
         (if doc-updated-p
             (setq corfu-docframe--candidate candidate
-                  corfu-docframe--cf-popup-edges
+                  corfu-docframe--popup-edges
                   (frame-edges corfu--frame 'inner-edges)
-                  corfu-docframe--cf-window (selected-window))
+                  corfu-docframe--window (selected-window))
           (when cfp-edges-changed-p
-            (setq corfu-docframe--cf-popup-edges
+            (setq corfu-docframe--popup-edges
                   (frame-edges corfu--frame 'inner-edges))))))))
 
 (defun corfu-docframe--hide ()
@@ -453,7 +453,7 @@ corfu doc mode is turned on and `corfu-docframe-auto' is set to Non-nil."
 (defun corfu-docframe--post-command ()
   "Update the doc popup after last command."
   (when corfu-preselect-first
-    (advice-remove 'corfu--exhibit #'corfu-docframe--cf-exhibit-after-advice))
+    (advice-remove 'corfu--exhibit #'corfu-docframe--exhibit-after-advice))
   (when (and (frame-live-p corfu--frame)
              (frame-visible-p corfu--frame))
     (if-let ((candidate
@@ -464,7 +464,7 @@ corfu doc mode is turned on and `corfu-docframe-auto' is set to Non-nil."
             (cancel-timer corfu-docframe--auto-timer)
             (setq corfu-docframe--auto-timer nil))
           (if (and (string= candidate corfu-docframe--candidate)
-                   (eq (selected-window) corfu-docframe--cf-window)
+                   (eq (selected-window) corfu-docframe--window)
                    (frame-live-p corfu-docframe--frame))
               (corfu-docframe--show candidate)
             (corfu-docframe--transition)
@@ -474,7 +474,7 @@ corfu doc mode is turned on and `corfu-docframe-auto' is set to Non-nil."
                    #'corfu-docframe--show nil corfu--index))))
       (corfu-docframe--hide))))
 
-(defun corfu-docframe--cf-exhibit-after-advice (&rest _args)
+(defun corfu-docframe--exhibit-after-advice (&rest _args)
   "After advice for `corfu--exhibit'.
 To display the doc popup for the preselected completion candidate."
   (when (and corfu--candidates (>= corfu--index 0))
@@ -490,7 +490,7 @@ To display the doc popup for the preselected completion candidate."
             ;; display the doc popup for the preselected first candidate
             (when corfu-preselect-first
               (advice-add 'corfu--exhibit :after
-                          #'corfu-docframe--cf-exhibit-after-advice))
+                          #'corfu-docframe--exhibit-after-advice))
             (add-hook 'post-command-hook #'corfu-docframe--post-command
                       'append 'local))
         (let ((sym (make-symbol "corfu-docframe--teardown"))
@@ -503,7 +503,7 @@ To display the doc popup for the preselected completion candidate."
                     (unless
                         (and completion-in-region-mode
                              (string= candidate corfu-docframe--candidate)
-                             (eq (selected-window) corfu-docframe--cf-window)
+                             (eq (selected-window) corfu-docframe--window)
                              (frame-live-p corfu-docframe--frame))
                       (remove-hook 'post-command-hook sym 'local)
                       (with-current-buffer (if (buffer-live-p buf)
