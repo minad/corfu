@@ -49,28 +49,10 @@ The value of nil means no delay."
           (const :tag "immediate (0)" 0)
           (number :tag "seconds")))
 
-(defcustom corfu-doc-popup-transition nil
-  "The method to transition the documentation popup when browsing candidates.
-
-The documentation popup transition only works when `corfu-auto-delay'
-is non-nil and its value is greater than 0.
-
-If this is nil, there is no transition (do nothing), the doc popup
-preserves the content of the last candidate.
-
-If the value is 'clear, the documentation content of the last candidate
-will be cleared on documentation popup transition.
-
-If the value is 'hide, the documentation popup will be hidden
-when brwosing candidates.
-
-It is recommended to select the corresponding transition method
-according to the value of `corfu-doc-popup-delay' to reduce flicker or
-documentation update delay."
+(defcustom corfu-doc-popup-hide t
+  "Hide the popup during the transition between candidates."
   :group 'corfu
-  :type '(choice (const :tag "no transition (nil)" nil)
-          (const :tag "clear content" clear)
-          (const :tag "hide popup" hide)))
+  :type 'boolean)
 
 (defcustom corfu-doc-popup-max-width 80
   "The max width of the corfu doc popup in characters."
@@ -420,12 +402,9 @@ it should be compared with the value recorded by `corfu--index'."
   (when (corfu-doc-popup--visible-p)
     (when (and (not (null corfu-doc-popup-delay))
                (> corfu-doc-popup-delay 0))
-      (pcase corfu-doc-popup-transition
-        ('clear
-         (corfu-doc-popup--clear-buffer)
-         (corfu-doc-popup--show corfu-doc-popup--candidate))
-        ('hide (make-frame-invisible corfu-doc-popup--frame))
-        (_ (corfu-doc-popup--show corfu-doc-popup--candidate))))))
+      (if corfu-doc-popup-hide
+          (make-frame-invisible corfu-doc-popup--frame)
+        (corfu-doc-popup--show corfu-doc-popup--candidate)))))
 
 (defun corfu-doc-popup-scroll-up (&optional n)
   "Scroll text of doc popup window upward N lines.
