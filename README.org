@@ -448,6 +448,7 @@ following extensions come with the Corfu ELPA package:
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-history.el][corfu-history]]: =corfu-history-mode= to remember selected candidates and to improve sorting.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-indexed.el][corfu-indexed]]: =corfu-indexed-mode= to select indexed candidates with prefix arguments.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-doc-buffer.el][corfu-doc-buffer]]: Actions to access the candidate location and documentation.
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-doc-popup.el][corfu-doc-popup]]: Display candidate documentation in a popup.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-quick.el][corfu-quick]]: Commands to select using Avy-style quick keys.
 
 See the Commentary of those files for configuration details.
@@ -461,9 +462,6 @@ enhance your setup.
 
 - [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]]: The corfu-terminal package provides an overlay-based display
   for Corfu, such that you can use Corfu in terminal Emacs.
-
-- [[https://github.com/galeo/corfu-doc][corfu-doc]]: The corfu-doc package displays the candidate documentation in a
-  popup next to the Corfu popup, similar to =company-quickhelp=.
 
 - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced
   [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering expressions are separated by
