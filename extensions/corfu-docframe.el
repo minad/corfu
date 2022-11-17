@@ -426,10 +426,8 @@ corfu doc mode is turned on and `corfu-docframe-auto' is set to Non-nil."
       (corfu-docframe--setup)
       (add-hook 'completion-in-region-mode-hook #'corfu-docframe--setup))))
 
-(defun corfu-docframe--post-command ()
+(defun corfu-docframe--exhibit (&rest _)
   "Update the doc popup after last command."
-  (when corfu-preselect-first
-    (advice-remove 'corfu--exhibit #'corfu-docframe--exhibit-after-advice))
   (when (and (frame-live-p corfu--frame)
              (frame-visible-p corfu--frame))
     (if-let ((candidate
@@ -449,25 +447,13 @@ corfu doc mode is turned on and `corfu-docframe-auto' is set to Non-nil."
                    #'corfu-docframe--show nil corfu--index))))
       (corfu-docframe--hide))))
 
-(defun corfu-docframe--exhibit-after-advice (&rest _args)
-  "After advice for `corfu--exhibit'.
-To display the doc popup for the preselected completion candidate."
-  (when (and corfu--candidates (>= corfu--index 0))
-    (corfu-docframe--post-command)))
-
 (defun corfu-docframe--setup ()
   "Setup corfu-docframe."
   (if (not completion-in-region-mode)
       (corfu-docframe--teardown)
     (when corfu-docframe-mode
       (if corfu-docframe-auto
-          (progn
-            ;; display the doc popup for the preselected first candidate
-            (when corfu-preselect-first
-              (advice-add 'corfu--exhibit :after
-                          #'corfu-docframe--exhibit-after-advice))
-            (add-hook 'post-command-hook #'corfu-docframe--post-command
-                      'append 'local))
+          (advice-add 'corfu--exhibit :after #'corfu-docframe--exhibit)
         (let ((sym (make-symbol "corfu-docframe--teardown"))
               (buf (current-buffer)))
           (fset sym
@@ -488,7 +474,7 @@ To display the doc popup for the preselected completion candidate."
 
 (defun corfu-docframe--teardown ()
   "Teardown corfu-docframe."
-  (remove-hook 'post-command-hook #'corfu-docframe--post-command 'local)
+  (advice-remove #'corfu--exhibit #'corfu-docframe--exhibit)
   (corfu-docframe--hide)
   (mapc #'kill-local-variable corfu-docframe--state-vars))
 
