@@ -319,45 +319,35 @@ The optional CANDIDATE is the completion candidate for the doc popup.
 
 The optional CANDIDATE-INDEX is the the current completion candidate index,
 it should be compared with the value recorded by `corfu--index'."
-  (when (and corfu-mode
-             (corfu--popup-support-p)
+  (when (and (corfu--popup-support-p)
              (frame-live-p corfu--frame)
              (frame-visible-p corfu--frame)
-             (or (null candidate-index)
+             (or (not candidate-index)
                  (equal candidate-index corfu--index)))
-    (when (null candidate)
+    (when (not candidate)
       (setq candidate (and (> corfu--total 0) (>= corfu--index 0)
                            (nth corfu--index corfu--candidates))))
     (if (not candidate)
         (corfu-docframe--hide)
       (let ((should-update-doc-p
-             (not (equal candidate corfu-docframe--candidate)))
-            doc-updated-p
+             (not (and (corfu-docframe--visible-p)
+                       (equal candidate corfu-docframe--candidate))))
             ;; check if the coordinates of the corfu popup have changed
             (cfp-edges-changed-p
              (not (equal (frame-edges corfu--frame 'inner-edges)
                          corfu-docframe--edges))))
-        (if (not should-update-doc-p)
-            (when (and (not (string-empty-p
-                             (string-trim
-                              (with-current-buffer " *corfu-docframe*"
-                                (buffer-string)))))
-                       (not (corfu-docframe--visible-p)))
-              (make-frame-visible corfu-docframe--frame))
+        (when should-update-doc-p
           (if-let* ((doc (corfu-docframe--get-doc)))
-              (progn
-                ;; turn on word wrap and hide fringe indicators
-                (with-current-buffer
-                    (corfu--make-buffer " *corfu-docframe*" doc)
-                  (setq-local line-move-visual t)
-                  (setq-local truncate-partial-width-windows nil)
-                  (setq truncate-lines nil
-                        word-wrap t
-                        fringe-indicator-alist `(,(cons 'continuation nil))))
-                (setq doc-updated-p t))
+              ;; turn on word wrap and hide fringe indicators
+              (with-current-buffer
+                  (corfu--make-buffer " *corfu-docframe*" doc)
+                (setq-local line-move-visual t)
+                (setq-local truncate-partial-width-windows nil)
+                (setq truncate-lines nil
+                      word-wrap t
+                      fringe-indicator-alist `(,(cons 'continuation nil))))
             (corfu-docframe--hide)))
-        (when (or (and (not should-update-doc-p) cfp-edges-changed-p)
-                  doc-updated-p)
+        (when (or should-update-doc-p cfp-edges-changed-p)
           (pcase-let
               ((`(,area-x ,area-y ,area-w ,area-h ,area-d)
                 (apply
@@ -377,13 +367,9 @@ it should be compared with the value recorded by `corfu--index'."
                                      area-x area-y area-w area-h
                                      (get-buffer " *corfu-docframe*"))
                   corfu-docframe--direction area-d)))
-        (if doc-updated-p
-            (setq corfu-docframe--candidate candidate
-                  corfu-docframe--edges
-                  (frame-edges corfu--frame 'inner-edges))
-          (when cfp-edges-changed-p
-            (setq corfu-docframe--edges
-                  (frame-edges corfu--frame 'inner-edges))))))))
+        (setq corfu-docframe--candidate candidate
+              corfu-docframe--edges
+              (frame-edges corfu--frame 'inner-edges))))))
 
 (defun corfu-docframe--hide ()
   "Clear the doc popup buffer content and hide it."
@@ -391,12 +377,12 @@ it should be compared with the value recorded by `corfu--index'."
 
 (defun corfu-docframe--transition ()
   "Transition when updating the doc popup."
-  (when (corfu-docframe--visible-p)
-    (when (and (not (null corfu-docframe-delay))
-               (> corfu-docframe-delay 0))
-      (if corfu-docframe-hide
-          (corfu--hide-frame corfu-docframe--frame)
-        (corfu-docframe--show corfu-docframe--candidate)))))
+  (when (and (corfu-docframe--visible-p)
+             corfu-docframe-delay
+             (> corfu-docframe-delay 0))
+    (if corfu-docframe-hide
+        (corfu--hide-frame corfu-docframe--frame)
+      (corfu-docframe--show corfu-docframe--candidate))))
 
 (defun corfu-docframe-scroll-up (&optional n)
   "Scroll text of doc popup window upward N lines.
