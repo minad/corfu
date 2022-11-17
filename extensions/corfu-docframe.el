@@ -52,8 +52,8 @@
 The value of nil means no delay."
   :group 'corfu
   :type '(choice (const :tag "never (nil)" nil)
-          (const :tag "immediate (0)" 0)
-          (number :tag "seconds")))
+                 (const :tag "immediate (0)" 0)
+                 (number :tag "seconds")))
 
 (defcustom corfu-docframe-hide t
   "Hide the popup during the transition between candidates."
@@ -132,22 +132,22 @@ Returns nil if an error occurs or the documentation content is empty."
   (when-let
       ((doc
         (cond
-          ((= corfu--total 0) nil)  ;; No candidates
-          ((< corfu--index 0) nil)  ;; No candidate selected
-          (t
-           (if-let*
-               ((fun (plist-get corfu--extra :company-doc-buffer))
-                (res
-                 ;; fix showing candidate location
-                 ;; when fetch helpful documentation
-                 (save-excursion
-                   (let ((inhibit-message t)
-                         (message-log-max nil))
-                     (funcall fun (nth corfu--index corfu--candidates))))))
-               (let ((buf (or (car-safe res) res)))
-                 (with-current-buffer buf
-                   (buffer-string)))
-             nil)))))  ;; No documentation available
+         ((= corfu--total 0) nil)  ;; No candidates
+         ((< corfu--index 0) nil)  ;; No candidate selected
+         (t
+          (if-let*
+              ((fun (plist-get corfu--extra :company-doc-buffer))
+               (res
+                ;; fix showing candidate location
+                ;; when fetch helpful documentation
+                (save-excursion
+                  (let ((inhibit-message t)
+                        (message-log-max nil))
+                    (funcall fun (nth corfu--index corfu--candidates))))))
+              (let ((buf (or (car-safe res) res)))
+                (with-current-buffer buf
+                  (buffer-string)))
+            nil)))))  ;; No documentation available
     (unless (string-empty-p (string-trim doc))
       doc)))
 
@@ -163,22 +163,22 @@ If WIDTH and HEIGHT is speicified, just return (WIDTH HEIGHT)."
           ((lfw (alist-get 'left-fringe corfu-docframe--frame-parameters))
            (rfw (alist-get 'right-fringe corfu-docframe--frame-parameters))
            (`(,popup-width ,popup-height)
-             (if (not corfu-docframe-resize)
-                 (list (or width
-                           ;; left margin + inner width + right margin
-                           (+ lfw max-width rfw))
-                       (or height max-height))
-               (pcase-let
-                   ((`(,win-width . ,win-height)
-                      (save-window-excursion
-                        (with-current-buffer " *corfu-docframe*"
-                          (set-window-dedicated-p nil nil)
-                          (set-window-buffer nil (current-buffer))
-                          (window-text-pixel-size
-                           nil (point-min) (point-max)
-                           (* (default-font-width) corfu-docframe-max-width)
-                           (* (default-line-height) corfu-docframe-max-height))))))
-                 (list (or width win-width) (or height win-height))))))
+            (if (not corfu-docframe-resize)
+                (list (or width
+                          ;; left margin + inner width + right margin
+                          (+ lfw max-width rfw))
+                      (or height max-height))
+              (pcase-let
+                  ((`(,win-width . ,win-height)
+                    (save-window-excursion
+                      (with-current-buffer " *corfu-docframe*"
+                        (set-window-dedicated-p nil nil)
+                        (set-window-buffer nil (current-buffer))
+                        (window-text-pixel-size
+                         nil (point-min) (point-max)
+                         (* (default-font-width) corfu-docframe-max-width)
+                         (* (default-line-height) corfu-docframe-max-height))))))
+                (list (or width win-width) (or height win-height))))))
         (list (min popup-width max-width) (min popup-height max-height))))))
 
 (defun corfu-docframe--frame-geometry (&optional frame)
@@ -209,7 +209,7 @@ relative to the corfu popup, its value can be 'right or 'left."
        (lfw (alist-get 'left-fringe corfu-docframe--frame-parameters))
        (rfw (alist-get 'right-fringe corfu-docframe--frame-parameters))
        (`(,_pfx ,_pfy ,pfw ,_pfh)
-         (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
+        (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
        (`(,cfx ,cfy ,cfw ,_cfh) (corfu-docframe--frame-geometry corfu--frame))
        (x-on-right (+ cfx cfw space))
        ;; width remaining right
@@ -218,25 +218,25 @@ relative to the corfu popup, its value can be 'right or 'left."
        ;; width remaining left
        (w-remaining-left (- cfx space 1 border lfw rfw border)))
     (cond
-      ((> w-remaining-right width)
-       (setq a-x x-on-right))
-      ((and (< w-remaining-right width)
-            (> w-remaining-left width))
-       (setq a-x x-on-left
-             a-direction 'left)
-       ;; workaround for emacs bug#58627
-       (when (eq window-system 'ns)
-         (setq a-x (- cfx space 1 border lfw width rfw border))))
-      ((>= w-remaining-right w-remaining-left)
-       (setq a-x x-on-right
-             a-width w-remaining-right))
-      (t
-       (setq a-x x-on-left
-             a-direction 'left
-             a-width w-remaining-left)
-       ;; workaround for emacs bug#58627
-       (when (eq window-system 'ns)
-         (setq a-x 1))))
+     ((> w-remaining-right width)
+      (setq a-x x-on-right))
+     ((and (< w-remaining-right width)
+           (> w-remaining-left width))
+      (setq a-x x-on-left
+            a-direction 'left)
+      ;; workaround for emacs bug#58627
+      (when (eq window-system 'ns)
+        (setq a-x (- cfx space 1 border lfw width rfw border))))
+     ((>= w-remaining-right w-remaining-left)
+      (setq a-x x-on-right
+            a-width w-remaining-right))
+     (t
+      (setq a-x x-on-left
+            a-direction 'left
+            a-width w-remaining-left)
+      ;; workaround for emacs bug#58627
+      (when (eq window-system 'ns)
+        (setq a-x 1))))
     (setq a-y cfy)
     (list a-x a-y a-width a-height a-direction)))
 
@@ -258,7 +258,7 @@ relative to the corfu popup, its value can be 'bottom or 'top."
        (rfw (alist-get 'right-fringe corfu-docframe--frame-parameters))
        (lh (default-line-height))
        (`(,_pfx ,_pfy ,pfw ,pfh)
-         (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
+        (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
        (`(,cfx ,cfy ,_cfw ,cfh) (corfu-docframe--frame-geometry corfu--frame))
        (cf-on-cursor-bottom-p
         (>= cfy
@@ -296,26 +296,26 @@ The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
 DIRECTION indicates the position direction of the doc popup relative to
 the corfu popup, its value is 'bottom, 'top, 'right or 'left."
   (cond
-    ((member direction '(right left))
-     (apply #'corfu-docframe--display-area-horizontal
-            (corfu-docframe--size)))
-    ((member direction '(bottom top))
-     (apply #'corfu-docframe--display-area-vertical
-            (corfu-docframe--size)))
-    (t
-     (pcase-let*
-         ((`(,width ,height)  ;; popup inner width and height
-            (corfu-docframe--size width height))
-          (`(,v-x ,v-y ,v-w ,v-h ,v-d)
-            (corfu-docframe--display-area-vertical width height)))
-       (if (and (>= v-h height) (>= v-w width))
-           (list v-x v-y v-w v-h v-d)
-         (pcase-let
-             ((`(,h-x ,h-y ,h-w ,h-h ,h-d)
-                (corfu-docframe--display-area-horizontal width height)))
-           (if (>= (* v-w v-h) (* h-w h-h))
-               (list v-x v-y v-w v-h v-d)
-             (list h-x h-y h-w h-h h-d))))))))
+   ((member direction '(right left))
+    (apply #'corfu-docframe--display-area-horizontal
+           (corfu-docframe--size)))
+   ((member direction '(bottom top))
+    (apply #'corfu-docframe--display-area-vertical
+           (corfu-docframe--size)))
+   (t
+    (pcase-let*
+        ((`(,width ,height)  ;; popup inner width and height
+          (corfu-docframe--size width height))
+         (`(,v-x ,v-y ,v-w ,v-h ,v-d)
+          (corfu-docframe--display-area-vertical width height)))
+      (if (and (>= v-h height) (>= v-w width))
+          (list v-x v-y v-w v-h v-d)
+        (pcase-let
+            ((`(,h-x ,h-y ,h-w ,h-h ,h-d)
+              (corfu-docframe--display-area-horizontal width height)))
+          (if (>= (* v-w v-h) (* h-w h-h))
+              (list v-x v-y v-w v-h v-d)
+            (list h-x h-y h-w h-h h-d))))))))
 
 (defun corfu-docframe--show (&optional candidate candidate-index)
   "Show the doc popup.
@@ -336,12 +336,12 @@ it should be compared with the value recorded by `corfu--index'."
     (if (not candidate)
         (corfu-docframe--hide)
       (let ((should-update-doc-p
-              (not (equal candidate corfu-docframe--candidate)))
+             (not (equal candidate corfu-docframe--candidate)))
             doc-updated-p
             ;; check if the coordinates of the corfu popup have changed
             (cfp-edges-changed-p
-              (not (equal (frame-edges corfu--frame 'inner-edges)
-                          corfu-docframe--popup-edges))))
+             (not (equal (frame-edges corfu--frame 'inner-edges)
+                         corfu-docframe--popup-edges))))
         (if (not should-update-doc-p)
             (when (and (not (string-empty-p
                              (string-trim
@@ -365,17 +365,17 @@ it should be compared with the value recorded by `corfu--index'."
                   doc-updated-p)
           (pcase-let
               ((`(,area-x ,area-y ,area-w ,area-h ,area-d)
-                 (apply
-                  #'corfu-docframe--display-area
-                  corfu-docframe--direction
-                  (when (not should-update-doc-p)
-                    (let ((border
-                            (alist-get 'child-frame-border-width
-                                       corfu-docframe--frame-parameters)))
-                      (list (- (frame-pixel-width corfu-docframe--frame)
-                               border border)
-                            (- (frame-pixel-height corfu-docframe--frame)
-                               border border)))))))
+                (apply
+                 #'corfu-docframe--display-area
+                 corfu-docframe--direction
+                 (when (not should-update-doc-p)
+                   (let ((border
+                          (alist-get 'child-frame-border-width
+                                     corfu-docframe--frame-parameters)))
+                     (list (- (frame-pixel-width corfu-docframe--frame)
+                              border border)
+                           (- (frame-pixel-height corfu-docframe--frame)
+                              border border)))))))
             (setq corfu-docframe--frame
                   (corfu--make-frame corfu-docframe--frame
                                      corfu-docframe--frame-parameters
@@ -429,12 +429,12 @@ If ARG is omitted or nil, scroll down by a near full screen."
   :global nil
   :group 'corfu
   (cond
-    (corfu-docframe-mode
-     (corfu-docframe--show)
-     (add-hook 'completion-in-region-mode-hook #'corfu-docframe--setup))
-    (t
-     (corfu-docframe--teardown)
-     (remove-hook 'completion-in-region-mode-hook #'corfu-docframe--setup))))
+   (corfu-docframe-mode
+    (corfu-docframe--show)
+    (add-hook 'completion-in-region-mode-hook #'corfu-docframe--setup))
+   (t
+    (corfu-docframe--teardown)
+    (remove-hook 'completion-in-region-mode-hook #'corfu-docframe--setup))))
 
 (defun corfu-docframe-toggle ()
   "Toggle the doc popup display or hide.
@@ -501,8 +501,8 @@ To display the doc popup for the preselected completion candidate."
           (fset sym
                 (lambda ()
                   (let ((candidate
-                          (and (> corfu--total 0) (>= corfu--index 0)
-                               (nth corfu--index corfu--candidates))))
+                         (and (> corfu--total 0) (>= corfu--index 0)
+                              (nth corfu--index corfu--candidates))))
                     (unless
                         (and completion-in-region-mode
                              (equal candidate corfu-docframe--candidate)
