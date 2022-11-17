@@ -83,11 +83,10 @@ If this is nil, do not resize corfu doc popup automatically."
 (defvar corfu-docframe--frame-parameters
   (let* ((cw (default-font-width))
          (lmw (* cw corfu-left-margin-width))
-         (rmw (* cw corfu-right-margin-width))
-         (fp (copy-alist corfu--frame-parameters)))
-    (setf (alist-get 'left-fringe fp) (ceiling lmw)
-          (alist-get 'right-fringe fp) (ceiling rmw))
-    fp)
+         (rmw (* cw corfu-right-margin-width)))
+    `((left-fringe . ,lmw)
+      (right-fringe . ,rmw)
+      ,@corfu--frame-parameters))
   "Default doc child frame parameters.")
 
 (defvar corfu-docframe--auto-timer nil
