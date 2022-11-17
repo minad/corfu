@@ -48,11 +48,10 @@
 
 (defcustom corfu-docframe-delay 1.0
   "The number of seconds to wait before displaying the documentation popup.
-
 The value of nil means no delay."
   :group 'corfu
-  :type '(choice (const :tag "never (nil)" nil)
-                 (const :tag "immediate (0)" 0)
+  :type '(choice (const :tag "never" nil)
+                 (const :tag "immediate" 0)
                  (number :tag "seconds")))
 
 (defcustom corfu-docframe-hide t
@@ -71,9 +70,7 @@ The value of nil means no delay."
   :type 'integer)
 
 (defcustom corfu-docframe-resize t
-  "Non-nil means resize the corfu doc popup automatically.
-
-If this is nil, do not resize corfu doc popup automatically."
+  "Resize the corfu doc popup automatically if non-nil."
   :group 'corfu
   :type 'boolean)
 
@@ -102,7 +99,6 @@ The coordinates list has the form (LEFT TOP RIGHT BOTTOM) where all
 values are in pixels relative to the origin - the position (0, 0)
 - of FRAME's display.  For terminal frames all values are
 relative to LEFT and TOP which are both zero.
-
 See `frame-edges' for details.")
 
 (defvar-local corfu-docframe--direction nil
@@ -121,9 +117,8 @@ See `frame-edges' for details.")
 
 (defun corfu-docframe--get-doc ()
   "Get the documentation for the current completion candidate.
-
-The documentation is trimmed.
-Returns nil if an error occurs or the documentation content is empty."
+The documentation is trimmed. Returns nil if an error occurs or
+the documentation content is empty."
   (when-let
       ((doc
         (cond
@@ -329,13 +324,13 @@ it should be compared with the value recorded by `corfu--index'."
                            (nth corfu--index corfu--candidates))))
     (if (not candidate)
         (corfu-docframe--hide)
-      (let* ((should-update-doc-p
+      (let* ((doc-changed
               (not (and (corfu-docframe--visible-p)
                         (equal candidate corfu-docframe--candidate))))
              ;; check if the coordinates of the corfu popup have changed
              (new-edges (frame-edges corfu--frame 'inner-edges))
-             (cfp-edges-changed-p (not (equal new-edges corfu-docframe--edges))))
-        (when should-update-doc-p
+             (edges-changed (not (equal new-edges corfu-docframe--edges))))
+        (when doc-changed
           (if-let* ((doc (corfu-docframe--get-doc)))
               ;; turn on word wrap and hide fringe indicators
               (with-current-buffer
@@ -346,13 +341,13 @@ it should be compared with the value recorded by `corfu--index'."
                       word-wrap t
                       fringe-indicator-alist `(,(cons 'continuation nil))))
             (corfu-docframe--hide)))
-        (when (or should-update-doc-p cfp-edges-changed-p)
+        (when (or doc-changed edges-changed)
           (pcase-let
               ((`(,area-x ,area-y ,area-w ,area-h ,area-d)
                 (apply
                  #'corfu-docframe--display-area
                  corfu-docframe--direction
-                 (when (not should-update-doc-p)
+                 (when (not doc-changed)
                    (let ((border
                           (alist-get 'child-frame-border-width
                                      corfu-docframe--frame-parameters)))
