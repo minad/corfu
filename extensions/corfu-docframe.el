@@ -111,7 +111,8 @@ See `frame-edges' for details.")
 (defconst corfu-docframe--state-vars
   '(corfu-docframe--candidate
     corfu-docframe--edges
-    corfu-docframe--direction)
+    corfu-docframe--direction
+    corfu-docframe--toggle)
   "Buffer-local state variables used by corfu-docframe.")
 
 (defun corfu-docframe--visible-p ()
@@ -364,7 +365,11 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
 
 (defun corfu-docframe--hide ()
   "Clear the doc popup buffer content and hide it."
-  (corfu--hide-frame corfu-docframe--frame)
+  (corfu--hide-frame corfu-docframe--frame))
+
+(defun corfu-docframe--teardown ()
+  "Teardown the docframe state."
+  (corfu-docframe--hide)
   (mapc #'kill-local-variable corfu-docframe--state-vars))
 
 (defun corfu-docframe-scroll-up (&optional n)
@@ -423,10 +428,10 @@ not be displayed until this command is called again, even if
   (cond
    (corfu-docframe-mode
     (advice-add #'corfu--exhibit :after #'corfu-docframe--exhibit)
-    (advice-add #'corfu--teardown :before #'corfu-docframe--hide))
+    (advice-add #'corfu--teardown :before #'corfu-docframe--teardown))
    (t
     (advice-remove #'corfu--exhibit #'corfu-docframe--exhibit)
-    (advice-remove #'corfu--teardown #'corfu-docframe--hide))))
+    (advice-remove #'corfu--teardown #'corfu-docframe--teardown))))
 
 (provide 'corfu-docframe)
 ;;; corfu-docframe.el ends here
