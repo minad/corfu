@@ -503,22 +503,26 @@ A scroll bar is displayed from LO to LO+BAR."
           (corfu--make-frame corfu--frame corfu--frame-parameters buffer
                              x y width height))))
 
-(defun corfu--hide-frame-deferred ()
-  "Deferred frame hiding."
-  (when (frame-live-p corfu--frame)
-    (set-frame-parameter corfu--frame 'corfu--frame-timer nil)
-    (make-frame-invisible corfu--frame)
-    (with-current-buffer (window-buffer (frame-root-window corfu--frame))
+(defun corfu--hide-frame-deferred (frame)
+  "Deferred hiding of child FRAME."
+  (when (frame-live-p frame)
+    (set-frame-parameter frame 'corfu--hide-timer nil)
+    (make-frame-invisible frame)
+    (with-current-buffer (window-buffer (frame-root-window frame))
       (let ((inhibit-modification-hooks t)
             (inhibit-read-only t))
         (erase-buffer)))))
 
+(defun corfu--hide-frame (frame)
+  "Hide child FRAME."
+  (when (and (frame-live-p frame)
+             (not (frame-parameter frame 'corfu--hide-timer)))
+    (set-frame-parameter frame 'corfu--hide-timer
+                         (run-at-time 0 nil #'corfu--hide-frame-deferred frame))))
+
 (defun corfu--popup-hide ()
   "Hide Corfu popup."
-  (when (and (frame-live-p corfu--frame)
-             (not (frame-parameter corfu--frame 'corfu--hide-timer)))
-    (set-frame-parameter corfu--frame 'corfu--hide-timer
-                         (run-at-time 0 nil #'corfu--hide-frame-deferred))))
+  (corfu--hide-frame corfu--frame))
 
 (defun corfu--popup-support-p ()
   "Return non-nil if child frames are supported."
