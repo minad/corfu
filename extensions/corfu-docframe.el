@@ -415,7 +415,7 @@ not be displayed until this command is called again, even if
                        corfu-docframe--candidate))
             (corfu-docframe--show)
           (when corfu-docframe-hide
-            (corfu--hide-frame corfu-docframe--frame))
+            (corfu-docframe--hide))
           (setq corfu-docframe--auto-timer
                 (run-at-time corfu-docframe-delay nil #'corfu-docframe--show))))
     (corfu-docframe--hide)))
