@@ -106,16 +106,12 @@ relative to LEFT and TOP which are both zero.
 
 See `frame-edges' for details.")
 
-(defvar corfu-docframe--window nil
-  "Window where the corfu popup is located.")
-
 (defvar-local corfu-docframe--direction nil
   "Position direction of the doc popup relative to the corfu popup.")
 
 (defconst corfu-docframe--state-vars
   '(corfu-docframe--candidate
     corfu-docframe--popup-edges
-    corfu-docframe--window
     corfu-docframe--direction)
   "Buffer-local state variables used by corfu-docframe.")
 
@@ -385,8 +381,7 @@ it should be compared with the value recorded by `corfu--index'."
         (if doc-updated-p
             (setq corfu-docframe--candidate candidate
                   corfu-docframe--popup-edges
-                  (frame-edges corfu--frame 'inner-edges)
-                  corfu-docframe--window (selected-window))
+                  (frame-edges corfu--frame 'inner-edges))
           (when cfp-edges-changed-p
             (setq corfu-docframe--popup-edges
                   (frame-edges corfu--frame 'inner-edges))))))))
@@ -467,7 +462,6 @@ corfu doc mode is turned on and `corfu-docframe-auto' is set to Non-nil."
             (cancel-timer corfu-docframe--auto-timer)
             (setq corfu-docframe--auto-timer nil))
           (if (and (equal candidate corfu-docframe--candidate)
-                   (eq (selected-window) corfu-docframe--window)
                    (frame-live-p corfu-docframe--frame))
               (corfu-docframe--show candidate)
             (corfu-docframe--transition)
@@ -506,7 +500,6 @@ To display the doc popup for the preselected completion candidate."
                     (unless
                         (and completion-in-region-mode
                              (equal candidate corfu-docframe--candidate)
-                             (eq (selected-window) corfu-docframe--window)
                              (frame-live-p corfu-docframe--frame))
                       (remove-hook 'post-command-hook sym 'local)
                       (with-current-buffer (if (buffer-live-p buf)
