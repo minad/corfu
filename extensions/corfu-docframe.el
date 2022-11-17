@@ -453,7 +453,7 @@ corfu doc mode is turned on and `corfu-docframe-auto' is set to Non-nil."
       (corfu-docframe--teardown)
     (when corfu-docframe-mode
       (if corfu-docframe-auto
-          (advice-add 'corfu--exhibit :after #'corfu-docframe--exhibit)
+          (advice-add #'corfu--exhibit :after #'corfu-docframe--exhibit)
         (let ((sym (make-symbol "corfu-docframe--teardown"))
               (buf (current-buffer)))
           (fset sym
