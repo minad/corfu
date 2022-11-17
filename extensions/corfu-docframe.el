@@ -27,6 +27,9 @@
 
 ;;; Commentary:
 
+;; NOTE: This extension has been added recently to Corfu. It is still
+;; experimental.
+;;
 ;; Display a documentation popup for completion candidate when using Corfu.
 ;;
 ;; Enable `corfu-docframe-mode':
