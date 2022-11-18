@@ -36,6 +36,8 @@
 ;; `corfu-docframe-toggle' to a key in `corfu-map':
 ;;
 ;; (define-key corfu-map "\M-d" #'corfu-docframe-toggle)
+;; (define-key corfu-map "\M-g" #'corfu-docframe-location)
+;; (define-key corfu-map "\M-h" #'corfu-docframe-documentation)
 
 ;;; Code:
 
@@ -83,7 +85,7 @@
   "Local docframe toggle state.")
 
 (defvar-local corfu-docframe--function
-  #'corfu-docframe--documentation
+  #'corfu-docframe--get-documentation
   "Documentation function.")
 
 (defvar corfu-docframe--frame nil
@@ -120,25 +122,29 @@ See `frame-edges' for details.")
   (and (frame-live-p corfu-docframe--frame)
        (frame-visible-p corfu-docframe--frame)))
 
-(defun corfu-docframe--get-source (candidate)
+(defun corfu-docframe--get-location (candidate)
+  "Get source at location of CANDIDATE."
+  (save-excursion
     (when-let* ((fun (plist-get corfu--extra :company-location))
                 (loc (funcall fun candidate))
                 (res (or (and (bufferp (car loc)) (car loc)) (find-file-noselect (car loc) t))))
-      (save-window-excursion
-        (with-current-buffer res
-          (save-excursion
-            (save-restriction
-              (widen)
-              (if (bufferp (car loc))
-                  (goto-char (cdr loc))
-                (goto-char (point-min))
-                (forward-line (1- (cdr loc))))
-              (setq res (buffer-substring (point) (point-max)))
-              (and (not (string-blank-p res)) res)))))))
+      (with-current-buffer res
+        (save-excursion
+          (save-restriction
+            (widen)
+            (if (bufferp (car loc))
+                (goto-char (cdr loc))
+              (goto-char (point-min))
+              (forward-line (1- (cdr loc))))
+            (let ((beg (point)))
+              (forward-line (* 2 corfu-docframe-max-height))
+              (when jit-lock-mode
+                (jit-lock-fontify-now beg (point)))
+              (setq res (buffer-substring beg (point)))
+              (and (not (string-blank-p res)) res))))))))
 
 (defun corfu-docframe--get-documentation (candidate)
-  "Get the documentation for CANDIDATE.
-Returns nil if an error occurs or the documentation content is empty."
+  "Get the documentation for CANDIDATE."
   (when-let* ((fun (plist-get corfu--extra :company-doc-buffer))
               (res (save-excursion
                      (let ((inhibit-message t)
@@ -293,7 +299,7 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
            (new-edges (frame-edges corfu--frame 'inner-edges))
            (edges-changed (not (equal new-edges corfu-docframe--edges))))
       (when doc-changed
-        (if-let (doc (corfu-docframe--get-source candidate))
+        (if-let (doc (funcall corfu-docframe--function candidate))
             (with-current-buffer (corfu--make-buffer " *corfu-docframe*" doc)
               ;; TODO extract settings
               (setq-local line-move-visual t
@@ -346,11 +352,24 @@ If ARG is omitted or nil, scroll down by a near full screen."
   (interactive "p")
   (corfu-docframe-scroll-up (- (or n 1))))
 
-(defun corfu-docframe-show-location ()
-  (setq corfu-docframe--function #'corfu-)
+(defun corfu-docframe--set-function (fun)
+  "Set popup documentation getter FUN."
+  (setq corfu-docframe--function fun
+        corfu-docframe--candidate nil
+        corfu-docframe--toggle t)
   (when-let (candidate (and (>= corfu--index 0)
                             (nth corfu--index corfu--candidates)))
     (corfu-docframe--show candidate)))
+
+(defun corfu-docframe-documentation ()
+  "Show documentation in popup."
+  (interactive)
+  (corfu-docframe--set-function #'corfu-docframe--get-documentation))
+
+(defun corfu-docframe-location ()
+  "Show location in popup."
+  (interactive)
+  (corfu-docframe--set-function #'corfu-docframe--get-location))
 
 (defun corfu-docframe-toggle ()
   "Toggle the doc popup display or hide.
