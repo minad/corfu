@@ -57,12 +57,19 @@ floats to specify initial and subsequent delay."
 (defvar-local corfu-echo--message nil
   "Last echo message.")
 
-(defun corfu-echo--cancel (&optional hide)
-  "Cancel echo timer and optionally HIDE message."
+(defun corfu-echo--refresh ()
+  "Refresh message to avoid flicker."
+  (corfu-echo--cancel corfu-echo--message))
+
+(defun corfu-echo--cancel (&optional msg)
+  "Cancel echo timer and refresh MSG."
   (when corfu-echo--timer
     (cancel-timer corfu-echo--timer)
     (setq corfu-echo--timer nil))
-  (corfu-echo--show (unless hide corfu-echo--message)))
+  (corfu-echo--show msg)
+  (unless corfu--echo-message
+    (kill-local-variable 'corfu-echo--timer)
+    (kill-local-variable 'corfu-echo--message)))
 
 (defun corfu-echo--show (msg)
   "Show MSG in echo area."
@@ -84,18 +91,12 @@ floats to specify initial and subsequent delay."
                        (nth corfu--index corfu--candidates))))
       (if (or (eq delay t) (<= delay 0))
           (corfu-echo--show (funcall fun cand))
-        (corfu-echo--cancel 'hide)
+        (corfu-echo--cancel)
         (setq corfu-echo--timer
               (run-at-time delay nil
                            (lambda ()
                              (corfu-echo--show (funcall fun cand))))))
-    (corfu-echo--cancel 'hide)))
-
-(defun corfu-echo--teardown ()
-  "Teardown echo display."
-  (corfu-echo--cancel 'hide)
-  (kill-local-variable 'corfu-echo--timer)
-  (kill-local-variable 'corfu-echo--message))
+    (corfu-echo--cancel)))
 
 ;;;###autoload
 (define-minor-mode corfu-echo-mode
@@ -103,13 +104,13 @@ floats to specify initial and subsequent delay."
   :global t :group 'corfu
   (cond
    (corfu-echo-mode
-    (advice-add #'corfu--pre-command :before #'corfu-echo--cancel)
+    (advice-add #'corfu--pre-command :before #'corfu-echo--refresh)
     (advice-add #'corfu--exhibit :after #'corfu-echo--exhibit)
-    (advice-add #'corfu--teardown :before #'corfu-echo--teardown))
+    (advice-add #'corfu--teardown :before #'corfu-echo--cancel))
    (t
-    (advice-remove #'corfu--pre-command #'corfu-echo--cancel)
+    (advice-remove #'corfu--pre-command #'corfu-echo--refresh)
     (advice-remove #'corfu--exhibit #'corfu-echo--exhibit)
-    (advice-remove #'corfu--teardown #'corfu-echo--teardown))))
+    (advice-remove #'corfu--teardown #'corfu-echo--cancel))))
 
 (provide 'corfu-echo)
 ;;; corfu-echo.el ends here
