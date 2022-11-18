@@ -157,7 +157,11 @@ See `frame-edges' for details.")
   (when-let* ((fun (plist-get corfu--extra :company-doc-buffer))
               (res (save-excursion
                      (let ((inhibit-message t)
-                           (message-log-max nil))
+                           (message-log-max nil)
+                           ;; Reduce print length for elisp backend (#249)
+                           (print-level 3)
+                           (print-length (* corfu-infoframe-max-width
+                                            corfu-infoframe-max-height)))
                        (funcall fun candidate)))))
     (with-current-buffer (or (car-safe res) res)
       (setq res (replace-regexp-in-string
