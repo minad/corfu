@@ -67,7 +67,7 @@ floats to specify initial and subsequent delay."
   :group 'corfu
   :type 'boolean)
 
-(defcustom corfu-popupinfo-max-width 50
+(defcustom corfu-popupinfo-max-width 70
   "The max width of the info popup in characters."
   :group 'corfu
   :type 'integer)
