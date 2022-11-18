@@ -301,11 +301,6 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
   "Clear the doc popup buffer content and hide it."
   (corfu--hide-frame corfu-docframe--frame))
 
-(defun corfu-docframe--teardown ()
-  "Teardown the docframe state."
-  (corfu-docframe--hide)
-  (mapc #'kill-local-variable corfu-docframe--state-vars))
-
 (defun corfu-docframe-scroll-up (&optional n)
   "Scroll text of doc popup window upward N lines.
 
@@ -360,11 +355,16 @@ not be displayed until this command is called again, even if
   :global t :group 'corfu
   (cond
    (corfu-docframe-mode
+    ;; TODO seq-union (Emacs 28, seq compatibility package?)
+    (setq corfu--state-vars (seq-uniq (append corfu--state-vars
+                                              corfu-docframe--state-vars)))
     (advice-add #'corfu--exhibit :after #'corfu-docframe--exhibit)
-    (advice-add #'corfu--teardown :before #'corfu-docframe--teardown))
+    (advice-add #'corfu--teardown :before #'corfu-docframe--hide))
    (t
+    (setq corfu--state-vars (seq-difference corfu--state-vars
+                                            corfu-docframe--state-vars))
     (advice-remove #'corfu--exhibit #'corfu-docframe--exhibit)
-    (advice-remove #'corfu--teardown #'corfu-docframe--teardown))))
+    (advice-remove #'corfu--teardown #'corfu-docframe--hide))))
 
 (provide 'corfu-docframe)
 ;;; corfu-docframe.el ends here
