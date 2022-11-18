@@ -1,4 +1,4 @@
-;;; corfu-docframe.el --- Documentation popup frame for Corfu -*- lexical-binding: t -*-
+;;; corfu-infoframe.el --- Candidate information popup frame for Corfu -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021-2022  Free Software Foundation, Inc.
 
@@ -30,14 +30,14 @@
 ;; experimental. The public interface may change any time.
 ;;
 ;; Display a documentation popup for completion candidate when using
-;; Corfu. The `corfu-docframe-mode' must be enabled globally. Set
-;; `corfu-docframe-auto' if you want the documentation popup to be
-;; displayed automatically. If you prefer manual toggling bind
-;; `corfu-docframe-toggle' to a key in `corfu-map':
+;; Corfu. The `corfu-infoframe-mode' must be enabled globally. Set
+;; `corfu-infoframe-auto' if you want the documentation popup frame to
+;; be displayed automatically. If you prefer manual toggling bind
+;; `corfu-infoframe-toggle' to a key in `corfu-map':
 ;;
-;; (define-key corfu-map "\M-d" #'corfu-docframe-toggle)
-;; (define-key corfu-map "\M-g" #'corfu-docframe-location)
-;; (define-key corfu-map "\M-h" #'corfu-docframe-documentation)
+;; (define-key corfu-map "\M-d" #'corfu-infoframe-toggle)
+;; (define-key corfu-map "\M-g" #'corfu-infoframe-location)
+;; (define-key corfu-map "\M-h" #'corfu-infoframe-documentation)
 
 ;;; Code:
 
@@ -45,59 +45,59 @@
 (eval-when-compile
   (require 'subr-x))
 
-(defface corfu-docframe
+(defface corfu-infoframe
   '((t :inherit corfu-default :height 0.8))
-  "Face used for the doc frame."
+  "Face used for the info frame."
   :group 'corfu-faces)
 
-(defcustom corfu-docframe-auto t
+(defcustom corfu-infoframe-auto t
   "Display documentation popup automatically."
   :group 'corfu
   :type 'boolean)
 
-(defcustom corfu-docframe-delay 1.0
+(defcustom corfu-infoframe-delay 1.0
   "The number of seconds to wait before displaying the documentation popup."
   :group 'corfu
   :type '(choice (const :tag "immediate" 0)
                  (number :tag "seconds")))
 
-(defcustom corfu-docframe-hide t
+(defcustom corfu-infoframe-hide t
   "Hide the popup during the transition between candidates."
   :group 'corfu
   :type 'boolean)
 
-(defcustom corfu-docframe-max-width 50
-  "The max width of the corfu doc popup in characters."
+(defcustom corfu-infoframe-max-width 50
+  "The max width of the info frame in characters."
   :group 'corfu
   :type 'integer)
 
-(defcustom corfu-docframe-max-height 10
-  "The max height of the corfu doc popup in characters."
+(defcustom corfu-infoframe-max-height 10
+  "The max height of the info frame in characters."
   :group 'corfu
   :type 'integer)
 
-(defcustom corfu-docframe-resize t
-  "Resize the corfu doc popup automatically if non-nil."
+(defcustom corfu-infoframe-resize t
+  "Resize the info frame automatically if non-nil."
   :group 'corfu
   :type 'boolean)
 
-(defvar-local corfu-docframe--toggle t
-  "Local docframe toggle state.")
+(defvar-local corfu-infoframe--toggle t
+  "Local infoframe toggle state.")
 
-(defvar-local corfu-docframe--function
-  #'corfu-docframe--get-documentation
+(defvar-local corfu-infoframe--function
+  #'corfu-infoframe--get-documentation
   "Documentation function.")
 
-(defvar corfu-docframe--frame nil
-  "Doc frame.")
+(defvar corfu-infoframe--frame nil
+  "Info frame.")
 
-(defvar corfu-docframe--auto-timer nil
-  "Corfu doc popup auto display timer.")
+(defvar corfu-infoframe--auto-timer nil
+  "Corfu info frame auto display timer.")
 
-(defvar-local corfu-docframe--candidate nil
-  "Completion candidate for the doc popup.")
+(defvar-local corfu-infoframe--candidate nil
+  "Completion candidate for the info frame.")
 
-(defvar-local corfu-docframe--edges nil
+(defvar-local corfu-infoframe--edges nil
   "Coordinates of the corfu popup's edges.
 
 The coordinates list has the form (LEFT TOP RIGHT BOTTOM) where all
@@ -106,23 +106,23 @@ values are in pixels relative to the origin - the position (0, 0)
 relative to LEFT and TOP which are both zero.
 See `frame-edges' for details.")
 
-(defvar-local corfu-docframe--direction nil
-  "Position direction of the doc popup relative to the corfu popup.")
+(defvar-local corfu-infoframe--direction nil
+  "Position direction of the info frame relative to the corfu popup.")
 
-(defconst corfu-docframe--state-vars
-  '(corfu-docframe--candidate
-    corfu-docframe--edges
-    corfu-docframe--direction
-    corfu-docframe--toggle
-    corfu-docframe--function)
-  "Buffer-local state variables used by corfu-docframe.")
+(defconst corfu-infoframe--state-vars
+  '(corfu-infoframe--candidate
+    corfu-infoframe--edges
+    corfu-infoframe--direction
+    corfu-infoframe--toggle
+    corfu-infoframe--function)
+  "Buffer-local state variables used by corfu-infoframe.")
 
-(defun corfu-docframe--visible-p ()
-  "Determine whether the doc popup is visible."
-  (and (frame-live-p corfu-docframe--frame)
-       (frame-visible-p corfu-docframe--frame)))
+(defun corfu-infoframe--visible-p ()
+  "Determine whether the info frame is visible."
+  (and (frame-live-p corfu-infoframe--frame)
+       (frame-visible-p corfu-infoframe--frame)))
 
-(defun corfu-docframe--get-location (candidate)
+(defun corfu-infoframe--get-location (candidate)
   "Get source at location of CANDIDATE."
   (save-excursion
     (when-let* ((fun (plist-get corfu--extra :company-location))
@@ -137,13 +137,13 @@ See `frame-edges' for details.")
               (goto-char (point-min))
               (forward-line (1- (cdr loc))))
             (let ((beg (point)))
-              (forward-line (* 2 corfu-docframe-max-height))
+              (forward-line (* 2 corfu-infoframe-max-height))
               (when jit-lock-mode
                 (jit-lock-fontify-now beg (point)))
               (setq res (buffer-substring beg (point)))
               (and (not (string-blank-p res)) res))))))))
 
-(defun corfu-docframe--get-documentation (candidate)
+(defun corfu-infoframe--get-documentation (candidate)
   "Get the documentation for CANDIDATE."
   (when-let* ((fun (plist-get corfu--extra :company-doc-buffer))
               (res (save-excursion
@@ -157,20 +157,20 @@ See `frame-edges' for details.")
       (and (not (string-blank-p res)) res))))
 
 ;; TODO get rid of optional arguments?
-(defun corfu-docframe--size (&optional width height)
+(defun corfu-infoframe--size (&optional width height)
   "Calculate popup size in the form of (width height).
 
 If WIDTH and HEIGHT is speicified, just return (WIDTH HEIGHT)."
-  (let ((max-width (* (frame-char-width) corfu-docframe-max-width))
-        (max-height (* (default-line-height) corfu-docframe-max-height)))
+  (let ((max-width (* (frame-char-width) corfu-infoframe-max-width))
+        (max-height (* (default-line-height) corfu-infoframe-max-height)))
     (if (and width height)
         (list (min width max-width) (min height max-height))
       (pcase-let* ((`(,popup-width ,popup-height)
-                    (if (not corfu-docframe-resize)
+                    (if (not corfu-infoframe-resize)
                         (list (or width max-width) (or height max-height))
                       (pcase-let ((`(,win-width . ,win-height)
                                    (save-window-excursion
-                                     (with-current-buffer " *corfu-docframe*"
+                                     (with-current-buffer " *corfu-infoframe*"
                                        (set-window-dedicated-p nil nil)
                                        (set-window-buffer nil (current-buffer))
                                        (window-text-pixel-size nil (point-min) (point-max)
@@ -178,7 +178,7 @@ If WIDTH and HEIGHT is speicified, just return (WIDTH HEIGHT)."
                         (list (or width win-width) (or height win-height))))))
         (list (min popup-width max-width) (min popup-height max-height))))))
 
-(defun corfu-docframe--frame-geometry (frame)
+(defun corfu-infoframe--frame-geometry (frame)
   "Return position and size geometric attributes of FRAME.
 
 The geometry represents the position and size in pixels
@@ -186,20 +186,20 @@ in the form of (X Y WIDTH HEIGHT)."
   (pcase-let ((`(,x . ,y) (frame-position frame)))
     (list x y (frame-pixel-width frame) (frame-pixel-height frame))))
 
-(defun corfu-docframe--display-area-horizontal (width height)
-  "Calculate the horizontal display area for the doc popup.
+(defun corfu-infoframe--display-area-horizontal (width height)
+  "Calculate the horizontal display area for the info frame.
 
-The WIDTH and HEIGHT of the doc popup are in pixels.
+The WIDTH and HEIGHT of the info frame are in pixels.
 
 The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
-DIRECTION indicates the horizontal position direction of the doc popup
+DIRECTION indicates the horizontal position direction of the info frame
 relative to the corfu popup, its value can be 'right or 'left."
   (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
-               ;; space between candidates popup and doc popup
+               ;; space between candidates popup and info frame
                (space (- border))  ;; share the border
                (`(,_pfx ,_pfy ,pfw ,_pfh)
-                (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
-               (`(,cfx ,cfy ,cfw ,_cfh) (corfu-docframe--frame-geometry corfu--frame))
+                (corfu-infoframe--frame-geometry (frame-parent corfu--frame)))
+               (`(,cfx ,cfy ,cfw ,_cfh) (corfu-infoframe--frame-geometry corfu--frame))
                (x-on-right (+ cfx cfw space))
                (w-remaining-right (- pfw 1 x-on-right border border))
                (x-on-left (- cfx space pfw))
@@ -215,21 +215,21 @@ relative to the corfu popup, its value can be 'right or 'left."
      (t
       (list x-on-left cfy w-remaining-left height 'left)))))
 
-(defun corfu-docframe--display-area-vertical (width height)
-  "Calculate the vertical display area for the doc popup.
+(defun corfu-infoframe--display-area-vertical (width height)
+  "Calculate the vertical display area for the info frame.
 
-The WIDTH and HEIGHT of the doc popup are in pixels.
+The WIDTH and HEIGHT of the info frame are in pixels.
 
 The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
-DIRECTION indicates the vertical position direction of the doc popup
+DIRECTION indicates the vertical position direction of the info frame
 relative to the corfu popup, its value can be 'bottom or 'top."
   (pcase-let* ((a-y 0) (a-height height) (a-direction 'bottom)
                (border (alist-get 'child-frame-border-width corfu--frame-parameters))
                (space (- border))
                (lh (default-line-height))
                (`(,_pfx ,_pfy ,pfw ,pfh)
-                (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
-               (`(,cfx ,cfy ,_cfw ,cfh) (corfu-docframe--frame-geometry corfu--frame))
+                (corfu-infoframe--frame-geometry (frame-parent corfu--frame)))
+               (`(,cfx ,cfy ,_cfw ,cfh) (corfu-infoframe--frame-geometry corfu--frame))
                (cf-on-cursor-bottom-p
                 (>= cfy
                     (+ (cadr (window-inside-pixel-edges))
@@ -253,54 +253,54 @@ relative to the corfu popup, its value can be 'bottom or 'top."
       (setq a-y (max 0 (- cfy space border height border))))
     (list cfx a-y a-width a-height a-direction)))
 
-(defun corfu-docframe--display-area (direction width height)
-  "Calculate the display area for the doc popup.
+(defun corfu-infoframe--display-area (direction width height)
+  "Calculate the display area for the info frame.
 
 If DIRECTION is non-nil, the display area in the corresponding
 direction is calculated first, its value can be 'bottom,
 'top,'right or 'left.
 
-The pixel size of the doc popup can be specified by WIDTH and HEIGHT.
+The pixel size of the info frame can be specified by WIDTH and HEIGHT.
 
 The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
-DIRECTION indicates the position direction of the doc popup relative to
+DIRECTION indicates the position direction of the info frame relative to
 the corfu popup, its value is 'bottom, 'top, 'right or 'left."
   ;; TODO wrong
   (cond
    ((member direction '(right left))
-    (apply #'corfu-docframe--display-area-horizontal
-           (corfu-docframe--size)))
+    (apply #'corfu-infoframe--display-area-horizontal
+           (corfu-infoframe--size)))
    ((member direction '(bottom top))
-    (apply #'corfu-docframe--display-area-vertical
-           (corfu-docframe--size)))
+    (apply #'corfu-infoframe--display-area-vertical
+           (corfu-infoframe--size)))
    (t
     (pcase-let* ((`(,width ,height)  ;; popup inner width and height
-                  (corfu-docframe--size width height))
+                  (corfu-infoframe--size width height))
                  ((and h-a `(,_h-x ,_h-y ,h-w ,h-h ,_h-d))
-                  (corfu-docframe--display-area-horizontal width height))
+                  (corfu-infoframe--display-area-horizontal width height))
                  ((and v-a `(,_v-x ,_v-y ,v-w ,v-h ,_v-d))
-                  (corfu-docframe--display-area-vertical width height)))
+                  (corfu-infoframe--display-area-vertical width height)))
       (if (and (or (< h-h height) (< h-w width))
                (or (>= (* v-w v-h) (* h-w h-h))
                    (and (>= v-h height) (>= v-w width))))
           v-a h-a)))))
 
-(defun corfu-docframe--show (candidate)
-  "Show the doc popup for CANDIDATE."
-  (when corfu-docframe--auto-timer
-    (cancel-timer corfu-docframe--auto-timer)
-    (setq corfu-docframe--auto-timer nil))
+(defun corfu-infoframe--show (candidate)
+  "Show the info frame for CANDIDATE."
+  (when corfu-infoframe--auto-timer
+    (cancel-timer corfu-infoframe--auto-timer)
+    (setq corfu-infoframe--auto-timer nil))
   (when (and (corfu--popup-support-p)
              (frame-live-p corfu--frame)
              (frame-visible-p corfu--frame))
     (let* ((doc-changed
-            (not (and (corfu-docframe--visible-p)
-                      (equal candidate corfu-docframe--candidate))))
+            (not (and (corfu-infoframe--visible-p)
+                      (equal candidate corfu-infoframe--candidate))))
            (new-edges (frame-edges corfu--frame 'inner-edges))
-           (edges-changed (not (equal new-edges corfu-docframe--edges))))
+           (edges-changed (not (equal new-edges corfu-infoframe--edges))))
       (when doc-changed
-        (if-let (doc (funcall corfu-docframe--function candidate))
-            (with-current-buffer (corfu--make-buffer " *corfu-docframe*" doc)
+        (if-let (doc (funcall corfu-infoframe--function candidate))
+            (with-current-buffer (corfu--make-buffer " *corfu-infoframe*" doc)
               ;; TODO extract settings
               (setq-local line-move-visual t
                           truncate-partial-width-windows nil
@@ -310,117 +310,117 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
                           word-wrap t
                           fringe-indicator-alist '((continuation))
                           face-remapping-alist (copy-tree face-remapping-alist))
-              (setf (alist-get 'default face-remapping-alist) 'corfu-docframe))
-          (corfu-docframe--hide)
+              (setf (alist-get 'default face-remapping-alist) 'corfu-infoframe))
+          (corfu-infoframe--hide)
           (setq doc-changed nil edges-changed nil)))
       (when (or doc-changed edges-changed)
         (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
-                      (corfu-docframe--display-area
-                       corfu-docframe--direction
+                      (corfu-infoframe--display-area
+                       corfu-infoframe--direction
                        (and (not doc-changed)
-                            (- (frame-pixel-width corfu-docframe--frame) border border))
+                            (- (frame-pixel-width corfu-infoframe--frame) border border))
                        (and (not doc-changed)
-                            (- (frame-pixel-height corfu-docframe--frame) border border)))))
-          (setq corfu-docframe--frame
-                (corfu--make-frame corfu-docframe--frame
+                            (- (frame-pixel-height corfu-infoframe--frame) border border)))))
+          (setq corfu-infoframe--frame
+                (corfu--make-frame corfu-infoframe--frame
                                    area-x area-y area-w area-h
-                                   (get-buffer " *corfu-docframe*"))
-                corfu-docframe--direction area-d)))
-      (setq corfu-docframe--candidate candidate
-            corfu-docframe--edges new-edges))))
+                                   (get-buffer " *corfu-infoframe*"))
+                corfu-infoframe--direction area-d)))
+      (setq corfu-infoframe--candidate candidate
+            corfu-infoframe--edges new-edges))))
 
-(defun corfu-docframe--hide ()
-  "Clear the doc popup buffer content and hide it."
-  (corfu--hide-frame corfu-docframe--frame))
+(defun corfu-infoframe--hide ()
+  "Clear the info frame buffer content and hide it."
+  (corfu--hide-frame corfu-infoframe--frame))
 
-(defun corfu-docframe-scroll-up (&optional n)
-  "Scroll text of doc popup window upward N lines.
+(defun corfu-infoframe-scroll-up (&optional n)
+  "Scroll text of info frame window upward N lines.
 
 If ARG is omitted or nil, scroll upward by a near full screen.
 See `scroll-up' for details."
   (interactive "p")
-  (when (corfu-docframe--visible-p)
-    (with-selected-frame corfu-docframe--frame
-      (with-current-buffer (get-buffer " *corfu-docframe*")
+  (when (corfu-infoframe--visible-p)
+    (with-selected-frame corfu-infoframe--frame
+      (with-current-buffer (get-buffer " *corfu-infoframe*")
         (scroll-up n)))))
 
-(defun corfu-docframe-scroll-down (&optional n)
-  "Scroll text of doc popup window down N lines.
+(defun corfu-infoframe-scroll-down (&optional n)
+  "Scroll text of info frame window down N lines.
 
 If ARG is omitted or nil, scroll down by a near full screen."
   (interactive "p")
-  (corfu-docframe-scroll-up (- (or n 1))))
+  (corfu-infoframe-scroll-up (- (or n 1))))
 
-(defun corfu-docframe--set-function (fun)
+(defun corfu-infoframe--set-function (fun)
   "Set popup documentation getter FUN."
-  (setq corfu-docframe--function fun
-        corfu-docframe--candidate nil
-        corfu-docframe--toggle t)
+  (setq corfu-infoframe--function fun
+        corfu-infoframe--candidate nil
+        corfu-infoframe--toggle t)
   (when-let (candidate (and (>= corfu--index 0)
                             (nth corfu--index corfu--candidates)))
-    (corfu-docframe--show candidate)))
+    (corfu-infoframe--show candidate)))
 
-(defun corfu-docframe-documentation ()
+(defun corfu-infoframe-documentation ()
   "Show documentation in popup."
   (interactive)
-  (corfu-docframe--set-function #'corfu-docframe--get-documentation))
+  (corfu-infoframe--set-function #'corfu-infoframe--get-documentation))
 
-(defun corfu-docframe-location ()
+(defun corfu-infoframe-location ()
   "Show location in popup."
   (interactive)
-  (corfu-docframe--set-function #'corfu-docframe--get-location))
+  (corfu-infoframe--set-function #'corfu-infoframe--get-location))
 
-(defun corfu-docframe-toggle ()
-  "Toggle the doc popup display or hide.
+(defun corfu-infoframe-toggle ()
+  "Toggle the info frame display or hide.
 
-When using this command to manually hide the doc popup, it will
+When using this command to manually hide the info frame, it will
 not be displayed until this command is called again, even if
-`corfu-docframe-auto' is non-nil."
+`corfu-infoframe-auto' is non-nil."
   (interactive)
   (if-let ((candidate (and (>= corfu--index 0)
                           (nth corfu--index corfu--candidates)))
-           ((setq corfu-docframe--toggle (not (corfu-docframe--visible-p)))))
-      (corfu-docframe--show candidate)
-    (corfu-docframe--hide)))
+           ((setq corfu-infoframe--toggle (not (corfu-infoframe--visible-p)))))
+      (corfu-infoframe--show candidate)
+    (corfu-infoframe--hide)))
 
-(defun corfu-docframe--exhibit (&rest _)
-  "Update the doc frame."
+(defun corfu-infoframe--exhibit (&rest _)
+  "Update the info frame automatically."
   (if (and (frame-live-p corfu--frame)
            (frame-visible-p corfu--frame)
            (>= corfu--index 0))
-      (when (and corfu-docframe-auto corfu-docframe--toggle)
-        (when corfu-docframe--auto-timer
-          (cancel-timer corfu-docframe--auto-timer)
-          (setq corfu-docframe--auto-timer nil))
+      (when (and corfu-infoframe-auto corfu-infoframe--toggle)
+        (when corfu-infoframe--auto-timer
+          (cancel-timer corfu-infoframe--auto-timer)
+          (setq corfu-infoframe--auto-timer nil))
         (let ((candidate (nth corfu--index corfu--candidates)))
-          (if (or (= corfu-docframe-delay 0)
-                  (equal candidate corfu-docframe--candidate))
-              (corfu-docframe--show candidate)
-            (if corfu-docframe-hide
-                (corfu-docframe--hide)
-              (corfu-docframe--show corfu-docframe--candidate))
-            (setq corfu-docframe--auto-timer
-                  (run-at-time corfu-docframe-delay nil
-                               #'corfu-docframe--show candidate)))))
-    (corfu-docframe--hide)))
+          (if (or (= corfu-infoframe-delay 0)
+                  (equal candidate corfu-infoframe--candidate))
+              (corfu-infoframe--show candidate)
+            (if corfu-infoframe-hide
+                (corfu-infoframe--hide)
+              (corfu-infoframe--show corfu-infoframe--candidate))
+            (setq corfu-infoframe--auto-timer
+                  (run-at-time corfu-infoframe-delay nil
+                               #'corfu-infoframe--show candidate)))))
+    (corfu-infoframe--hide)))
 
 ;;;###autoload
-(define-minor-mode corfu-docframe-mode
-  "Corfu doc popup minor mode."
+(define-minor-mode corfu-infoframe-mode
+  "Corfu info frame minor mode."
   :global t :group 'corfu
   (cond
-   (corfu-docframe-mode
+   (corfu-infoframe-mode
     ;; TODO seq-union (Emacs 28, seq compatibility package?)
     (setq corfu--state-vars (seq-uniq (append corfu--state-vars
-                                              corfu-docframe--state-vars)))
-    (advice-add #'corfu--exhibit :after #'corfu-docframe--exhibit)
-    (advice-add #'corfu--teardown :before #'corfu-docframe--hide))
+                                              corfu-infoframe--state-vars)))
+    (advice-add #'corfu--exhibit :after #'corfu-infoframe--exhibit)
+    (advice-add #'corfu--teardown :before #'corfu-infoframe--hide))
    (t
     (setq corfu--state-vars (seq-difference corfu--state-vars
-                                            corfu-docframe--state-vars))
-    (advice-remove #'corfu--exhibit #'corfu-docframe--exhibit)
-    (advice-remove #'corfu--teardown #'corfu-docframe--hide))))
+                                            corfu-infoframe--state-vars))
+    (advice-remove #'corfu--exhibit #'corfu-infoframe--exhibit)
+    (advice-remove #'corfu--teardown #'corfu-infoframe--hide))))
 
-(provide 'corfu-docframe)
-;;; corfu-docframe.el ends here
+(provide 'corfu-infoframe)
+;;; corfu-infoframe.el ends here
