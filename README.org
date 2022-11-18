@@ -49,7 +49,7 @@ provides an alternative overlay-based display.
   arbitrary characters, after inserting a space via =M-SPC= (configurable via
   ~corfu-quit-at-boundary~ and ~corfu-separator~).
 - Deferred completion style highlighting for performance.
-- Support for candidate annotations and documentation in the echo area.
+- Support for candidate annotations (=annotation-function=, =affixation-function=).
 - Deprecated candidates are crossed out in the display.
 - Icons can be provided by an external package via margin formatter functions.
 - Rich set of extensions: Quick keys, Index keys, Sorting by history, Candidate
