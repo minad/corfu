@@ -126,18 +126,6 @@ separator: Only stay alive if there is no match and
   "Width of the bar in units of the character width."
   :type 'float)
 
-(defcustom corfu-echo-documentation '(1.0 . 0.2)
-  "Show documentation string in the echo area after that number of seconds.
-Set to nil to disable the echo message or to t for an instant message.
-The value can be a pair of two floats to specify initial and subsequent
-delay."
-  :type '(choice (const :tag "Never" nil)
-                 (const :tag "Instant" t)
-                 (number :tag "Delay in seconds")
-                 (cons :tag "Two Delays"
-                       (choice :tag "Initial   " number)
-                       (choice :tag "Subsequent" number))))
-
 (defcustom corfu-margin-formatters nil
   "Registry for margin formatter functions.
 Each function of the list is called with the completion metadata as
@@ -207,10 +195,6 @@ The completion backend can override this with
     (((class color) (min-colors 88) (background light)) :background "#d7d7d7")
     (t :background "gray"))
   "The background color used for the thin border.")
-
-(defface corfu-echo
-  '((t :inherit completions-annotations))
-  "Face used for echo area messages.")
 
 (defface corfu-annotations
   '((t :inherit completions-annotations))
@@ -285,12 +269,6 @@ The completion backend can override this with
 (defvar-local corfu--change-group nil
   "Undo change group.")
 
-(defvar-local corfu--echo-timer nil
-  "Echo area message timer.")
-
-(defvar-local corfu--echo-message nil
-  "Last echo message.")
-
 (defvar corfu--frame nil
   "Popup frame.")
 
@@ -305,8 +283,6 @@ The completion backend can override this with
     corfu--total
     corfu--preview-ov
     corfu--extra
-    corfu--echo-timer
-    corfu--echo-message
     corfu--change-group
     corfu--metadata)
   "Buffer-local state variables used by Corfu.")
@@ -830,40 +806,6 @@ there hasn't been any input, then quit."
     (overlay-put corfu--preview-ov 'window (selected-window))
     (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display) cand)))
 
-(defun corfu--echo-cancel (&optional msg)
-  "Cancel echo timer and refresh MSG to prevent flicker during redisplay."
-  (when corfu--echo-timer
-    (cancel-timer corfu--echo-timer)
-    (setq corfu--echo-timer nil))
-  (corfu--echo-show msg))
-
-(defun corfu--echo-show (msg)
-  "Show MSG in echo area."
-  (when (or msg corfu--echo-message)
-    (setq msg (or msg "")
-          corfu--echo-message msg)
-    (corfu--message "%s" (if (text-property-not-all 0 (length msg) 'face nil msg)
-                             msg
-                           (propertize msg 'face 'corfu-echo)))))
-
-(defun corfu--echo-documentation ()
-  "Show documentation string of current candidate in echo area."
-  (if-let* ((delay (if (consp corfu-echo-documentation)
-                       (funcall (if corfu--echo-message #'cdr #'car)
-                                corfu-echo-documentation)
-                     corfu-echo-documentation))
-            (fun (plist-get corfu--extra :company-docsig))
-            (cand (and (>= corfu--index 0)
-                       (nth corfu--index corfu--candidates))))
-      (if (or (eq delay t) (<= delay 0))
-          (corfu--echo-show (funcall fun cand))
-        (corfu--echo-cancel)
-        (setq corfu--echo-timer
-              (run-at-time delay nil
-                           (lambda ()
-                             (corfu--echo-show (funcall fun cand))))))
-    (corfu--echo-cancel)))
-
 (defun corfu--exhibit (&optional auto)
   "Exhibit Corfu UI.
 AUTO is non-nil when initializing auto completion."
@@ -883,7 +825,6 @@ AUTO is non-nil when initializing auto completion."
      (corfu--candidates
       (corfu--candidates-popup beg)
       (corfu--preview-current beg end)
-      (corfu--echo-documentation)
       (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
      ;; 3) No candidates & corfu-quit-no-match & initialized => Confirmation popup.
      ((pcase-exhaustive corfu-quit-no-match
@@ -900,7 +841,6 @@ AUTO is non-nil when initializing auto completion."
   (when corfu--preview-ov
     (delete-overlay corfu--preview-ov)
     (setq corfu--preview-ov nil))
-  (corfu--echo-cancel corfu--echo-message)
   ;; Ensure that state is initialized before next Corfu command
   (when (and (symbolp this-command) (string-prefix-p "corfu-" (symbol-name this-command)))
     (corfu--update))
@@ -1099,7 +1039,6 @@ Quit if no candidate is selected."
   (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
   (remove-hook 'post-command-hook #'corfu--post-command)
   (when corfu--preview-ov (delete-overlay corfu--preview-ov))
-  (corfu--echo-cancel)
   (accept-change-group corfu--change-group)
   (mapc #'kill-local-variable corfu--state-vars))
 

@@ -83,7 +83,6 @@ Here is an example configuration:
     ;; (corfu-preview-current nil)    ;; Disable current candidate preview
     ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
     ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-    ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
     ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
     ;; Enable Corfu only for certain modes.
@@ -446,6 +445,7 @@ be enabled manually if desired. Furthermore it is possible to install all of the
 files separately, both ~corfu.el~ and the ~corfu-*.el~ extensions. Currently the
 following extensions come with the Corfu ELPA package:
 
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-echo.el][corfu-echo]]: Display brief candidate documentation in the echo area.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-history.el][corfu-history]]: =corfu-history-mode= remembers selected candidates and sorts the
   candidates by their history position.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-indexed.el][corfu-indexed]]: =corfu-indexed-mode= allows you to select indexed candidates with
