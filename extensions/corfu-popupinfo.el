@@ -27,8 +27,8 @@
 ;;; Commentary:
 
 ;; NOTE: This extension has been added recently to Corfu. It is still
-;; experimental. The extension may get renamed and the public interface may
-;; change any time.
+;; experimental. The extension may get renamed and the public interface
+;; may change any time.
 ;;
 ;; Display a documentation popup for completion candidate when using
 ;; Corfu. The `corfu-popupinfo-mode' must be enabled globally. Set
@@ -180,27 +180,21 @@ See `frame-edges' for details.")
                  (buffer-string)))
       (and (not (string-blank-p res)) res))))
 
-;; TODO get rid of optional arguments?
-(defun corfu-popupinfo--size (&optional width height)
-  "Calculate popup size in the form of (width height).
-
-If WIDTH and HEIGHT is speicified, just return (WIDTH HEIGHT)."
+;; TODO return pair, not list?
+(defun corfu-popupinfo--size ()
+  "Calculate popup size in the form of (width height)."
   (let ((max-width (* (frame-char-width) corfu-popupinfo-max-width))
         (max-height (* (default-line-height) corfu-popupinfo-max-height)))
-    (if (and width height)
-        (list (min width max-width) (min height max-height))
-      (pcase-let* ((`(,popup-width ,popup-height)
-                    (if (not corfu-popupinfo-resize)
-                        (list (or width max-width) (or height max-height))
-                      (pcase-let ((`(,win-width . ,win-height)
-                                   (save-window-excursion
-                                     (with-current-buffer " *corfu-popupinfo*"
-                                       (set-window-dedicated-p nil nil)
-                                       (set-window-buffer nil (current-buffer))
-                                       (window-text-pixel-size nil (point-min) (point-max)
-                                                               (* 2 max-width) (* 2 max-height))))))
-                        (list (or width win-width) (or height win-height))))))
-        (list (min popup-width max-width) (min popup-height max-height))))))
+    (if corfu-popupinfo-resize
+        (pcase-let ((`(,width . ,height)
+                     (save-window-excursion
+                       (with-current-buffer " *corfu-popupinfo*"
+                         (set-window-dedicated-p nil nil)
+                         (set-window-buffer nil (current-buffer))
+                         (window-text-pixel-size nil (point-min) (point-max)
+                                                 (* 2 max-width) (* 2 max-height))))))
+          (list (min width max-width) (min height max-height)))
+      (list max-width max-height))))
 
 (defun corfu-popupinfo--frame-geometry (frame)
   "Return position and size geometric attributes of FRAME.
@@ -297,8 +291,10 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
     (apply #'corfu-popupinfo--display-area-vertical
            (corfu-popupinfo--size)))
    (t
-    (pcase-let* ((`(,width ,height)  ;; popup inner width and height
-                  (corfu-popupinfo--size width height))
+    (pcase-let* ((`(,width ,height)
+                  (if (and width height)
+                      (list width height)
+                    (corfu-popupinfo--size)))
                  ((and h-a `(,_h-x ,_h-y ,h-w ,h-h ,_h-d))
                   (corfu-popupinfo--display-area-horizontal width height))
                  ((and v-a `(,_v-x ,_v-y ,v-w ,v-h ,_v-d))
