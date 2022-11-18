@@ -1,4 +1,4 @@
-;;; corfu-docframe.el --- Documentation popup for Corfu -*- lexical-binding: t -*-
+;;; corfu-docframe.el --- Documentation popup frame for Corfu -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021-2022  Free Software Foundation, Inc.
 
@@ -6,7 +6,6 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
 ;; Version: 0.1
-;; Keywords: corfu popup documentation convenience
 ;; Package-Requires: ((emacs "27.1") (corfu "0.28"))
 ;; Homepage: https://github.com/minad/corfu
 
@@ -123,12 +122,13 @@ Returns nil if an error occurs or the documentation content is empty."
       (setq res (buffer-string)))
     (and (not (string-empty-p (string-trim res))) res)))
 
+;; TODO get rid of optional arguments?
 (defun corfu-docframe--size (&optional width height)
   "Calculate popup size in the form of (width height).
 
 If WIDTH and HEIGHT is speicified, just return (WIDTH HEIGHT)."
   (let ((max-width (* (frame-char-width) corfu-docframe-max-width))
-        (max-height (* (frame-char-height) corfu-docframe-max-height)))
+        (max-height (* (default-line-height) corfu-docframe-max-height)))
     (if (and width height)
         (list (min width max-width) (min height max-height))
       (pcase-let*
@@ -141,10 +141,8 @@ If WIDTH and HEIGHT is speicified, just return (WIDTH HEIGHT)."
                       (with-current-buffer " *corfu-docframe*"
                         (set-window-dedicated-p nil nil)
                         (set-window-buffer nil (current-buffer))
-                        (window-text-pixel-size
-                         nil (point-min) (point-max)
-                         (* (default-font-width) corfu-docframe-max-width)
-                         (* (default-line-height) corfu-docframe-max-height))))))
+                        (window-text-pixel-size nil (point-min) (point-max)
+                                                (* 2 max-width) (* 2 max-height))))))
                 (list (or width win-width) (or height win-height))))))
         (list (min popup-width max-width) (min popup-height max-height))))))
 
@@ -165,35 +163,26 @@ The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
 DIRECTION indicates the horizontal position direction of the doc popup
 relative to the corfu popup, its value can be 'right or 'left."
   (pcase-let*
-      ((a-x 0) (a-y 0) (a-width width) (a-height height) (a-direction 'right)
-       (border (alist-get 'child-frame-border-width corfu--frame-parameters))
+      ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
        ;; space between candidates popup and doc popup
        (space (- border))  ;; share the border
        (`(,_pfx ,_pfy ,pfw ,_pfh)
         (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
        (`(,cfx ,cfy ,cfw ,_cfh) (corfu-docframe--frame-geometry corfu--frame))
        (x-on-right (+ cfx cfw space))
-       ;; width remaining right
        (w-remaining-right (- pfw 1 x-on-right border border))
        (x-on-left (- cfx space pfw))
-       ;; width remaining left
        (w-remaining-left (- cfx space 1 border border)))
     (cond
      ((> w-remaining-right width)
-      (setq a-x x-on-right))
+      (list x-on-right cfy width height 'right))
      ((and (< w-remaining-right width)
            (> w-remaining-left width))
-      (setq a-x x-on-left
-            a-direction 'left))
+      (list x-on-left cfy width height 'left))
      ((>= w-remaining-right w-remaining-left)
-      (setq a-x x-on-right
-            a-width w-remaining-right))
+      (list x-on-right cfy w-remaining-right height 'right))
      (t
-      (setq a-x x-on-left
-            a-direction 'left
-            a-width w-remaining-left)))
-    (setq a-y cfy)
-    (list a-x a-y a-width a-height a-direction)))
+      (list x-on-left cfy w-remaining-left height 'left)))))
 
 (defun corfu-docframe--display-area-vertical (width height)
   "Calculate the vertical display area for the doc popup.
@@ -204,7 +193,7 @@ The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
 DIRECTION indicates the vertical position direction of the doc popup
 relative to the corfu popup, its value can be 'bottom or 'top."
   (pcase-let*
-      ((a-x 0) (a-y 0) (a-height height) (a-direction 'bottom)
+      ((a-y 0) (a-height height) (a-direction 'bottom)
        (border (alist-get 'child-frame-border-width corfu--frame-parameters))
        (space (- border))
        (lh (default-line-height))
@@ -222,6 +211,7 @@ relative to the corfu popup, its value can be 'bottom or 'top."
        (y-on-bottom (+ cfy cfh space))
        (h-remaining-bottom (- pfh y-on-bottom border border))
        (a-width (min width (- pfw cfx border border))))
+    ;; TODO cleanup, get rid of a-* variables
     (if cf-on-cursor-bottom-p
         (setq a-y y-on-bottom
               a-height (min h-remaining-bottom height))
@@ -231,8 +221,7 @@ relative to the corfu popup, its value can be 'bottom or 'top."
     (setq a-height (min a-height (* (floor (/ a-height lh)) lh)))
     (unless cf-on-cursor-bottom-p
       (setq a-y (max 0 (- cfy space border height border))))
-    (setq a-x cfx)
-    (list a-x a-y a-width a-height a-direction)))
+    (list cfx a-y a-width a-height a-direction)))
 
 (defun corfu-docframe--display-area (direction width height)
   "Calculate the display area for the doc popup.
@@ -255,19 +244,16 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
     (apply #'corfu-docframe--display-area-vertical
            (corfu-docframe--size)))
    (t
-    (pcase-let*
-        ((`(,width ,height)  ;; popup inner width and height
-          (corfu-docframe--size width height))
-         (`(,v-x ,v-y ,v-w ,v-h ,v-d)
-          (corfu-docframe--display-area-vertical width height)))
-      (if (and (>= v-h height) (>= v-w width))
-          (list v-x v-y v-w v-h v-d)
-        (pcase-let
-            ((`(,h-x ,h-y ,h-w ,h-h ,h-d)
-              (corfu-docframe--display-area-horizontal width height)))
-          (if (>= (* v-w v-h) (* h-w h-h))
-              (list v-x v-y v-w v-h v-d)
-            (list h-x h-y h-w h-h h-d))))))))
+    (pcase-let* ((`(,width ,height)  ;; popup inner width and height
+                  (corfu-docframe--size width height))
+                 ((and h-a `(,h-x ,h-y ,h-w ,h-h ,h-d))
+                  (corfu-docframe--display-area-horizontal width height))
+                 ((and v-a `(,v-x ,v-y ,v-w ,v-h ,v-d))
+                  (corfu-docframe--display-area-vertical width height)))
+      (if (and (or (< h-h height) (< h-w width))
+               (or (>= (* v-w v-h) (* h-w h-h))
+                   (and (>= v-h height) (>= v-w width))))
+          v-a h-a)))))
 
 (defun corfu-docframe--show ()
   "Show the doc popup."
