@@ -338,7 +338,7 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
           (setq corfu-popupinfo--frame
                 (corfu--make-frame corfu-popupinfo--frame
                                    area-x area-y area-w area-h
-                                   (get-buffer " *corfu-popupinfo*"))
+                                   " *corfu-popupinfo*")
                 corfu-popupinfo--direction area-d)))
       (setq corfu-popupinfo--candidate candidate
             corfu-popupinfo--edges new-edges))))
@@ -355,7 +355,7 @@ See `scroll-up' for details."
   (interactive "p")
   (when (corfu-popupinfo--visible-p)
     (with-selected-frame corfu-popupinfo--frame
-      (with-current-buffer (get-buffer " *corfu-popupinfo*")
+      (with-current-buffer " *corfu-popupinfo*"
         (scroll-up n)))))
 
 (defun corfu-popupinfo-scroll-down (&optional n)
