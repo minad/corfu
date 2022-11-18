@@ -135,17 +135,18 @@ all values are in pixels relative to the origin. See
     corfu-popupinfo--function)
   "Buffer-local state variables used by corfu-popupinfo.")
 
-(defun corfu-popupinfo--visible-p ()
-  "Determine whether the info popup is visible."
-  (and (frame-live-p corfu-popupinfo--frame)
-       (frame-visible-p corfu-popupinfo--frame)))
+(defun corfu-popupinfo--visible-p (&optional frame)
+  "Return non-nil if FRAME is visible."
+  (setq frame (or frame corfu-popupinfo--frame))
+  (and (frame-live-p frame) (frame-visible-p frame)))
 
 (defun corfu-popupinfo--get-location (candidate)
   "Get source at location of CANDIDATE."
   (save-excursion
     (when-let* ((fun (plist-get corfu--extra :company-location))
                 (loc (funcall fun candidate))
-                (res (or (and (bufferp (car loc)) (car loc)) (find-file-noselect (car loc) t))))
+                (res (or (and (bufferp (car loc)) (car loc))
+                         (find-file-noselect (car loc) t))))
       (with-current-buffer res
         (save-excursion
           (save-restriction
@@ -308,9 +309,7 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
   (when corfu-popupinfo--auto-timer
     (cancel-timer corfu-popupinfo--auto-timer)
     (setq corfu-popupinfo--auto-timer nil))
-  (when (and (corfu--popup-support-p)
-             (frame-live-p corfu--frame)
-             (frame-visible-p corfu--frame))
+  (when (and (corfu--popup-support-p) (corfu-popupinfo--visible-p corfu--frame))
     (let* ((doc-changed
             (not (and (corfu-popupinfo--visible-p)
                       (equal candidate corfu-popupinfo--candidate))))
@@ -400,9 +399,7 @@ not be displayed until this command is called again, even if
   "Update the info popup automatically."
   (add-to-list 'minor-mode-overriding-map-alist
                `(,#'corfu-popupinfo-mode . ,corfu-popupinfo-map))
-  (if (and (frame-live-p corfu--frame)
-           (frame-visible-p corfu--frame)
-           (>= corfu--index 0))
+  (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
       (when (and corfu-popupinfo-delay corfu-popupinfo--toggle)
         (when corfu-popupinfo--auto-timer
           (cancel-timer corfu-popupinfo--auto-timer)
