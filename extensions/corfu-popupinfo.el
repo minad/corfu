@@ -90,6 +90,16 @@
     map)
   "Additional keymap activated in popupinfo mode.")
 
+(defvar corfu-popupinfo--buffer-parameters
+  '((line-move-visual . t)
+    (truncate-partial-width-windows . nil)
+    (truncate-lines . nil)
+    (left-margin-width . 1)
+    (right-margin-width . 1)
+    (word-wrap . t)
+    (fringe-indicator-alist (continuation)))
+  "Buffer parameters.")
+
 (defvar-local corfu-popupinfo--toggle t
   "Local popupinfo toggle state.")
 
@@ -313,16 +323,10 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
       (when doc-changed
         (if-let (doc (funcall corfu-popupinfo--function candidate))
             (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*" doc)
-              ;; TODO extract settings
-              (setq-local line-move-visual t
-                          truncate-partial-width-windows nil
-                          left-margin-width 1
-                          right-margin-width 1
-                          truncate-lines nil
-                          word-wrap t
-                          fringe-indicator-alist '((continuation))
-                          face-remapping-alist (copy-tree face-remapping-alist))
-              (setf (alist-get 'default face-remapping-alist) 'corfu-popupinfo))
+              (dolist (var corfu-popupinfo--buffer-parameters)
+                (set (make-local-variable (car var)) (cdr var)))
+              (setf face-remapping-alist (copy-tree face-remapping-alist)
+                    (alist-get 'default face-remapping-alist) 'corfu-popupinfo))
           (corfu-popupinfo--hide)
           (setq doc-changed nil edges-changed nil)))
       (when (or doc-changed edges-changed)
