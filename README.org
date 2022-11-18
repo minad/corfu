@@ -53,7 +53,7 @@ provides an alternative overlay-based display.
 - Deprecated candidates are crossed out in the display.
 - Icons can be provided by an external package via margin formatter functions.
 - Rich set of extensions: Quick keys, Index keys, Sorting by history, Candidate
-  documentation in popup or separate buffer
+  documentation in echo area, popup or separate buffer
 
 * Installation and Configuration
 
@@ -445,7 +445,8 @@ be enabled manually if desired. Furthermore it is possible to install all of the
 files separately, both ~corfu.el~ and the ~corfu-*.el~ extensions. Currently the
 following extensions come with the Corfu ELPA package:
 
-- [[https://github.com/minad/corfu/blob/main/extensions/corfu-echo.el][corfu-echo]]: Display brief candidate documentation in the echo area.
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-echo.el][corfu-echo]]: =corfu-echo-mode= displays a brief candidate documentation in the
+  echo area.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-history.el][corfu-history]]: =corfu-history-mode= remembers selected candidates and sorts the
   candidates by their history position.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-indexed.el][corfu-indexed]]: =corfu-indexed-mode= allows you to select indexed candidates with
