@@ -1,0 +1,18 @@
+#+title: corfu.el - Changelog
+#+author: Daniel Mendler
+#+language: en
+
+* Development
+
+- Add =corfu-infoframe= extension to display candidate documentation and location
+  in a small child frame next to the candidate menu. This extension has been
+  contributed by Yuwei Tian who assigned copyright to the FSF. The extension
+  supersedes Yuwei's =corfu-doc= package.
+- Extract the =corfu-echo= extension from =corfu.el=. In order to see echo
+  messages, enable =corfu-echo-mode=. You probably want to enable either
+  =corfu-echo-mode= or =corfu-infoframe-mode=.
+- Rename =corfu-echo-documentation= to =corfu-echo-delay=.
+
+* Version 0.28 (2022-10-16)
+
+- Start of changelog.
