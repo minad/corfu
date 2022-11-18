@@ -110,6 +110,10 @@ See `frame-edges' for details.")
   (and (frame-live-p corfu-docframe--frame)
        (frame-visible-p corfu-docframe--frame)))
 
+(defun corfu-docframe--advice-help-buffer ()
+  "Advice `help-buffer' to return the name of a buffer for displaying docstring."
+  (buffer-name (get-buffer-create " *Corfu-doc*")))
+
 (defun corfu-docframe--get-doc (candidate)
   "Get the documentation for CANDIDATE.
 Returns nil if an error occurs or the documentation content is empty."
@@ -117,7 +121,9 @@ Returns nil if an error occurs or the documentation content is empty."
               (res (save-excursion
                      (let ((inhibit-message t)
                            (message-log-max nil))
-                       (funcall fun candidate)))))
+                       (cl-letf (((symbol-function 'help-buffer)
+                                  #'corfu-docframe--advice-help-buffer))
+                         (funcall fun candidate))))))
     (with-current-buffer (or (car-safe res) res)
       (setq res (buffer-string)))
     (and (not (string-empty-p (string-trim res))) res)))
