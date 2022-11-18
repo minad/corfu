@@ -32,11 +32,11 @@
 ;; Display a documentation popup for completion candidate when using
 ;; Corfu. The `corfu-infoframe-mode' must be enabled globally. Set
 ;; `corfu-infoframe-auto' if you want the documentation popup frame to
-;; be displayed automatically. For manual toggling the commands
-;; `corfu-infoframe-toggle', `corfu-infoframe-location' and
-;; `corfu-infoframe-documentation' are bound in the
-;; `corfu-infoframe-map'. `corfu-infoframe-toggle' to a key in
-;; `corfu-map'.
+;; be displayed automatically.
+
+;; For manual toggling the commands `corfu-infoframe-toggle',
+;; `corfu-infoframe-location' and `corfu-infoframe-documentation' are
+;; bound in the `corfu-infoframe-map'.
 
 ;;; Code:
 
