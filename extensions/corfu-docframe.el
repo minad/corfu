@@ -69,6 +69,16 @@
   :group 'corfu
   :type 'integer)
 
+(defcustom corfu-docframe-print-level 3
+  "Value for `print-level' while printing value in doc."
+  :group 'corfu
+  :type 'integer)
+
+(defcustom corfu-docframe-print-length 12
+  "Value for `print-length' while printing value in doc."
+  :group 'corfu
+  :type 'integer)
+
 (defcustom corfu-docframe-resize t
   "Resize the corfu doc popup automatically if non-nil."
   :group 'corfu
@@ -116,7 +126,9 @@ Returns nil if an error occurs or the documentation content is empty."
   (when-let* ((fun (plist-get corfu--extra :company-doc-buffer))
               (res (save-excursion
                      (let ((inhibit-message t)
-                           (message-log-max nil))
+                           (message-log-max nil)
+                           (print-level corfu-docframe-print-level)
+                           (print-length corfu-docframe-print-length))
                        (funcall fun candidate)))))
     (with-current-buffer (or (car-safe res) res)
       (setq res (buffer-string)))
