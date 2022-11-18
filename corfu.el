@@ -502,7 +502,7 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--hide-frame-deferred (frame)
   "Deferred hiding of child FRAME."
-  (when (frame-live-p frame)
+  (when (and (frame-live-p frame) (frame-visible-p frame))
     (set-frame-parameter frame 'corfu--hide-timer nil)
     (make-frame-invisible frame)
     (with-current-buffer (window-buffer (frame-root-window frame))
@@ -512,7 +512,7 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu--hide-frame (frame)
   "Hide child FRAME."
-  (when (and (frame-live-p frame)
+  (when (and (frame-live-p frame) (frame-visible-p frame)
              (not (frame-parameter frame 'corfu--hide-timer)))
     (set-frame-parameter frame 'corfu--hide-timer
                          (run-at-time 0 nil #'corfu--hide-frame-deferred frame))))
