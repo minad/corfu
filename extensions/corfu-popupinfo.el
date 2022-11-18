@@ -267,7 +267,7 @@ relative to the candidate popup, its value can be 'bottom or 'top."
             a-direction 'top))
     (setq a-height (min a-height (* (floor (/ a-height lh)) lh)))
     (unless cf-on-cursor-bottom-p
-      (setq a-y (max 0 (- cfy space border height border))))
+      (setq a-y (max 0 (- cfy space border a-height border))))
     (list cfx a-y a-width a-height a-direction)))
 
 (defun corfu-popupinfo--display-area (direction width height)
