@@ -251,51 +251,48 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
                    (and (>= v-h height) (>= v-w width))))
           v-a h-a)))))
 
-(defun corfu-docframe--show ()
-  "Show the doc popup."
+(defun corfu-docframe--show (candidate)
+  "Show the doc popup for CANDIDATE."
   (when corfu-docframe--auto-timer
     (cancel-timer corfu-docframe--auto-timer)
     (setq corfu-docframe--auto-timer nil))
   (when (and (corfu--popup-support-p)
              (frame-live-p corfu--frame)
              (frame-visible-p corfu--frame))
-    (if (< corfu--index 0)
-        (corfu-docframe--hide)
-      (let* ((candidate (nth corfu--index corfu--candidates))
-             (doc-changed
-              (not (and (corfu-docframe--visible-p)
-                        (equal candidate corfu-docframe--candidate))))
-             (new-edges (frame-edges corfu--frame 'inner-edges))
-             (edges-changed (not (equal new-edges corfu-docframe--edges))))
-        (when doc-changed
-          (if-let (doc (corfu-docframe--get-doc candidate))
-              (with-current-buffer (corfu--make-buffer " *corfu-docframe*" doc)
-                ;; TODO extract
-                (setq-local line-move-visual t
-                            truncate-partial-width-windows nil
-                            left-margin-width 1
-                            right-margin-width 1
-                            truncate-lines nil
-                            word-wrap t
-                            fringe-indicator-alist '((continuation))))
-            (corfu-docframe--hide)
-            (setq doc-changed nil edges-changed nil)))
-        (when (or doc-changed edges-changed)
-          (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
-                       (`(,area-x ,area-y ,area-w ,area-h ,area-d)
-                        (corfu-docframe--display-area
-                         corfu-docframe--direction
-                         (and (not doc-changed)
-                              (- (frame-pixel-width corfu-docframe--frame) border border))
-                         (and (not doc-changed)
-                              (- (frame-pixel-height corfu-docframe--frame) border border)))))
-            (setq corfu-docframe--frame
-                  (corfu--make-frame corfu-docframe--frame
-                                     area-x area-y area-w area-h
-                                     (get-buffer " *corfu-docframe*"))
-                  corfu-docframe--direction area-d)))
-        (setq corfu-docframe--candidate candidate
-              corfu-docframe--edges new-edges)))))
+    (let* ((doc-changed
+            (not (and (corfu-docframe--visible-p)
+                      (equal candidate corfu-docframe--candidate))))
+           (new-edges (frame-edges corfu--frame 'inner-edges))
+           (edges-changed (not (equal new-edges corfu-docframe--edges))))
+      (when doc-changed
+        (if-let (doc (corfu-docframe--get-doc candidate))
+            (with-current-buffer (corfu--make-buffer " *corfu-docframe*" doc)
+              ;; TODO extract
+              (setq-local line-move-visual t
+                          truncate-partial-width-windows nil
+                          left-margin-width 1
+                          right-margin-width 1
+                          truncate-lines nil
+                          word-wrap t
+                          fringe-indicator-alist '((continuation))))
+          (corfu-docframe--hide)
+          (setq doc-changed nil edges-changed nil)))
+      (when (or doc-changed edges-changed)
+        (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
+                     (`(,area-x ,area-y ,area-w ,area-h ,area-d)
+                      (corfu-docframe--display-area
+                       corfu-docframe--direction
+                       (and (not doc-changed)
+                            (- (frame-pixel-width corfu-docframe--frame) border border))
+                       (and (not doc-changed)
+                            (- (frame-pixel-height corfu-docframe--frame) border border)))))
+          (setq corfu-docframe--frame
+                (corfu--make-frame corfu-docframe--frame
+                                   area-x area-y area-w area-h
+                                   (get-buffer " *corfu-docframe*"))
+                corfu-docframe--direction area-d)))
+      (setq corfu-docframe--candidate candidate
+            corfu-docframe--edges new-edges))))
 
 (defun corfu-docframe--hide ()
   "Clear the doc popup buffer content and hide it."
@@ -326,8 +323,10 @@ When using this command to manually hide the doc popup, it will
 not be displayed until this command is called again, even if
 `corfu-docframe-auto' is non-nil."
   (interactive)
-  (if (setq corfu-docframe--toggle (not (corfu-docframe--visible-p)))
-      (corfu-docframe--show)
+  (if-let ((candidate (and (>= corfu--index 0)
+                          (nth corfu--index corfu--candidates)))
+           ((setq corfu-docframe--toggle (not (corfu-docframe--visible-p)))))
+      (corfu-docframe--show candidate)
     (corfu-docframe--hide)))
 
 (defun corfu-docframe--exhibit (&rest _)
@@ -339,14 +338,16 @@ not be displayed until this command is called again, even if
         (when corfu-docframe--auto-timer
           (cancel-timer corfu-docframe--auto-timer)
           (setq corfu-docframe--auto-timer nil))
-        (if (or (= corfu-docframe-delay 0)
-                (equal (nth corfu--index corfu--candidates)
-                       corfu-docframe--candidate))
-            (corfu-docframe--show)
-          (when corfu-docframe-hide
-            (corfu-docframe--hide))
-          (setq corfu-docframe--auto-timer
-                (run-at-time corfu-docframe-delay nil #'corfu-docframe--show))))
+        (let ((candidate (nth corfu--index corfu--candidates)))
+          (if (or (= corfu-docframe-delay 0)
+                  (equal candidate corfu-docframe--candidate))
+              (corfu-docframe--show candidate)
+            (if corfu-docframe-hide
+                (corfu-docframe--hide)
+              (corfu-docframe--show corfu-docframe--candidate))
+            (setq corfu-docframe--auto-timer
+                  (run-at-time corfu-docframe-delay nil
+                               #'corfu-docframe--show candidate)))))
     (corfu-docframe--hide)))
 
 ;;;###autoload
