@@ -157,7 +157,8 @@ See `frame-edges' for details.")
               (goto-char (point-min))
               (forward-line (1- (cdr loc))))
             (let ((beg (point)))
-              (forward-line (* 2 corfu-popupinfo-max-height))
+              ;; Support a little bit of scrolling.
+              (forward-line (* 10 corfu-popupinfo-max-height))
               (when jit-lock-mode
                 (jit-lock-fontify-now beg (point)))
               (setq res (buffer-substring beg (point)))
