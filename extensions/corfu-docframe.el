@@ -111,31 +111,17 @@ See `frame-edges' for details.")
   (and (frame-live-p corfu-docframe--frame)
        (frame-visible-p corfu-docframe--frame)))
 
-(defun corfu-docframe--get-doc ()
-  "Get the documentation for the current completion candidate.
-The documentation is trimmed. Returns nil if an error occurs or
-the documentation content is empty."
-  (when-let
-      ((doc
-        (cond
-         ((= corfu--total 0) nil)  ;; No candidates
-         ((< corfu--index 0) nil)  ;; No candidate selected
-         (t
-          (if-let*
-              ((fun (plist-get corfu--extra :company-doc-buffer))
-               (res
-                ;; fix showing candidate location
-                ;; when fetch helpful documentation
-                (save-excursion
-                  (let ((inhibit-message t)
-                        (message-log-max nil))
-                    (funcall fun (nth corfu--index corfu--candidates))))))
-              (let ((buf (or (car-safe res) res)))
-                (with-current-buffer buf
-                  (buffer-string)))
-            nil)))))  ;; No documentation available
-    (unless (string-empty-p (string-trim doc))
-      doc)))
+(defun corfu-docframe--get-doc (candidate)
+  "Get the documentation for CANDIDATE.
+Returns nil if an error occurs or the documentation content is empty."
+  (when-let* ((fun (plist-get corfu--extra :company-doc-buffer))
+              (res (save-excursion
+                     (let ((inhibit-message t)
+                           (message-log-max nil))
+                       (funcall fun candidate)))))
+    (with-current-buffer (or (car-safe res) res)
+      (setq res (buffer-string)))
+    (and (not (string-empty-p (string-trim res))) res)))
 
 (defun corfu-docframe--size (&optional width height)
   "Calculate popup size in the form of (width height).
@@ -300,10 +286,8 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
              (new-edges (frame-edges corfu--frame 'inner-edges))
              (edges-changed (not (equal new-edges corfu-docframe--edges))))
         (when doc-changed
-          (if-let (doc (corfu-docframe--get-doc))
-              ;; turn on word wrap and hide fringe indicators
-              (with-current-buffer
-                  (corfu--make-buffer " *corfu-docframe*" doc)
+          (if-let (doc (corfu-docframe--get-doc candidate))
+              (with-current-buffer (corfu--make-buffer " *corfu-docframe*" doc)
                 ;; TODO extract
                 (setq-local line-move-visual t
                             truncate-partial-width-windows nil
