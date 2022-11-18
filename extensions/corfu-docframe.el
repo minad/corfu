@@ -131,19 +131,17 @@ If WIDTH and HEIGHT is speicified, just return (WIDTH HEIGHT)."
         (max-height (* (default-line-height) corfu-docframe-max-height)))
     (if (and width height)
         (list (min width max-width) (min height max-height))
-      (pcase-let*
-          ((`(,popup-width ,popup-height)
-            (if (not corfu-docframe-resize)
-                (list (or width max-width) (or height max-height))
-              (pcase-let
-                  ((`(,win-width . ,win-height)
-                    (save-window-excursion
-                      (with-current-buffer " *corfu-docframe*"
-                        (set-window-dedicated-p nil nil)
-                        (set-window-buffer nil (current-buffer))
-                        (window-text-pixel-size nil (point-min) (point-max)
-                                                (* 2 max-width) (* 2 max-height))))))
-                (list (or width win-width) (or height win-height))))))
+      (pcase-let* ((`(,popup-width ,popup-height)
+                    (if (not corfu-docframe-resize)
+                        (list (or width max-width) (or height max-height))
+                      (pcase-let ((`(,win-width . ,win-height)
+                                   (save-window-excursion
+                                     (with-current-buffer " *corfu-docframe*"
+                                       (set-window-dedicated-p nil nil)
+                                       (set-window-buffer nil (current-buffer))
+                                       (window-text-pixel-size nil (point-min) (point-max)
+                                                               (* 2 max-width) (* 2 max-height))))))
+                        (list (or width win-width) (or height win-height))))))
         (list (min popup-width max-width) (min popup-height max-height))))))
 
 (defun corfu-docframe--frame-geometry (frame)
@@ -162,17 +160,16 @@ The WIDTH and HEIGHT of the doc popup are in pixels.
 The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
 DIRECTION indicates the horizontal position direction of the doc popup
 relative to the corfu popup, its value can be 'right or 'left."
-  (pcase-let*
-      ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
-       ;; space between candidates popup and doc popup
-       (space (- border))  ;; share the border
-       (`(,_pfx ,_pfy ,pfw ,_pfh)
-        (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
-       (`(,cfx ,cfy ,cfw ,_cfh) (corfu-docframe--frame-geometry corfu--frame))
-       (x-on-right (+ cfx cfw space))
-       (w-remaining-right (- pfw 1 x-on-right border border))
-       (x-on-left (- cfx space pfw))
-       (w-remaining-left (- cfx space 1 border border)))
+  (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
+               ;; space between candidates popup and doc popup
+               (space (- border))  ;; share the border
+               (`(,_pfx ,_pfy ,pfw ,_pfh)
+                (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
+               (`(,cfx ,cfy ,cfw ,_cfh) (corfu-docframe--frame-geometry corfu--frame))
+               (x-on-right (+ cfx cfw space))
+               (w-remaining-right (- pfw 1 x-on-right border border))
+               (x-on-left (- cfx space pfw))
+               (w-remaining-left (- cfx space 1 border border)))
     (cond
      ((> w-remaining-right width)
       (list x-on-right cfy width height 'right))
@@ -192,25 +189,24 @@ The WIDTH and HEIGHT of the doc popup are in pixels.
 The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
 DIRECTION indicates the vertical position direction of the doc popup
 relative to the corfu popup, its value can be 'bottom or 'top."
-  (pcase-let*
-      ((a-y 0) (a-height height) (a-direction 'bottom)
-       (border (alist-get 'child-frame-border-width corfu--frame-parameters))
-       (space (- border))
-       (lh (default-line-height))
-       (`(,_pfx ,_pfy ,pfw ,pfh)
-        (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
-       (`(,cfx ,cfy ,_cfw ,cfh) (corfu-docframe--frame-geometry corfu--frame))
-       (cf-on-cursor-bottom-p
-        (>= cfy
-            (+ (cadr (window-inside-pixel-edges))
-               (window-tab-line-height)
-               (or (cdr (posn-x-y (posn-at-point (point)))) 0)
-               lh)))
-       (y-on-top (max 0 (- cfy space border height border)))
-       (h-remaining-top (- cfy border border))
-       (y-on-bottom (+ cfy cfh space))
-       (h-remaining-bottom (- pfh y-on-bottom border border))
-       (a-width (min width (- pfw cfx border border))))
+  (pcase-let* ((a-y 0) (a-height height) (a-direction 'bottom)
+               (border (alist-get 'child-frame-border-width corfu--frame-parameters))
+               (space (- border))
+               (lh (default-line-height))
+               (`(,_pfx ,_pfy ,pfw ,pfh)
+                (corfu-docframe--frame-geometry (frame-parent corfu--frame)))
+               (`(,cfx ,cfy ,_cfw ,cfh) (corfu-docframe--frame-geometry corfu--frame))
+               (cf-on-cursor-bottom-p
+                (>= cfy
+                    (+ (cadr (window-inside-pixel-edges))
+                       (window-tab-line-height)
+                       (or (cdr (posn-x-y (posn-at-point (point)))) 0)
+                       lh)))
+               (y-on-top (max 0 (- cfy space border height border)))
+               (h-remaining-top (- cfy border border))
+               (y-on-bottom (+ cfy cfh space))
+               (h-remaining-bottom (- pfh y-on-bottom border border))
+               (a-width (min width (- pfw cfx border border))))
     ;; TODO cleanup, get rid of a-* variables
     (if cf-on-cursor-bottom-p
         (setq a-y y-on-bottom
@@ -285,15 +281,14 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
             (corfu-docframe--hide)
             (setq doc-changed nil edges-changed nil)))
         (when (or doc-changed edges-changed)
-          (pcase-let*
-              ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
-               (`(,area-x ,area-y ,area-w ,area-h ,area-d)
-                (corfu-docframe--display-area
-                 corfu-docframe--direction
-                 (and (not doc-changed)
-                      (- (frame-pixel-width corfu-docframe--frame) border border))
-                 (and (not doc-changed)
-                      (- (frame-pixel-height corfu-docframe--frame) border border)))))
+          (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
+                       (`(,area-x ,area-y ,area-w ,area-h ,area-d)
+                        (corfu-docframe--display-area
+                         corfu-docframe--direction
+                         (and (not doc-changed)
+                              (- (frame-pixel-width corfu-docframe--frame) border border))
+                         (and (not doc-changed)
+                              (- (frame-pixel-height corfu-docframe--frame) border border)))))
             (setq corfu-docframe--frame
                   (corfu--make-frame corfu-docframe--frame
                                      area-x area-y area-w area-h
