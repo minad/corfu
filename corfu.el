@@ -388,9 +388,9 @@ The completion backend can override this with
 
 ;; Function adapted from posframe.el by tumashu
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
-(defun corfu--make-frame (frame params x y width height buffer)
+(defun corfu--make-frame (frame x y width height buffer)
   "Show BUFFER in child frame at X/Y with WIDTH/HEIGHT.
-PARAMS are frame parameters and FRAME is the existing frame."
+FRAME is the existing frame."
   (when-let (timer (and (frame-live-p frame)
                         (frame-parameter frame 'corfu--hide-timer)))
     (cancel-timer timer)
@@ -418,8 +418,9 @@ PARAMS are frame parameters and FRAME is the existing frame."
                    `((parent-frame . ,parent)
                      (minibuffer . ,(minibuffer-window parent))
                      ;; Set `internal-border-width' for Emacs 27
-                     (internal-border-width . ,(alist-get 'child-frame-border-width params))
-                     ,@params))))
+                     (internal-border-width
+                      . ,(alist-get 'child-frame-border-width corfu--frame-parameters))
+                     ,@corfu--frame-parameters))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
     ;; on Mac. We have to apply the face background before adjusting the frame
@@ -429,8 +430,6 @@ PARAMS are frame parameters and FRAME is the existing frame."
       (unless (equal (face-attribute face :background frame 'default) new)
         (set-face-background face new frame)))
     (let ((new (face-attribute 'corfu-default :background nil 'default)))
-      (unless (equal (face-attribute 'fringe :background frame 'default) new)
-        (set-face-background 'fringe new frame))
       (unless (equal (frame-parameter frame 'background-color) new)
         (set-frame-parameter frame 'background-color new)))
     (let ((win (frame-root-window frame)))
@@ -486,7 +485,7 @@ A scroll bar is displayed from LO to LO+BAR."
          (row 0))
     (setq corfu--frame
           (corfu--make-frame
-           corfu--frame corfu--frame-parameters x y width height
+           corfu--frame x y width height
            (corfu--make-buffer
             " *corfu*"
             (mapconcat (lambda (line)
