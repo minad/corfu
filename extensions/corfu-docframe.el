@@ -82,6 +82,10 @@
 (defvar-local corfu-docframe--toggle t
   "Local docframe toggle state.")
 
+(defvar-local corfu-docframe--function
+  #'corfu-docframe--documentation
+  "Documentation function.")
+
 (defvar corfu-docframe--frame nil
   "Doc frame.")
 
@@ -107,7 +111,8 @@ See `frame-edges' for details.")
   '(corfu-docframe--candidate
     corfu-docframe--edges
     corfu-docframe--direction
-    corfu-docframe--toggle)
+    corfu-docframe--toggle
+    corfu-docframe--function)
   "Buffer-local state variables used by corfu-docframe.")
 
 (defun corfu-docframe--visible-p ()
@@ -115,7 +120,23 @@ See `frame-edges' for details.")
   (and (frame-live-p corfu-docframe--frame)
        (frame-visible-p corfu-docframe--frame)))
 
-(defun corfu-docframe--get-doc (candidate)
+(defun corfu-docframe--get-source (candidate)
+    (when-let* ((fun (plist-get corfu--extra :company-location))
+                (loc (funcall fun candidate))
+                (res (or (and (bufferp (car loc)) (car loc)) (find-file-noselect (car loc) t))))
+      (save-window-excursion
+        (with-current-buffer res
+          (save-excursion
+            (save-restriction
+              (widen)
+              (if (bufferp (car loc))
+                  (goto-char (cdr loc))
+                (goto-char (point-min))
+                (forward-line (1- (cdr loc))))
+              (setq res (buffer-substring (point) (point-max)))
+              (and (not (string-blank-p res)) res)))))))
+
+(defun corfu-docframe--get-documentation (candidate)
   "Get the documentation for CANDIDATE.
 Returns nil if an error occurs or the documentation content is empty."
   (when-let* ((fun (plist-get corfu--extra :company-doc-buffer))
@@ -272,7 +293,7 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
            (new-edges (frame-edges corfu--frame 'inner-edges))
            (edges-changed (not (equal new-edges corfu-docframe--edges))))
       (when doc-changed
-        (if-let (doc (corfu-docframe--get-doc candidate))
+        (if-let (doc (corfu-docframe--get-source candidate))
             (with-current-buffer (corfu--make-buffer " *corfu-docframe*" doc)
               ;; TODO extract settings
               (setq-local line-move-visual t
@@ -324,6 +345,12 @@ See `scroll-up' for details."
 If ARG is omitted or nil, scroll down by a near full screen."
   (interactive "p")
   (corfu-docframe-scroll-up (- (or n 1))))
+
+(defun corfu-docframe-show-location ()
+  (setq corfu-docframe--function #'corfu-)
+  (when-let (candidate (and (>= corfu--index 0)
+                            (nth corfu--index corfu--candidates)))
+    (corfu-docframe--show candidate)))
 
 (defun corfu-docframe-toggle ()
   "Toggle the doc popup display or hide.
