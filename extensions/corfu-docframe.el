@@ -119,8 +119,10 @@ Returns nil if an error occurs or the documentation content is empty."
                            (message-log-max nil))
                        (funcall fun candidate)))))
     (with-current-buffer (or (car-safe res) res)
-      (setq res (buffer-string)))
-    (and (not (string-empty-p (string-trim res))) res)))
+      (setq res (replace-regexp-in-string
+                 "[\\s-\n]*\\[back\\][\\s-\n]*" ""
+                 (buffer-string))
+      (and (not (string-blank-p res)) res))))
 
 ;; TODO get rid of optional arguments?
 (defun corfu-docframe--size (&optional width height)
