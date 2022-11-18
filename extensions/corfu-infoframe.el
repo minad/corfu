@@ -85,6 +85,8 @@
     (define-key map "\M-d" #'corfu-infoframe-documentation)
     (define-key map "\M-l" #'corfu-infoframe-location)
     (define-key map "\M-t" #'corfu-infoframe-toggle)
+    (define-key map [remap scroll-other-window] #'corfu-infoframe-scroll-up)
+    (define-key map [remap scroll-other-window-down] #'corfu-infoframe-scroll-down)
     map)
   "Additional keymap activated in infoframe mode.")
 
