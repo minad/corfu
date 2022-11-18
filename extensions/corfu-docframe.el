@@ -43,6 +43,11 @@
 (eval-when-compile
   (require 'subr-x))
 
+(defface corfu-docframe
+  '((t :inherit corfu-default :height 0.8))
+  "Face used for the doc frame."
+  :group 'corfu-faces)
+
 (defcustom corfu-docframe-auto t
   "Display documentation popup automatically."
   :group 'corfu
@@ -59,7 +64,7 @@
   :group 'corfu
   :type 'boolean)
 
-(defcustom corfu-docframe-max-width 80
+(defcustom corfu-docframe-max-width 50
   "The max width of the corfu doc popup in characters."
   :group 'corfu
   :type 'integer)
@@ -121,7 +126,7 @@ Returns nil if an error occurs or the documentation content is empty."
     (with-current-buffer (or (car-safe res) res)
       (setq res (replace-regexp-in-string
                  "[\\s-\n]*\\[back\\][\\s-\n]*" ""
-                 (buffer-string))
+                 (buffer-string)))
       (and (not (string-blank-p res)) res))))
 
 ;; TODO get rid of optional arguments?
@@ -269,14 +274,16 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
       (when doc-changed
         (if-let (doc (corfu-docframe--get-doc candidate))
             (with-current-buffer (corfu--make-buffer " *corfu-docframe*" doc)
-              ;; TODO extract
+              ;; TODO extract settings
               (setq-local line-move-visual t
                           truncate-partial-width-windows nil
                           left-margin-width 1
                           right-margin-width 1
                           truncate-lines nil
                           word-wrap t
-                          fringe-indicator-alist '((continuation))))
+                          fringe-indicator-alist '((continuation))
+                          face-remapping-alist (copy-tree face-remapping-alist))
+              (setf (alist-get 'default face-remapping-alist) 'corfu-docframe))
           (corfu-docframe--hide)
           (setq doc-changed nil edges-changed nil)))
       (when (or doc-changed edges-changed)
