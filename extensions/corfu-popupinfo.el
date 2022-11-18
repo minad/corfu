@@ -207,8 +207,8 @@ in the form of (X Y WIDTH HEIGHT)."
   "Calculate the horizontal display area for the info popup.
 
 The WIDTH and HEIGHT of the info popup are in pixels.
-The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
-DIRECTION indicates the horizontal position direction of the info popup
+The calculated area is in the form (X Y WIDTH HEIGHT DIR).
+DIR indicates the horizontal position direction of the info popup
 relative to the candidate popup, its value can be 'right or 'left."
   (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                ;; space between candidates popup and info popup
@@ -236,8 +236,8 @@ relative to the candidate popup, its value can be 'right or 'left."
 
 The WIDTH and HEIGHT of the info popup are in pixels.
 
-The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
-DIRECTION indicates the vertical position direction of the info popup
+The calculated area is in the form (X Y WIDTH HEIGHT DIR).
+DIR indicates the vertical position direction of the info popup
 relative to the candidate popup, its value can be 'bottom or 'top."
   (pcase-let* ((a-y 0) (a-height height) (a-direction 'bottom)
                (border (alist-get 'child-frame-border-width corfu--frame-parameters))
@@ -269,24 +269,25 @@ relative to the candidate popup, its value can be 'bottom or 'top."
       (setq a-y (max 0 (- cfy space border a-height border))))
     (list cfx a-y a-width a-height a-direction)))
 
-(defun corfu-popupinfo--display-area (direction width height)
+(defun corfu-popupinfo--display-area (dir width height)
   "Calculate the display area for the info popup.
 
-If DIRECTION is non-nil, the display area in the corresponding
+If DIR is non-nil, the display area in the corresponding
 direction is calculated first, its value can be 'bottom,
 'top,'right or 'left.
 
 The pixel size of the info popup can be specified by WIDTH and HEIGHT.
 
-The calculated area is in the form (X Y WIDTH HEIGHT DIRECTION).
-DIRECTION indicates the position direction of the info popup relative to
+The calculated area is in the form (X Y WIDTH HEIGHT DIR).
+DIR indicates the position direction of the info popup relative to
 the candidate popup, its value is 'bottom, 'top, 'right or 'left."
-  ;; TODO wrong
+  ;; TODO Direction handling is incomplete. Fix not only horizontal/vertical,
+  ;; but left/right/bottom/top.
   (cond
-   ((member direction '(right left))
+   ((memq dir '(right left))
     (let ((size (corfu-popupinfo--size)))
       (corfu-popupinfo--display-area-horizontal (car size) (cdr size))))
-   ((member direction '(bottom top))
+   ((memq dir '(bottom top))
     (let ((size (corfu-popupinfo--size)))
       (corfu-popupinfo--display-area-vertical (car size) (cdr size))))
    (t
