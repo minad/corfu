@@ -117,21 +117,18 @@
 (defvar-local corfu-popupinfo--candidate nil
   "Completion candidate for the info popup.")
 
-(defvar-local corfu-popupinfo--edges nil
-  "Coordinates of the candidate popup edges.
-
-The coordinates list has the form (LEFT TOP RIGHT BOTTOM) where all
-values are in pixels relative to the origin - the position (0, 0)
-- of FRAME's display.  For terminal frames all values are
-relative to LEFT and TOP which are both zero.
-See `frame-edges' for details.")
+(defvar-local corfu-popupinfo--coordinates nil
+  "Coordinates of the candidate popup.
+The coordinates list has the form (LEFT TOP RIGHT BOTTOM) where
+all values are in pixels relative to the origin. See
+`frame-edges' for details.")
 
 (defvar-local corfu-popupinfo--direction nil
   "Position direction of the info popup relative to the candidate popup.")
 
 (defconst corfu-popupinfo--state-vars
   '(corfu-popupinfo--candidate
-    corfu-popupinfo--edges
+    corfu-popupinfo--coordinates
     corfu-popupinfo--direction
     corfu-popupinfo--toggle
     corfu-popupinfo--function)
@@ -316,8 +313,8 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
     (let* ((doc-changed
             (not (and (corfu-popupinfo--visible-p)
                       (equal candidate corfu-popupinfo--candidate))))
-           (new-edges (frame-edges corfu--frame 'inner-edges))
-           (edges-changed (not (equal new-edges corfu-popupinfo--edges))))
+           (new-coords (frame-edges corfu--frame 'inner-edges))
+           (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
       (when doc-changed
         (if-let (doc (funcall corfu-popupinfo--function candidate))
             (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*" doc)
@@ -326,8 +323,8 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
               (setf face-remapping-alist (copy-tree face-remapping-alist)
                     (alist-get 'default face-remapping-alist) 'corfu-popupinfo))
           (corfu-popupinfo--hide)
-          (setq doc-changed nil edges-changed nil)))
-      (when (or doc-changed edges-changed)
+          (setq doc-changed nil coords-changed nil)))
+      (when (or doc-changed coords-changed)
         (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
                       (corfu-popupinfo--display-area
@@ -340,9 +337,9 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
                 (corfu--make-frame corfu-popupinfo--frame
                                    area-x area-y area-w area-h
                                    " *corfu-popupinfo*")
-                corfu-popupinfo--direction area-d)))
-      (setq corfu-popupinfo--candidate candidate
-            corfu-popupinfo--edges new-edges))))
+                corfu-popupinfo--direction area-d
+                corfu-popupinfo--candidate candidate
+                corfu-popupinfo--coordinates new-coords))))))
 
 (defun corfu-popupinfo--hide ()
   "Clear the info popup buffer content and hide it."
