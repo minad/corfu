@@ -32,12 +32,11 @@
 ;; Display a documentation popup for completion candidate when using
 ;; Corfu. The `corfu-infoframe-mode' must be enabled globally. Set
 ;; `corfu-infoframe-auto' if you want the documentation popup frame to
-;; be displayed automatically. If you prefer manual toggling bind
-;; `corfu-infoframe-toggle' to a key in `corfu-map':
-;;
-;; (define-key corfu-map "\M-d" #'corfu-infoframe-toggle)
-;; (define-key corfu-map "\M-g" #'corfu-infoframe-location)
-;; (define-key corfu-map "\M-h" #'corfu-infoframe-documentation)
+;; be displayed automatically. For manual toggling the commands
+;; `corfu-infoframe-toggle', `corfu-infoframe-location' and
+;; `corfu-infoframe-documentation' are bound in the
+;; `corfu-infoframe-map'. `corfu-infoframe-toggle' to a key in
+;; `corfu-map'.
 
 ;;; Code:
 
@@ -80,6 +79,14 @@
   "Resize the info frame automatically if non-nil."
   :group 'corfu
   :type 'boolean)
+
+(defvar corfu-infoframe-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\M-d" #'corfu-infoframe-documentation)
+    (define-key map "\M-l" #'corfu-infoframe-location)
+    (define-key map "\M-t" #'corfu-infoframe-toggle)
+    map)
+  "Additional keymap activated in infoframe mode.")
 
 (defvar-local corfu-infoframe--toggle t
   "Local infoframe toggle state.")
@@ -386,6 +393,8 @@ not be displayed until this command is called again, even if
 
 (defun corfu-infoframe--exhibit (&rest _)
   "Update the info frame automatically."
+  (add-to-list 'minor-mode-overriding-map-alist
+               `(,#'corfu-infoframe-mode . ,corfu-infoframe-map))
   (if (and (frame-live-p corfu--frame)
            (frame-visible-p corfu--frame)
            (>= corfu--index 0))
@@ -405,22 +414,25 @@ not be displayed until this command is called again, even if
                                #'corfu-infoframe--show candidate)))))
     (corfu-infoframe--hide)))
 
+(defun corfu-infoframe--teardown ()
+  "Teardown the info frame state."
+  (corfu-infoframe--hide)
+  (mapc #'kill-local-variable corfu-infoframe--state-vars)
+  (setq minor-mode-overriding-map-alist
+        (assq-delete-all #'corfu-infoframe-mode
+                         minor-mode-overriding-map-alist)))
+
 ;;;###autoload
 (define-minor-mode corfu-infoframe-mode
   "Corfu info frame minor mode."
   :global t :group 'corfu
   (cond
    (corfu-infoframe-mode
-    ;; TODO seq-union (Emacs 28, seq compatibility package?)
-    (setq corfu--state-vars (seq-uniq (append corfu--state-vars
-                                              corfu-infoframe--state-vars)))
     (advice-add #'corfu--exhibit :after #'corfu-infoframe--exhibit)
-    (advice-add #'corfu--teardown :before #'corfu-infoframe--hide))
+    (advice-add #'corfu--teardown :before #'corfu-infoframe--teardown))
    (t
-    (setq corfu--state-vars (seq-difference corfu--state-vars
-                                            corfu-infoframe--state-vars))
     (advice-remove #'corfu--exhibit #'corfu-infoframe--exhibit)
-    (advice-remove #'corfu--teardown #'corfu-infoframe--hide))))
+    (advice-remove #'corfu--teardown #'corfu-infoframe--teardown))))
 
 (provide 'corfu-infoframe)
 ;;; corfu-infoframe.el ends here
