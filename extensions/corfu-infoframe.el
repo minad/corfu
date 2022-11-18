@@ -215,7 +215,7 @@ relative to the corfu popup, its value can be 'right or 'left."
                (`(,cfx ,cfy ,cfw ,_cfh) (corfu-infoframe--frame-geometry corfu--frame))
                (x-on-right (+ cfx cfw space))
                (w-remaining-right (- pfw 1 x-on-right border border))
-               (x-on-left (- cfx space pfw))
+               (x-on-left (- cfx space border width border))
                (w-remaining-left (- cfx space 1 border border)))
     (cond
      ((> w-remaining-right width)
