@@ -52,7 +52,8 @@ provides an alternative overlay-based display.
 - Support for candidate annotations and documentation in the echo area.
 - Deprecated candidates are crossed out in the display.
 - Icons can be provided by an external package via margin formatter functions.
-- Extensions: Quick keys, Index keys, Sorting by history, Candidate documentation
+- Rich set of extensions: Quick keys, Index keys, Sorting by history, Candidate
+  documentation in popup or separate buffer
 
 * Installation and Configuration
 
