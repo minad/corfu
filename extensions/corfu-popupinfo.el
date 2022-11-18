@@ -180,9 +180,8 @@ all values are in pixels relative to the origin. See
                  (buffer-string)))
       (and (not (string-blank-p res)) res))))
 
-;; TODO return pair, not list?
 (defun corfu-popupinfo--size ()
-  "Calculate popup size in the form of (width height)."
+  "Return popup size as pair."
   (let ((max-width (* (frame-char-width) corfu-popupinfo-max-width))
         (max-height (* (default-line-height) corfu-popupinfo-max-height)))
     (if corfu-popupinfo-resize
@@ -193,8 +192,8 @@ all values are in pixels relative to the origin. See
                          (set-window-buffer nil (current-buffer))
                          (window-text-pixel-size nil (point-min) (point-max)
                                                  (* 2 max-width) (* 2 max-height))))))
-          (list (min width max-width) (min height max-height)))
-      (list max-width max-height))))
+          (cons (min width max-width) (min height max-height)))
+      (cons max-width max-height))))
 
 (defun corfu-popupinfo--frame-geometry (frame)
   "Return position and size geometric attributes of FRAME.
@@ -285,15 +284,15 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
   ;; TODO wrong
   (cond
    ((member direction '(right left))
-    (apply #'corfu-popupinfo--display-area-horizontal
-           (corfu-popupinfo--size)))
+    (let ((size (corfu-popupinfo--size)))
+      (corfu-popupinfo--display-area-horizontal (car size) (cdr size))))
    ((member direction '(bottom top))
-    (apply #'corfu-popupinfo--display-area-vertical
-           (corfu-popupinfo--size)))
+    (let ((size (corfu-popupinfo--size)))
+      (corfu-popupinfo--display-area-vertical (car size) (cdr size))))
    (t
-    (pcase-let* ((`(,width ,height)
+    (pcase-let* ((`(,width . ,height)
                   (if (and width height)
-                      (list width height)
+                      (cons width height)
                     (corfu-popupinfo--size)))
                  ((and h-a `(,_h-x ,_h-y ,h-w ,h-h ,_h-d))
                   (corfu-popupinfo--display-area-horizontal width height))
