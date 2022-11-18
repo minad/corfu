@@ -32,8 +32,8 @@
 ;;
 ;; Display a documentation popup for completion candidate when using
 ;; Corfu. The `corfu-popupinfo-mode' must be enabled globally. Set
-;; `corfu-popupinfo-auto' if you want the documentation popup to be
-;; displayed automatically.
+;; `corfu-popupinfo-delay' to nil if the documentation popup should not
+;; appear automatically.
 
 ;; For manual toggling the commands `corfu-popupinfo-toggle',
 ;; `corfu-popupinfo-location' and `corfu-popupinfo-documentation' are
@@ -50,16 +50,17 @@
   "Face used for the info popup."
   :group 'corfu-faces)
 
-(defcustom corfu-popupinfo-auto t
-  "Display info popup automatically."
-  :group 'corfu
-  :type 'boolean)
-
-(defcustom corfu-popupinfo-delay 1.0
-  "The number of seconds to wait before displaying the documentation popup."
-  :group 'corfu
-  :type '(choice (const :tag "immediate" 0)
-                 (number :tag "seconds")))
+(defcustom corfu-popupinfo-delay '(1.0 . 0.5)
+  "Show documentation popup after that number of seconds.
+Set to t for an instant message. The value can be a pair of two
+floats to specify initial and subsequent delay."
+  :type '(choice (const :tag "Never" nil)
+                 (const :tag "Instant" t)
+                 (number :tag "Delay in seconds")
+                 (cons :tag "Two Delays"
+                       (choice :tag "Initial   " number)
+                       (choice :tag "Subsequent" number)))
+  :group 'corfu)
 
 (defcustom corfu-popupinfo-hide t
   "Hide the popup during the transition between candidates."
@@ -387,7 +388,7 @@ If ARG is omitted or nil, scroll down by a near full screen."
 
 When using this command to manually hide the info popup, it will
 not be displayed until this command is called again, even if
-`corfu-popupinfo-auto' is non-nil."
+`corfu-popupinfo-delay' is non-nil."
   (interactive)
   (if-let ((candidate (and (>= corfu--index 0)
                           (nth corfu--index corfu--candidates)))
@@ -402,20 +403,23 @@ not be displayed until this command is called again, even if
   (if (and (frame-live-p corfu--frame)
            (frame-visible-p corfu--frame)
            (>= corfu--index 0))
-      (when (and corfu-popupinfo-auto corfu-popupinfo--toggle)
+      (when (and corfu-popupinfo-delay corfu-popupinfo--toggle)
         (when corfu-popupinfo--auto-timer
           (cancel-timer corfu-popupinfo--auto-timer)
           (setq corfu-popupinfo--auto-timer nil))
-        (let ((candidate (nth corfu--index corfu--candidates)))
-          (if (or (= corfu-popupinfo-delay 0)
+        (let ((candidate (nth corfu--index corfu--candidates))
+              (delay (if (consp corfu-popupinfo-delay)
+                         (funcall (if (corfu-popupinfo--visible-p) #'cdr #'car)
+                                  corfu-popupinfo-delay)
+                       corfu-popupinfo-delay)))
+          (if (or (eq delay t) (<= delay 0)
                   (equal candidate corfu-popupinfo--candidate))
               (corfu-popupinfo--show candidate)
             (if corfu-popupinfo-hide
                 (corfu-popupinfo--hide)
               (corfu-popupinfo--show corfu-popupinfo--candidate))
             (setq corfu-popupinfo--auto-timer
-                  (run-at-time corfu-popupinfo-delay nil
-                               #'corfu-popupinfo--show candidate)))))
+                  (run-at-time delay nil #'corfu-popupinfo--show candidate)))))
     (corfu-popupinfo--hide)))
 
 (defun corfu-popupinfo--teardown ()

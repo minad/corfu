@@ -39,7 +39,7 @@
   "Face used for echo area messages."
   :group 'corfu-faces)
 
-(defcustom corfu-echo-delay '(1.0 . 0.2)
+(defcustom corfu-echo-delay '(1.0 . 0.5)
   "Show documentation string in the echo area after that number of seconds.
 Set to t for an instant message. The value can be a pair of two
 floats to specify initial and subsequent delay."
