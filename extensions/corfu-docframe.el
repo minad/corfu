@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2021-2022  Free Software Foundation, Inc.
 
-;; Author: Yuwei Tian <fishtai0@gmail.com>
+;; Author: Yuwei Tian <fishtai0@gmail.com>, Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
 ;; Version: 0.1
@@ -242,9 +242,9 @@ the corfu popup, its value is 'bottom, 'top, 'right or 'left."
    (t
     (pcase-let* ((`(,width ,height)  ;; popup inner width and height
                   (corfu-docframe--size width height))
-                 ((and h-a `(,h-x ,h-y ,h-w ,h-h ,h-d))
+                 ((and h-a `(,_h-x ,_h-y ,h-w ,h-h ,_h-d))
                   (corfu-docframe--display-area-horizontal width height))
-                 ((and v-a `(,v-x ,v-y ,v-w ,v-h ,v-d))
+                 ((and v-a `(,_v-x ,_v-y ,v-w ,v-h ,_v-d))
                   (corfu-docframe--display-area-vertical width height)))
       (if (and (or (< h-h height) (< h-w width))
                (or (>= (* v-w v-h) (* h-w h-h))
