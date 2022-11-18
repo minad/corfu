@@ -27,7 +27,8 @@
 ;;; Commentary:
 
 ;; NOTE: This extension has been added recently to Corfu. It is still
-;; experimental. The public interface may change any time.
+;; experimental. The extension may get renamed and the public interface may
+;; change any time.
 ;;
 ;; Display a documentation popup for completion candidate when using
 ;; Corfu. The `corfu-popupinfo-mode' must be enabled globally. Set
