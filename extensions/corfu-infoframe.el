@@ -440,5 +440,11 @@ not be displayed until this command is called again, even if
     (advice-remove #'corfu--exhibit #'corfu-infoframe--exhibit)
     (advice-remove #'corfu--teardown #'corfu-infoframe--teardown))))
 
+;; Emacs 28: Do not show Corfu commands with M-X
+(dolist (sym '(corfu-infoframe-scroll-down corfu-infoframe-scroll-down
+               corfu-infoframe-documentation corfu-infoframe-location
+               corfu-infoframe-toggle))
+  (put sym 'completion-predicate #'ignore))
+
 (provide 'corfu-infoframe)
 ;;; corfu-infoframe.el ends here
