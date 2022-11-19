@@ -112,7 +112,7 @@ popup can be requested manually via `corfu-popupinfo-toggle',
     (fringe-indicator-alist (continuation)))
   "Buffer parameters.")
 
-(defvar-local corfu-popupinfo--toggle t
+(defvar-local corfu-popupinfo--toggle 'init
   "Local toggle state.")
 
 (defvar-local corfu-popupinfo--function
@@ -154,7 +154,8 @@ all values are in pixels relative to the origin. See
   "Get source at location of CANDIDATE."
   (save-excursion
     (when-let* ((fun (plist-get corfu--extra :company-location))
-                (loc (funcall fun candidate))
+                ;; BUG: company-location may throw errors if location is not found
+                (loc (ignore-errors (funcall fun candidate)))
                 (res (or (and (bufferp (car loc)) (car loc))
                          (find-file-noselect (car loc) t))))
       (with-current-buffer res
@@ -327,8 +328,14 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
                 (set (make-local-variable (car var)) (cdr var)))
               (setf face-remapping-alist (copy-tree face-remapping-alist)
                     (alist-get 'default face-remapping-alist) 'corfu-popupinfo))
+          (unless (eq corfu-popupinfo--toggle 'init)
+            (message
+             ;; TODO support custom functions, don't hard code the error!
+             (if (eq corfu-popupinfo--function #'corfu-popupinfo--get-documentation)
+                 "No documentation available"
+               "Location is unknown")))
           (corfu-popupinfo--hide)
-          (setq doc-changed nil coords-changed nil)))
+          (setq doc-changed nil coords-changed nil corfu-popupinfo--toggle nil)))
       (when (or doc-changed coords-changed)
         (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
@@ -369,25 +376,31 @@ If ARG is omitted or nil, scroll down by a near full screen."
   (interactive "p")
   (corfu-popupinfo-scroll-up (- (or n 1))))
 
-(defun corfu-popupinfo--set-function (fun)
-  "Set popup documentation getter FUN."
-  (setq corfu-popupinfo--function fun
-        corfu-popupinfo--candidate nil
-        corfu-popupinfo--toggle nil)
-  (when-let (candidate (and (>= corfu--index 0)
-                            (nth corfu--index corfu--candidates)))
-    (setq corfu-popupinfo--toggle t)
-    (corfu-popupinfo--show candidate)))
+(defun corfu-popupinfo--toggle (fun)
+  "Set documentation getter FUN and toggle popup."
+  (when (< corfu--index 0)
+    (corfu-popupinfo--hide)
+    (user-error "No candidate selected"))
+  (setq corfu-popupinfo--toggle
+        (not (and (corfu-popupinfo--visible-p)
+                  (eq corfu-popupinfo--function fun))))
+  (if (not corfu-popupinfo--toggle)
+      (corfu-popupinfo--hide)
+    (setq corfu-popupinfo--function fun
+          corfu-popupinfo--candidate nil)
+    (corfu-popupinfo--show (nth corfu--index corfu--candidates))))
 
 (defun corfu-popupinfo-documentation ()
-  "Show documentation in popup."
+  "Show or hide documentation in popup.
+Behaves like `corfu-popupinfo-toggle'."
   (interactive)
-  (corfu-popupinfo--set-function #'corfu-popupinfo--get-documentation))
+  (corfu-popupinfo--toggle #'corfu-popupinfo--get-documentation))
 
 (defun corfu-popupinfo-location ()
-  "Show location in popup."
+  "Show or hide location in popup.
+Behaves like `corfu-popupinfo-toggle'."
   (interactive)
-  (corfu-popupinfo--set-function #'corfu-popupinfo--get-location))
+  (corfu-popupinfo--toggle #'corfu-popupinfo--get-location))
 
 (defun corfu-popupinfo-toggle ()
   "Toggle the info popup display or hide.
@@ -396,14 +409,7 @@ When using this command to manually hide the info popup, it will
 not be displayed until this command is called again, even if
 `corfu-popupinfo-delay' is non-nil."
   (interactive)
-  (setq corfu-popupinfo--toggle nil)
-  (if-let ((candidate (and (>= corfu--index 0)
-                          (nth corfu--index corfu--candidates)))
-           ((not (corfu-popupinfo--visible-p))))
-      (progn
-        (setq corfu-popupinfo--toggle t)
-        (corfu-popupinfo--show candidate))
-    (corfu-popupinfo--hide)))
+  (corfu-popupinfo--toggle corfu-popupinfo--function))
 
 (defun corfu-popupinfo--exhibit (&rest _)
   "Update the info popup automatically."

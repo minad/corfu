@@ -87,7 +87,7 @@
               (goto-char (point-min))
               (forward-line (1- (cdr loc))))
             (set-window-start nil (point)))))
-    (user-error "No candidate location available")))
+    (user-error "Location is unknown")))
 
 ;; Emacs 28: Do not show Corfu commands with M-X
 (put #'corfu-info-location 'completion-predicate #'ignore)
