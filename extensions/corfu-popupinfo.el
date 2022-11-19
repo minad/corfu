@@ -211,15 +211,13 @@ The calculated area is in the form (X Y WIDTH HEIGHT DIR).
 DIR indicates the horizontal position direction of the info popup
 relative to the candidate popup, its value can be 'right or 'left."
   (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
-               ;; space between candidates popup and info popup
-               (space (- border))  ;; share the border
                (`(,_pfx ,_pfy ,pfw ,_pfh)
                 (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
                (`(,cfx ,cfy ,cfw ,_cfh) (corfu-popupinfo--frame-geometry corfu--frame))
-               (x-on-right (+ cfx cfw space))
+               (x-on-right (+ cfx cfw (- border)))
+               (x-on-left (- cfx width border))
                (w-remaining-right (- pfw 1 x-on-right border border))
-               (x-on-left (- cfx space border width border))
-               (w-remaining-left (- cfx space 1 border border)))
+               (w-remaining-left (- cfx 1 border)))
     (cond
      ((>= w-remaining-right width)
       (list x-on-right cfy width height 'right))
@@ -239,7 +237,6 @@ The calculated area is in the form (X Y WIDTH HEIGHT DIR).
 DIR indicates the vertical position direction of the info popup
 relative to the candidate popup, its value can be 'bottom or 'top."
   (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
-               (space (- border))
                (lh (default-line-height))
                (`(,_pfx ,_pfy ,pfw ,pfh)
                 (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
@@ -250,8 +247,8 @@ relative to the candidate popup, its value can be 'bottom or 'top."
                        (window-tab-line-height)
                        (or (cdr (posn-x-y (posn-at-point (point)))) 0)
                        lh)))
-               ;; (y-on-top (max 0 (- cfy space border height border)))
-               (y-on-bottom (+ cfy cfh space))
+               ;; (y-on-top (max 0 (- cfy height border)))
+               (y-on-bottom (+ cfy cfh (- border)))
                (h-remaining-top (- cfy border border))
                (h-remaining-bottom (- pfh y-on-bottom border border))
                (w-avail (min width (- pfw cfx border border))))
@@ -264,7 +261,7 @@ relative to the candidate popup, its value can be 'bottom or 'top."
       (setq height (min h-remaining-top height)
             height (min height (* (floor (/ height lh)) lh)))
       (list cfx
-            (max 0 (- cfy space border height border))
+            (max 0 (- cfy height border))
             w-avail height 'top))))
 
 (defun corfu-popupinfo--display-area (dir width height)
