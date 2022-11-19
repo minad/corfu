@@ -330,7 +330,7 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
                     (alist-get 'default face-remapping-alist) 'corfu-popupinfo))
           (unless (eq corfu-popupinfo--toggle 'init)
             (message "No %s available"
-                     (last (split-string (symbol-name corfu-popupinfo--function) "-+"))))
+                     (car (last (split-string (symbol-name corfu-popupinfo--function) "-+")))))
           (corfu-popupinfo--hide)
           (setq doc-changed nil coords-changed nil corfu-popupinfo--toggle nil)))
       (when (or doc-changed coords-changed)
