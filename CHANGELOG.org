@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 0.29 (2022-11-19)
 
 - BREAKING: Extract the =corfu-echo= extension from =corfu.el=. In order to see echo
   messages, enable =corfu-echo-mode=. You probably want to enable either
