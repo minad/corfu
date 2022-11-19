@@ -2,13 +2,17 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Version 0.30 (2022-11-19)
+
+- =corfu-popupinfo-mode=: Bugfixes and improvements.
+
 * Version 0.29 (2022-11-19)
 
 - BREAKING: Extract the =corfu-echo= extension from =corfu.el=. In order to see echo
   messages, enable =corfu-echo-mode=. You probably want to enable either
-  =corfu-echo-mode= or =corfu-infoframe-mode=.
+  =corfu-echo-mode= or =corfu-popupinfo-mode=.
 - BREAKING: Rename =corfu-echo-documentation= to =corfu-echo-delay=.
-- Add =corfu-infoframe= extension to display candidate documentation and location
+- Add =corfu-popupinfo= extension to display candidate documentation and location
   in a small child frame next to the candidate menu. This extension has been
   contributed by Yuwei Tian who assigned copyright to the FSF. The extension
   supersedes Yuwei's =corfu-doc= package.
