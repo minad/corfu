@@ -30,10 +30,10 @@
 ;; experimental. The extension may get renamed and the public interface
 ;; may change any time.
 ;;
-;; Display a documentation popup for completion candidate when using
-;; Corfu. The `corfu-popupinfo-mode' must be enabled globally. Set
-;; `corfu-popupinfo-delay' to nil if the documentation popup should not
-;; appear automatically.
+;; Display an info popup for completion candidate when using Corfu. The
+;; `corfu-popupinfo-mode' must be enabled globally. Set
+;; `corfu-popupinfo-auto' to nil if the info popup should not appear
+;; automatically.
 
 ;; For manual toggling the commands `corfu-popupinfo-toggle',
 ;; `corfu-popupinfo-location' and `corfu-popupinfo-documentation' are
@@ -50,10 +50,22 @@
   "Face used for the info popup."
   :group 'corfu-faces)
 
+(defcustom corfu-popupinfo-auto t
+  "Show info popup automatically.
+
+If set to nil, the popup can be requested manually via
+`corfu-popupinfo-toggle', `corfu-popupinfo-documentation' and
+`corfu-popupinfo-location'."
+  :type 'boolean
+  :group 'corfu)
+
 (defcustom corfu-popupinfo-delay '(1.0 . 0.5)
-  "Show documentation popup after that number of seconds.
-Set to t for an instant message. The value can be a pair of two
-floats to specify initial and subsequent delay."
+  "Automatically update info popup after that number of seconds.
+
+Set to t for an instant update. The value can be a pair of two
+floats to specify initial and subsequent delay. If
+`corfu-popupinfo-auto' is non-nil, the popup will automatically
+appear for the preselected candidate."
   :type '(choice (const :tag "Never" nil)
                  (const :tag "Instant" t)
                  (number :tag "Delay in seconds")
@@ -102,8 +114,8 @@ floats to specify initial and subsequent delay."
     (fringe-indicator-alist (continuation)))
   "Buffer parameters.")
 
-(defvar-local corfu-popupinfo--toggle t
-  "Local popupinfo toggle state.")
+(defvar-local corfu-popupinfo--toggle 'unset
+  "Local toggle state.")
 
 (defvar-local corfu-popupinfo--function
   #'corfu-popupinfo--get-documentation
@@ -112,7 +124,7 @@ floats to specify initial and subsequent delay."
 (defvar corfu-popupinfo--frame nil
   "Info popup child frame.")
 
-(defvar corfu-popupinfo--auto-timer nil
+(defvar corfu-popupinfo--timer nil
   "Corfu info popup auto display timer.")
 
 (defvar-local corfu-popupinfo--candidate nil
@@ -301,9 +313,9 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
 
 (defun corfu-popupinfo--show (candidate)
   "Show the info popup for CANDIDATE."
-  (when corfu-popupinfo--auto-timer
-    (cancel-timer corfu-popupinfo--auto-timer)
-    (setq corfu-popupinfo--auto-timer nil))
+  (when corfu-popupinfo--timer
+    (cancel-timer corfu-popupinfo--timer)
+    (setq corfu-popupinfo--timer nil))
   (when (and (corfu--popup-support-p) (corfu-popupinfo--visible-p corfu--frame))
     (let* ((doc-changed
             (not (and (corfu-popupinfo--visible-p)
@@ -390,8 +402,9 @@ not be displayed until this command is called again, even if
   (if-let ((candidate (and (>= corfu--index 0)
                           (nth corfu--index corfu--candidates)))
            ((not (corfu-popupinfo--visible-p))))
-      (setq corfu-popupinfo--toggle t)
-      (corfu-popupinfo--show candidate)
+      (progn
+        (setq corfu-popupinfo--toggle t)
+        (corfu-popupinfo--show candidate))
     (corfu-popupinfo--hide)))
 
 (defun corfu-popupinfo--exhibit (&rest _)
@@ -399,10 +412,13 @@ not be displayed until this command is called again, even if
   (add-to-list 'minor-mode-overriding-map-alist
                `(,#'corfu-popupinfo-mode . ,corfu-popupinfo-map))
   (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
-      (when (and corfu-popupinfo-delay corfu-popupinfo--toggle)
-        (when corfu-popupinfo--auto-timer
-          (cancel-timer corfu-popupinfo--auto-timer)
-          (setq corfu-popupinfo--auto-timer nil))
+      (when (and corfu-popupinfo-delay
+                 (if (eq corfu-popupinfo--toggle 'unset)
+                     (setq corfu-popupinfo--toggle corfu-popupinfo-auto)
+                   corfu-popupinfo--toggle))
+        (when corfu-popupinfo--timer
+          (cancel-timer corfu-popupinfo--timer)
+          (setq corfu-popupinfo--timer nil))
         (let ((candidate (nth corfu--index corfu--candidates))
               (delay (if (consp corfu-popupinfo-delay)
                          (funcall (if (corfu-popupinfo--visible-p) #'cdr #'car)
@@ -416,7 +432,7 @@ not be displayed until this command is called again, even if
               (corfu-popupinfo--hide))
              (corfu-popupinfo--candidate
               (corfu-popupinfo--show corfu-popupinfo--candidate)))
-            (setq corfu-popupinfo--auto-timer
+            (setq corfu-popupinfo--timer
                   (run-at-time delay nil #'corfu-popupinfo--show candidate)))))
     (corfu-popupinfo--hide)))
 
