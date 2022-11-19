@@ -30,12 +30,13 @@
 ;; experimental. The extension may get renamed and the public interface
 ;; may change any time.
 ;;
-;; Display an info popup for completion candidate when using Corfu. The
-;; `corfu-popupinfo-mode' must be enabled globally. Set
-;; `corfu-popupinfo-delay' to nil if the info popup should not update
-;; automatically. If the popup should not appear initially, but update
-;; automatically afterwards, use `(setq corfu-popupinfo-delay (cons nil
-;; 1.0))'.
+;; Display an information popup for completion candidate when using
+;; Corfu. The popup displays either the candidate documentation or the
+;; candidate location. The `corfu-popupinfo-mode' must be enabled
+;; globally. Set `corfu-popupinfo-delay' to nil if the info popup should
+;; not update automatically. If the popup should not appear initially,
+;; but update automatically afterwards, use `(setq corfu-popupinfo-delay
+;; (cons nil 1.0))'.
 
 ;; For manual toggling the commands `corfu-popupinfo-toggle',
 ;; `corfu-popupinfo-location' and `corfu-popupinfo-documentation' are
