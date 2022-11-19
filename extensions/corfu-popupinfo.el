@@ -205,7 +205,7 @@ all values are in pixels relative to the origin. See
                        ((window-buffer) (current-buffer))
                        (size (window-text-pixel-size
                               nil (point-min) (point-max)
-                              (* 2 max-width) (* 2 max-height))))
+                              max-width max-height)))
               (cons (min (+ margin (car size)) max-width)
                     (min (cdr size) max-height))))
       (cons max-width max-height))))
