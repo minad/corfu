@@ -329,11 +329,8 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
               (setf face-remapping-alist (copy-tree face-remapping-alist)
                     (alist-get 'default face-remapping-alist) 'corfu-popupinfo))
           (unless (eq corfu-popupinfo--toggle 'init)
-            (message
-             ;; TODO support custom functions, don't hard code the error!
-             (if (eq corfu-popupinfo--function #'corfu-popupinfo--get-documentation)
-                 "No documentation available"
-               "Location is unknown")))
+            (message "No %s available"
+                     (last (split-string (symbol-name corfu-popupinfo--function) "-+"))))
           (corfu-popupinfo--hide)
           (setq doc-changed nil coords-changed nil corfu-popupinfo--toggle nil)))
       (when (or doc-changed coords-changed)
