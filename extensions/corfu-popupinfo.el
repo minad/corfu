@@ -46,6 +46,7 @@
 
 (require 'corfu)
 (eval-when-compile
+  (require 'cl-lib)
   (require 'subr-x))
 
 (defface corfu-popupinfo
@@ -74,23 +75,23 @@ popup can be requested manually via `corfu-popupinfo-toggle',
 
 (defcustom corfu-popupinfo-hide t
   "Hide the popup during the transition between candidates."
-  :group 'corfu
-  :type 'boolean)
+  :type 'boolean
+  :group 'corfu)
 
-(defcustom corfu-popupinfo-max-width 70
+(defcustom corfu-popupinfo-max-width 80
   "The max width of the info popup in characters."
-  :group 'corfu
-  :type 'integer)
+  :type 'integer
+  :group 'corfu)
 
 (defcustom corfu-popupinfo-max-height 10
   "The max height of the info popup in characters."
-  :group 'corfu
-  :type 'integer)
+  :type 'integer
+  :group 'corfu)
 
 (defcustom corfu-popupinfo-resize t
   "Resize the info popup automatically if non-nil."
-  :group 'corfu
-  :type 'boolean)
+  :type 'boolean
+  :group 'corfu)
 
 (defvar corfu-popupinfo-map
   (let ((map (make-sparse-keymap)))
@@ -103,8 +104,7 @@ popup can be requested manually via `corfu-popupinfo-toggle',
   "Additional keymap activated in popupinfo mode.")
 
 (defvar corfu-popupinfo--buffer-parameters
-  '((line-move-visual . t)
-    (truncate-partial-width-windows . nil)
+  '((truncate-partial-width-windows . nil)
     (truncate-lines . nil)
     (left-margin-width . 1)
     (right-margin-width . 1)
@@ -186,24 +186,28 @@ all values are in pixels relative to the origin. See
                                             corfu-popupinfo-max-height)))
                        (funcall fun candidate)))))
     (with-current-buffer (or (car-safe res) res)
-      (setq res (replace-regexp-in-string
-                 "[\\s-\n]*\\[back\\][\\s-\n]*" ""
-                 (buffer-string)))
+      (setq res (string-trim
+                 (replace-regexp-in-string
+                  "[\\s-\n]*\\[back\\][\\s-\n]*" ""
+                  (buffer-string))))
       (and (not (string-blank-p res)) res))))
 
 (defun corfu-popupinfo--size ()
   "Return popup size as pair."
-  (let ((max-width (* (frame-char-width) corfu-popupinfo-max-width))
-        (max-height (* (default-line-height) corfu-popupinfo-max-height)))
-    (if corfu-popupinfo-resize
-        (pcase-let ((`(,width . ,height)
-                     (save-window-excursion
-                       (with-current-buffer " *corfu-popupinfo*"
-                         (set-window-dedicated-p nil nil)
-                         (set-window-buffer nil (current-buffer))
-                         (window-text-pixel-size nil (point-min) (point-max)
-                                                 (* 2 max-width) (* 2 max-height))))))
-          (cons (min width max-width) (min height max-height)))
+  (let* ((cw (default-font-width))
+         (margin (* cw (+ (alist-get 'left-margin-width corfu--buffer-parameters)
+                          (alist-get 'right-margin-width corfu--buffer-parameters))))
+         (max-height (* (default-line-height) corfu-popupinfo-max-height))
+         (max-width (+ margin (* cw corfu-popupinfo-max-width))))
+      (if corfu-popupinfo-resize
+          (with-current-buffer " *corfu-popupinfo*"
+            (cl-letf* (((window-dedicated-p) nil)
+                       ((window-buffer) (current-buffer))
+                       (size (window-text-pixel-size
+                              nil (point-min) (point-max)
+                              (* 2 max-width) (* 2 max-height))))
+              (cons (min (+ margin (car size)) max-width)
+                    (min (cdr size) max-height))))
       (cons max-width max-height))))
 
 (defun corfu-popupinfo--frame-geometry (frame)
@@ -287,21 +291,19 @@ The pixel size of the info popup can be specified by WIDTH and HEIGHT.
 The calculated area is in the form (X Y WIDTH HEIGHT DIR).
 DIR indicates the position direction of the info popup relative to
 the candidate popup, its value is 'bottom, 'top, 'right or 'left."
+  (unless (and width height)
+    (let ((size (corfu-popupinfo--size)))
+      (setq width (car size)
+            height (cdr size))))
   ;; TODO Direction handling is incomplete. Fix not only horizontal/vertical,
   ;; but left/right/bottom/top.
   (cond
    ((memq dir '(right left))
-    (let ((size (corfu-popupinfo--size)))
-      (corfu-popupinfo--display-area-horizontal (car size) (cdr size))))
+    (corfu-popupinfo--display-area-horizontal width height))
    ((memq dir '(bottom top))
-    (let ((size (corfu-popupinfo--size)))
-      (corfu-popupinfo--display-area-vertical (car size) (cdr size))))
+    (corfu-popupinfo--display-area-vertical width height))
    (t
-    (pcase-let* ((`(,width . ,height)
-                  (if (and width height)
-                      (cons width height)
-                    (corfu-popupinfo--size)))
-                 ((and h-a `(,_h-x ,_h-y ,h-w ,h-h ,_h-d))
+    (pcase-let* (((and h-a `(,_h-x ,_h-y ,h-w ,h-h ,_h-d))
                   (corfu-popupinfo--display-area-horizontal width height))
                  ((and v-a `(,_v-x ,_v-y ,v-w ,v-h ,_v-d))
                   (corfu-popupinfo--display-area-vertical width height)))
@@ -324,6 +326,10 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
       (when doc-changed
         (if-let (doc (funcall corfu-popupinfo--function candidate))
             (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*" doc)
+              ;; TODO Could we somehow refill the buffer intelligently?
+              ;;(let ((inhibit-read-only t))
+              ;;  (setq fill-column corfu-popupinfo-max-width)
+              ;;  (fill-region (point-min) (point-max)))
               (dolist (var corfu-popupinfo--buffer-parameters)
                 (set (make-local-variable (car var)) (cdr var)))
               (setf face-remapping-alist (copy-tree face-remapping-alist)
