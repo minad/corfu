@@ -363,9 +363,10 @@ If ARG is omitted or nil, scroll down by a near full screen."
   "Set popup documentation getter FUN."
   (setq corfu-popupinfo--function fun
         corfu-popupinfo--candidate nil
-        corfu-popupinfo--toggle t)
+        corfu-popupinfo--toggle nil)
   (when-let (candidate (and (>= corfu--index 0)
                             (nth corfu--index corfu--candidates)))
+    (setq corfu-popupinfo--toggle t)
     (corfu-popupinfo--show candidate)))
 
 (defun corfu-popupinfo-documentation ()
@@ -385,9 +386,11 @@ When using this command to manually hide the info popup, it will
 not be displayed until this command is called again, even if
 `corfu-popupinfo-delay' is non-nil."
   (interactive)
+  (setq corfu-popupinfo--toggle nil)
   (if-let ((candidate (and (>= corfu--index 0)
                           (nth corfu--index corfu--candidates)))
-           ((setq corfu-popupinfo--toggle (not (corfu-popupinfo--visible-p)))))
+           ((not (corfu-popupinfo--visible-p))))
+      (setq corfu-popupinfo--toggle t)
       (corfu-popupinfo--show candidate)
     (corfu-popupinfo--hide)))
 
@@ -408,9 +411,11 @@ not be displayed until this command is called again, even if
           (if (or (eq delay t) (<= delay 0)
                   (equal candidate corfu-popupinfo--candidate))
               (corfu-popupinfo--show candidate)
-            (if corfu-popupinfo-hide
-                (corfu-popupinfo--hide)
-              (corfu-popupinfo--show corfu-popupinfo--candidate))
+            (cond
+             (corfu-popupinfo-hide
+              (corfu-popupinfo--hide))
+             (corfu-popupinfo--candidate
+              (corfu-popupinfo--show corfu-popupinfo--candidate)))
             (setq corfu-popupinfo--auto-timer
                   (run-at-time delay nil #'corfu-popupinfo--show candidate)))))
     (corfu-popupinfo--hide)))
