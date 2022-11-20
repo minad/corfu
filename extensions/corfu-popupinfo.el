@@ -156,23 +156,26 @@ all values are in pixels relative to the origin. See
     (when-let* ((fun (plist-get corfu--extra :company-location))
                 ;; BUG: company-location may throw errors if location is not found
                 (loc (ignore-errors (funcall fun candidate)))
-                (res (or (and (bufferp (car loc)) (car loc))
+                (buf (or (and (bufferp (car loc)) (car loc))
                          (find-file-noselect (car loc) t))))
-      (with-current-buffer res
-        (save-excursion
-          (save-restriction
-            (widen)
-            (if (bufferp (car loc))
-                (goto-char (cdr loc))
-              (goto-char (point-min))
-              (forward-line (1- (cdr loc))))
-            (let ((beg (point)))
-              ;; Support a little bit of scrolling.
-              (forward-line (* 10 corfu-popupinfo-max-height))
-              (when jit-lock-mode
-                (jit-lock-fontify-now beg (point)))
-              (setq res (buffer-substring beg (point)))
-              (and (not (string-blank-p res)) res))))))))
+      (unwind-protect
+          (with-current-buffer buf
+            (save-excursion
+              (save-restriction
+                (widen)
+                (if (bufferp (car loc))
+                    (goto-char (cdr loc))
+                  (goto-char (point-min))
+                  (forward-line (1- (cdr loc))))
+                (let ((beg (point)))
+                  ;; Support a little bit of scrolling.
+                  (forward-line (* 10 corfu-popupinfo-max-height))
+                  (when jit-lock-mode
+                    (jit-lock-fontify-now beg (point)))
+                  (let ((res (buffer-substring beg (point))))
+                    (and (not (string-blank-p res)) res))))))
+        (unless (bufferp (car loc))
+          (kill-buffer buf))))))
 
 (defun corfu-popupinfo--get-documentation (candidate)
   "Get the documentation for CANDIDATE."
