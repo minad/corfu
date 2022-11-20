@@ -67,7 +67,7 @@ floats to specify initial and subsequent delay."
     (cancel-timer corfu-echo--timer)
     (setq corfu-echo--timer nil))
   (corfu-echo--show msg)
-  (unless corfu--echo-message
+  (unless corfu-echo--message
     (kill-local-variable 'corfu-echo--timer)
     (kill-local-variable 'corfu-echo--message)))
 
