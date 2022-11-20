@@ -152,35 +152,37 @@ all values are in pixels relative to the origin. See
 
 (defun corfu-popupinfo--get-location (candidate)
   "Get source at location of CANDIDATE."
-  (save-excursion
-    (when-let* ((fun (plist-get corfu--extra :company-location))
-                ;; BUG: company-location may throw errors if location is not found
-                (loc (ignore-errors (funcall fun candidate)))
-                (buf (or (and (bufferp (car loc)) (car loc))
-                         (let ((inhibit-message t)
-                               (enable-dir-local-variables nil)
-                               (enable-local-variables :safe)
-                               (non-essential t)
-                               (delay-mode-hooks t))
-                           (find-file-noselect (car loc) t)))))
-      (unwind-protect
-          (with-current-buffer buf
-            (save-excursion
-              (save-restriction
-                (widen)
-                (if (bufferp (car loc))
-                    (goto-char (cdr loc))
-                  (goto-char (point-min))
-                  (forward-line (1- (cdr loc))))
-                (let ((beg (point)))
-                  ;; Support a little bit of scrolling.
-                  (forward-line (* 10 corfu-popupinfo-max-height))
-                  (when jit-lock-mode
-                    (jit-lock-fontify-now beg (point)))
-                  (let ((res (buffer-substring beg (point))))
-                    (and (not (string-blank-p res)) res))))))
-        (unless (bufferp (car loc))
-          (kill-buffer buf))))))
+  (let (cleanup)
+    (unwind-protect
+        (save-excursion
+          (when-let* ((fun (plist-get corfu--extra :company-location))
+                      ;; BUG: company-location may throw errors if location is not found
+                      (loc (ignore-errors (funcall fun candidate)))
+                      (buf (or (and (bufferp (car loc)) (car loc))
+                               (get-file-buffer (car loc))
+                               (let ((inhibit-message t)
+                                     (enable-dir-local-variables nil)
+                                     (enable-local-variables :safe)
+                                     (non-essential t)
+                                     (delay-mode-hooks t))
+                                 (setq cleanup (find-file-noselect (car loc) t))))))
+            (with-current-buffer buf
+              (save-excursion
+                (save-restriction
+                  (widen)
+                  (if (bufferp (car loc))
+                      (goto-char (cdr loc))
+                    (goto-char (point-min))
+                    (forward-line (1- (cdr loc))))
+                  (let ((beg (point)))
+                    ;; Support a little bit of scrolling.
+                    (forward-line (* 10 corfu-popupinfo-max-height))
+                    (when jit-lock-mode
+                      (jit-lock-fontify-now beg (point)))
+                    (let ((res (buffer-substring beg (point))))
+                      (and (not (string-blank-p res)) res))))))))
+    (unless (bufferp (car loc))
+      (kill-buffer buf))))))
 
 (defun corfu-popupinfo--get-documentation (candidate)
   "Get the documentation for CANDIDATE."
