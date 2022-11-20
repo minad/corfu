@@ -204,8 +204,8 @@ all values are in pixels relative to the origin. See
 (defun corfu-popupinfo--size ()
   "Return popup size as pair."
   (let* ((cw (default-font-width))
-         (margin (* cw (+ (alist-get 'left-margin-width corfu--buffer-parameters)
-                          (alist-get 'right-margin-width corfu--buffer-parameters))))
+         (margin (* cw (+ (alist-get 'left-margin-width corfu-popupinfo--buffer-parameters)
+                          (alist-get 'right-margin-width corfu-popupinfo--buffer-parameters))))
          (max-height (* (default-line-height) corfu-popupinfo-max-height))
          (max-width (+ margin (* cw corfu-popupinfo-max-width))))
     (if corfu-popupinfo-resize
