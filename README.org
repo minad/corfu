@@ -33,6 +33,10 @@ provides an alternative overlay-based display.
 
 #+html: <img src="https://github.com/minad/corfu/blob/screenshots/dark.png?raw=true">
 
+#+html: <img src="https://github.com/minad/corfu/blob/screenshots/popupinfo-light.png?raw=true">
+
+#+html: <img src="https://github.com/minad/corfu/blob/screenshots/popupinfo-dark.png?raw=true">
+
 #+toc: headlines 8
 
 * Features
