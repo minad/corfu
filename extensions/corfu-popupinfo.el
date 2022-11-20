@@ -199,15 +199,15 @@ all values are in pixels relative to the origin. See
                           (alist-get 'right-margin-width corfu--buffer-parameters))))
          (max-height (* (default-line-height) corfu-popupinfo-max-height))
          (max-width (+ margin (* cw corfu-popupinfo-max-width))))
-      (if corfu-popupinfo-resize
-          (with-current-buffer " *corfu-popupinfo*"
-            (cl-letf* (((window-dedicated-p) nil)
-                       ((window-buffer) (current-buffer))
-                       (size (window-text-pixel-size
-                              nil (point-min) (point-max)
-                              max-width max-height)))
-              (cons (min (+ margin (car size)) max-width)
-                    (min (cdr size) max-height))))
+    (if corfu-popupinfo-resize
+        (with-current-buffer " *corfu-popupinfo*"
+          (cl-letf* (((window-dedicated-p) nil)
+                     ((window-buffer) (current-buffer))
+                     (size (window-text-pixel-size
+                            nil (point-min) (point-max)
+                            max-width max-height)))
+            (cons (min (+ margin (car size)) max-width)
+                  (min (cdr size) max-height))))
       (cons max-width max-height))))
 
 (defun corfu-popupinfo--frame-geometry (frame)
