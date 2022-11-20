@@ -364,7 +364,8 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
   "Scroll text of info popup window upward N lines.
 
 If ARG is omitted or nil, scroll upward by a near full screen.
-See `scroll-up' for details."
+See `scroll-up' for details. If the info popup is not visible,
+the other window is scrolled."
   (interactive "p")
   (if (corfu-popupinfo--visible-p)
       (with-selected-frame corfu-popupinfo--frame
@@ -375,7 +376,7 @@ See `scroll-up' for details."
 (defun corfu-popupinfo-scroll-down (&optional n)
   "Scroll text of info popup window down N lines.
 
-If ARG is omitted or nil, scroll down by a near full screen."
+See `corfu-popupinfo-scroll-up' for more details."
   (interactive "p")
   (corfu-popupinfo-scroll-up (- (or n 1))))
 
