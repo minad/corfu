@@ -157,11 +157,11 @@ all values are in pixels relative to the origin. See
                 ;; BUG: company-location may throw errors if location is not found
                 (loc (ignore-errors (funcall fun candidate)))
                 (buf (or (and (bufferp (car loc)) (car loc))
-                         (let ((inhibit-message . t)
-                               (enable-dir-local-variables . nil)
-                               (enable-local-variables . :safe)
-                               (non-essential . t)
-                               (delay-mode-hooks . t))
+                         (let ((inhibit-message t)
+                               (enable-dir-local-variables nil)
+                               (enable-local-variables :safe)
+                               (non-essential t)
+                               (delay-mode-hooks t))
                            (find-file-noselect (car loc) t)))))
       (unwind-protect
           (with-current-buffer buf
