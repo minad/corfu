@@ -54,7 +54,7 @@
   "Face used for the info popup."
   :group 'corfu-faces)
 
-(defcustom corfu-popupinfo-delay '(1.0 . 0.5)
+(defcustom corfu-popupinfo-delay '(2.0 . 1.0)
   "Automatically update info popup after that number of seconds.
 
 Set to t for an instant update. The value can be a pair of two
@@ -362,6 +362,7 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
                 (corfu--make-frame corfu-popupinfo--frame
                                    area-x area-y area-w area-h
                                    " *corfu-popupinfo*")
+                corfu-popupinfo--toggle t
                 corfu-popupinfo--direction area-d
                 corfu-popupinfo--candidate candidate
                 corfu-popupinfo--coordinates new-coords)
@@ -437,15 +438,15 @@ not be displayed until this command is called again, even if
   (when completion-in-region-mode
     (setf (alist-get #'corfu-popupinfo-mode minor-mode-overriding-map-alist)
           corfu-popupinfo-map)
+    (when corfu-popupinfo--timer
+      (cancel-timer corfu-popupinfo--timer)
+      (setq corfu-popupinfo--timer nil))
     (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
         (when-let* ((delay (if (consp corfu-popupinfo-delay)
-                               (funcall (if (corfu-popupinfo--visible-p) #'cdr #'car)
+                               (funcall (if (eq corfu-popupinfo--toggle 'init) #'car #'cdr)
                                         corfu-popupinfo-delay)
                              corfu-popupinfo-delay))
                     (corfu-popupinfo--toggle))
-          (when corfu-popupinfo--timer
-            (cancel-timer corfu-popupinfo--timer)
-            (setq corfu-popupinfo--timer nil))
           (let ((candidate (nth corfu--index corfu--candidates)))
             (if (or (eq delay t) (<= delay 0)
                     (equal candidate corfu-popupinfo--candidate))
