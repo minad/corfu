@@ -434,29 +434,30 @@ not be displayed until this command is called again, even if
 
 (defun corfu-popupinfo--exhibit (&rest _)
   "Update the info popup automatically."
-  (add-to-list 'minor-mode-overriding-map-alist
-               `(,#'corfu-popupinfo-mode . ,corfu-popupinfo-map))
-  (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
-      (when-let* ((delay (if (consp corfu-popupinfo-delay)
-                             (funcall (if (corfu-popupinfo--visible-p) #'cdr #'car)
-                                      corfu-popupinfo-delay)
-                           corfu-popupinfo-delay))
-                  (corfu-popupinfo--toggle))
-        (when corfu-popupinfo--timer
-          (cancel-timer corfu-popupinfo--timer)
-          (setq corfu-popupinfo--timer nil))
-        (let ((candidate (nth corfu--index corfu--candidates)))
-          (if (or (eq delay t) (<= delay 0)
-                  (equal candidate corfu-popupinfo--candidate))
-              (corfu-popupinfo--show candidate)
-            (cond
-             (corfu-popupinfo-hide
-              (corfu-popupinfo--hide))
-             (corfu-popupinfo--candidate
-              (corfu-popupinfo--show corfu-popupinfo--candidate)))
-            (setq corfu-popupinfo--timer
-                  (run-at-time delay nil #'corfu-popupinfo--show candidate)))))
-    (corfu-popupinfo--hide)))
+  (when completion-in-region-mode
+    (setf (alist-get #'corfu-popupinfo-mode minor-mode-overriding-map-alist)
+          corfu-popupinfo-map)
+    (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
+        (when-let* ((delay (if (consp corfu-popupinfo-delay)
+                               (funcall (if (corfu-popupinfo--visible-p) #'cdr #'car)
+                                        corfu-popupinfo-delay)
+                             corfu-popupinfo-delay))
+                    (corfu-popupinfo--toggle))
+          (when corfu-popupinfo--timer
+            (cancel-timer corfu-popupinfo--timer)
+            (setq corfu-popupinfo--timer nil))
+          (let ((candidate (nth corfu--index corfu--candidates)))
+            (if (or (eq delay t) (<= delay 0)
+                    (equal candidate corfu-popupinfo--candidate))
+                (corfu-popupinfo--show candidate)
+              (cond
+               (corfu-popupinfo-hide
+                (corfu-popupinfo--hide))
+               (corfu-popupinfo--candidate
+                (corfu-popupinfo--show corfu-popupinfo--candidate)))
+              (setq corfu-popupinfo--timer
+                    (run-at-time delay nil #'corfu-popupinfo--show candidate)))))
+      (corfu-popupinfo--hide))))
 
 (defun corfu-popupinfo--teardown ()
   "Teardown the info popup state."
