@@ -326,7 +326,7 @@ the candidate popup, its value is 'bottom, 'top, 'right or 'left."
   (when corfu-popupinfo--timer
     (cancel-timer corfu-popupinfo--timer)
     (setq corfu-popupinfo--timer nil))
-  (when (and (corfu--popup-support-p) (corfu-popupinfo--visible-p corfu--frame))
+  (when (and (corfu-popupinfo--visible-p corfu--frame))
     (let* ((doc-changed
             (not (and (corfu-popupinfo--visible-p)
                       (equal candidate corfu-popupinfo--candidate))))
