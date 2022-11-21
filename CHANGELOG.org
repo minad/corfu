@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Version 0.32 (2022-11-21)
+* Version 0.33 (2022-11-21)
 
 - =corfu-popupinfo=: Bugfixes
 
