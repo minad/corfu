@@ -146,13 +146,13 @@ The coordinates list has the form (LEFT TOP RIGHT BOTTOM) where
 all values are in pixels relative to the origin. See
 `frame-edges' for details.")
 
-(defvar-local corfu-popupinfo--direction nil
-  "Position direction of the info popup relative to the candidate popup.")
+(defvar-local corfu-popupinfo--lock-dir nil
+  "Locked position direction of the info popup.")
 
 (defconst corfu-popupinfo--state-vars
   '(corfu-popupinfo--candidate
     corfu-popupinfo--coordinates
-    corfu-popupinfo--direction
+    corfu-popupinfo--lock-dir
     corfu-popupinfo--toggle
     corfu-popupinfo--function)
   "Buffer-local state variables used by corfu-popupinfo.")
@@ -219,17 +219,19 @@ all values are in pixels relative to the origin. See
          (margin (* cw (+ (alist-get 'left-margin-width corfu-popupinfo--buffer-parameters)
                           (alist-get 'right-margin-width corfu-popupinfo--buffer-parameters))))
          (max-height (* (default-line-height) corfu-popupinfo-max-height))
-         (max-width (+ margin (* cw corfu-popupinfo-max-width))))
-    (if corfu-popupinfo-resize
-        (with-current-buffer " *corfu-popupinfo*"
-          (cl-letf* (((window-dedicated-p) nil)
-                     ((window-buffer) (current-buffer))
-                     (size (window-text-pixel-size
-                            nil (point-min) (point-max)
-                            max-width max-height)))
-            (cons (min (+ margin (car size)) max-width)
-                  (min (cdr size) max-height))))
-      (cons max-width max-height))))
+         (max-width (* cw corfu-popupinfo-max-width)))
+    (or (when corfu-popupinfo-resize
+          (with-current-buffer " *corfu-popupinfo*"
+            (cl-letf* (((window-dedicated-p) nil)
+                       ((window-buffer) (current-buffer))
+                       (size (window-text-pixel-size
+                              nil (point-min) (point-max)
+                              max-width max-height)))
+              ;; Check that width is not exceeded. Otherwise use full height,
+              ;; since lines will get wrapped.
+              (when (<= (car size) max-width)
+                (cons (+ margin (car size)) (min (cdr size) max-height))))))
+        (cons (+ margin max-width) max-height))))
 
 (defun corfu-popupinfo--frame-geometry (frame)
   "Return position and size geometric attributes of FRAME.
@@ -370,7 +372,7 @@ the candidate popup, its value is 'vertical, 'right or 'left."
         (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
                       (corfu-popupinfo--display-area
-                       corfu-popupinfo--direction
+                       corfu-popupinfo--lock-dir
                        (and (not doc-changed)
                             (- (frame-pixel-width corfu-popupinfo--frame) border border))
                        (and (not doc-changed)
@@ -381,7 +383,7 @@ the candidate popup, its value is 'vertical, 'right or 'left."
                                    area-x area-y area-w area-h
                                    " *corfu-popupinfo*")
                 corfu-popupinfo--toggle t
-                corfu-popupinfo--direction area-d
+                corfu-popupinfo--lock-dir area-d
                 corfu-popupinfo--candidate candidate
                 corfu-popupinfo--coordinates new-coords)
           ;; HACK: Force margin update. For some reason, the call to
