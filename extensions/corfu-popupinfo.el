@@ -93,6 +93,18 @@ popup can be requested manually via `corfu-popupinfo-toggle',
   :type 'boolean
   :group 'corfu)
 
+;; TODO Not yet fully supported.
+(defcustom corfu-popupinfo-direction 'horizontal
+  "Preferred direction for the popup."
+  :type '(choice (const horizontal)
+                 (const vertical)
+                 ;; TODO always-* are unsupported
+                 (const always-horizontal)
+                 (const always-vertical)
+                 (const always-left)
+                 (const always-right))
+  :group 'corfu)
+
 (defvar corfu-popupinfo-map
   (let ((map (make-sparse-keymap)))
     (define-key map "\M-d" #'corfu-popupinfo-documentation)
@@ -278,10 +290,12 @@ The calculated area is in the form (X Y WIDTH HEIGHT 'vertical)."
     (if cf-on-cursor-bottom
         (progn
           (setq height (min h-remaining-bottom height)
-                height (min height (* (floor (/ height lh)) lh)))
+                ;;height (min height (* (floor (/ height lh)) lh))
+                )
           (list cfx y-on-bottom w-avail height 'vertical))
       (setq height (min h-remaining-top height)
-            height (min height (* (floor (/ height lh)) lh)))
+            ;;height (min height (* (floor (/ height lh)) lh))
+            )
       (list cfx
             (max 0 (- cfy height border))
             w-avail height 'vertical))))
@@ -303,7 +317,7 @@ the candidate popup, its value is 'vertical, 'right or 'left."
       (setq width (car size)
             height (cdr size))))
   (cond
-   ((memq dir '(right left))
+   ((or (eq dir 'right) (eq dir 'left))
     ;; TODO Direction handling is incomplete. Fix not only horizontal,
     ;; but also left or right.
     (corfu-popupinfo--display-area-horizontal width height))
@@ -314,10 +328,16 @@ the candidate popup, its value is 'vertical, 'right or 'left."
                   (corfu-popupinfo--display-area-horizontal width height))
                  ((and v-a `(,_v-x ,_v-y ,v-w ,v-h ,_v-d))
                   (corfu-popupinfo--display-area-vertical width height)))
-      (if (and (or (< h-h height) (< h-w width))
-               (or (>= (* v-w v-h) (* h-w h-h))
-                   (and (>= v-h height) (>= v-w width))))
-          v-a h-a)))))
+      (pcase corfu-popupinfo-direction
+        ;; TODO Add proper support for corfu-popupinfo-direction 'always-left,
+        ;; 'always-right.
+        ('always-left       h-a)
+        ('always-right      h-a)
+        ('always-horizontal h-a)
+        ('always-vertical   v-a)
+        ((and 'horizontal (guard (>= h-h height)) (guard (>= h-w width))) h-a)
+        ((and 'vertical   (guard (>= v-h height)) (guard (>= v-w width))) v-a)
+        (_ (if (>= (* v-w v-h) (* h-w h-h)) v-a h-a)))))))
 
 (defun corfu-popupinfo--show (candidate)
   "Show the info popup for CANDIDATE."
