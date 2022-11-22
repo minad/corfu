@@ -257,9 +257,7 @@ relative to the candidate popup, its value can be 'right or 'left."
 
 The WIDTH and HEIGHT of the info popup are in pixels.
 
-The calculated area is in the form (X Y WIDTH HEIGHT DIR).
-DIR indicates the vertical position direction of the info popup
-relative to the candidate popup, its value can be 'bottom or 'top."
+The calculated area is in the form (X Y WIDTH HEIGHT 'vertical)."
   (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                (lh (default-line-height))
                (`(,_pfx ,_pfy ,pfw ,pfh)
@@ -281,35 +279,35 @@ relative to the candidate popup, its value can be 'bottom or 'top."
         (progn
           (setq height (min h-remaining-bottom height)
                 height (min height (* (floor (/ height lh)) lh)))
-          (list cfx y-on-bottom w-avail height 'bottom))
+          (list cfx y-on-bottom w-avail height 'vertical))
       (setq height (min h-remaining-top height)
             height (min height (* (floor (/ height lh)) lh)))
       (list cfx
             (max 0 (- cfy height border))
-            w-avail height 'top))))
+            w-avail height 'vertical))))
 
 (defun corfu-popupinfo--display-area (dir width height)
   "Calculate the display area for the info popup.
 
 If DIR is non-nil, the display area in the corresponding
-direction is calculated first, its value can be 'bottom,
-'top,'right or 'left.
+direction is calculated first, its value can be 'vertical, 'right
+or 'left.
 
 The pixel size of the info popup can be specified by WIDTH and HEIGHT.
 
 The calculated area is in the form (X Y WIDTH HEIGHT DIR).
 DIR indicates the position direction of the info popup relative to
-the candidate popup, its value is 'bottom, 'top, 'right or 'left."
+the candidate popup, its value is 'vertical, 'right or 'left."
   (unless (and width height)
     (let ((size (corfu-popupinfo--size)))
       (setq width (car size)
             height (cdr size))))
-  ;; TODO Direction handling is incomplete. Fix not only horizontal/vertical,
-  ;; but left/right/bottom/top.
   (cond
    ((memq dir '(right left))
+    ;; TODO Direction handling is incomplete. Fix not only horizontal,
+    ;; but also left or right.
     (corfu-popupinfo--display-area-horizontal width height))
-   ((memq dir '(bottom top))
+   ((eq dir 'vertical)
     (corfu-popupinfo--display-area-vertical width height))
    (t
     (pcase-let* (((and h-a `(,_h-x ,_h-y ,h-w ,h-h ,_h-d))
