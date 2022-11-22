@@ -82,10 +82,11 @@
         (with-selected-window (display-buffer buf t)
           (save-restriction
             (widen)
-            (if (bufferp (car loc))
-                (goto-char (cdr loc))
-              (goto-char (point-min))
-              (forward-line (1- (cdr loc))))
+            (goto-char (point-min))
+            (when-let (pos (cdr loc))
+              (if (bufferp (car loc))
+                  (goto-char pos)
+                (forward-line (1- pos))))
             (set-window-start nil (point)))))
     (user-error "No location available")))
 

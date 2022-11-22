@@ -182,10 +182,11 @@ all values are in pixels relative to the origin. See
               (save-excursion
                 (save-restriction
                   (widen)
-                  (if (bufferp (car loc))
-                      (goto-char (cdr loc))
-                    (goto-char (point-min))
-                    (forward-line (1- (cdr loc))))
+                  (goto-char (point-min))
+                  (when-let (pos (cdr loc))
+                    (if (bufferp (car loc))
+                        (goto-char pos)
+                      (forward-line (1- pos))))
                   (let ((beg (point)))
                     ;; Support a little bit of scrolling.
                     (forward-line (* 10 corfu-popupinfo-max-height))
