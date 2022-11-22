@@ -164,21 +164,23 @@ all values are in pixels relative to the origin. See
 
 (defun corfu-popupinfo--get-location (candidate)
   "Get source at location of CANDIDATE."
-  (let (cleanup)
-    (unwind-protect
-        (save-excursion
+  (save-excursion
+    (let ((old-buffers (buffer-list)) (buffer nil))
+      (unwind-protect
           (when-let* ((fun (plist-get corfu--extra :company-location))
                       ;; BUG: company-location may throw errors if location is not found
                       (loc (ignore-errors (funcall fun candidate)))
-                      (res (or (and (bufferp (car loc)) (car loc))
-                               (get-file-buffer (car loc))
-                               (let ((inhibit-message t)
-                                     (enable-dir-local-variables nil)
-                                     (enable-local-variables :safe)
-                                     (non-essential t)
-                                     (delay-mode-hooks t))
-                                 (setq cleanup (find-file-noselect (car loc) t))))))
-            (with-current-buffer res
+                      ((setq buffer
+                             (or (and (bufferp (car loc)) (car loc))
+                                 (get-file-buffer (car loc))
+                                 (let ((inhibit-message t)
+                                       (enable-dir-local-variables nil)
+                                       (enable-local-variables :safe)
+                                       (non-essential t)
+                                       (delay-mode-hooks t)
+                                       (find-file-hook '(global-font-lock-mode-check-buffers)))
+                                   (find-file-noselect (car loc) t))))))
+            (with-current-buffer buffer
               (save-excursion
                 (save-restriction
                   (widen)
@@ -192,9 +194,10 @@ all values are in pixels relative to the origin. See
                     (forward-line (* 10 corfu-popupinfo-max-height))
                     (when jit-lock-mode
                       (jit-lock-fontify-now beg (point)))
-                    (setq res (buffer-substring beg (point)))
-                    (and (not (string-blank-p res)) res)))))))
-      (when cleanup (kill-buffer cleanup)))))
+                    (let ((res (buffer-substring beg (point))))
+                      (and (not (string-blank-p res)) res)))))))
+        (when (and buffer (not (memq buffer old-buffers)))
+          (kill-buffer buffer))))))
 
 (defun corfu-popupinfo--get-documentation (candidate)
   "Get the documentation for CANDIDATE."
