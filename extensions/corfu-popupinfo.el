@@ -367,7 +367,7 @@ the candidate popup, its value is 'vertical, 'right or 'left."
             (message "No %s available"
                      (car (last (split-string (symbol-name corfu-popupinfo--function) "-+")))))
           (corfu-popupinfo--hide)
-          (setq doc-changed nil coords-changed nil corfu-popupinfo--toggle nil)))
+          (setq doc-changed nil coords-changed nil)))
       (when (or doc-changed coords-changed)
         (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
