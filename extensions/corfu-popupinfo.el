@@ -351,14 +351,14 @@ the candidate popup, its value is 'vertical, 'right or 'left."
     (cancel-timer corfu-popupinfo--timer)
     (setq corfu-popupinfo--timer nil))
   (when (and (corfu-popupinfo--visible-p corfu--frame))
-    (let* ((doc-changed
+    (let* ((cand-changed
             (not (and (corfu-popupinfo--visible-p)
                       (equal candidate corfu-popupinfo--candidate))))
            (new-coords (frame-edges corfu--frame 'inner-edges))
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
-      (when doc-changed
-        (if-let (doc (funcall corfu-popupinfo--function candidate))
-            (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*" doc)
+      (when cand-changed
+        (if-let (content (funcall corfu-popupinfo--function candidate))
+            (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*" content)
               ;; TODO Could we somehow refill the buffer intelligently?
               ;;(let ((inhibit-read-only t))
               ;;  (setq fill-column corfu-popupinfo-max-width)
@@ -371,15 +371,15 @@ the candidate popup, its value is 'vertical, 'right or 'left."
             (message "No %s available"
                      (car (last (split-string (symbol-name corfu-popupinfo--function) "-+")))))
           (corfu-popupinfo--hide)
-          (setq doc-changed nil coords-changed nil)))
-      (when (or doc-changed coords-changed)
+          (setq cand-changed nil coords-changed nil)))
+      (when (or cand-changed coords-changed)
         (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
                       (corfu-popupinfo--display-area
                        corfu-popupinfo--lock-dir
-                       (and (not doc-changed)
+                       (and (not cand-changed)
                             (- (frame-pixel-width corfu-popupinfo--frame) border border))
-                       (and (not doc-changed)
+                       (and (not cand-changed)
                             (- (frame-pixel-height corfu-popupinfo--frame) border border))))
                      (margin-quirk (not corfu-popupinfo--frame)))
           (setq corfu-popupinfo--frame
@@ -473,7 +473,8 @@ not be displayed until this command is called again, even if
                     (corfu-popupinfo--toggle))
           (let ((candidate (nth corfu--index corfu--candidates)))
             (if (or (eq delay t) (<= delay 0)
-                    (equal candidate corfu-popupinfo--candidate))
+                    (and (equal candidate corfu-popupinfo--candidate)
+                         (corfu-popupinfo--visible-p)))
                 (corfu-popupinfo--show candidate)
               (when (corfu-popupinfo--visible-p)
                 (cond
