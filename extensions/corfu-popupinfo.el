@@ -93,14 +93,13 @@ popup can be requested manually via `corfu-popupinfo-toggle',
   :type 'boolean
   :group 'corfu)
 
-;; TODO Not yet fully supported.
 (defcustom corfu-popupinfo-direction 'horizontal
   "Preferred direction for the popup."
   :type '(choice (const horizontal)
                  (const vertical)
-                 ;; TODO always-* are unsupported
                  (const always-horizontal)
                  (const always-vertical)
+                 ;; TODO always-left and always-right are unsupported
                  (const always-left)
                  (const always-right))
   :group 'corfu)
@@ -281,30 +280,20 @@ The calculated area is in the form (X Y WIDTH HEIGHT 'vertical)."
                (`(,_pfx ,_pfy ,pfw ,pfh)
                 (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
                (`(,cfx ,cfy ,_cfw ,cfh) (corfu-popupinfo--frame-geometry corfu--frame))
-               (cf-on-cursor-bottom
-                (>= cfy
-                    (+ (cadr (window-inside-pixel-edges))
-                       (window-tab-line-height)
-                       (or (cdr (posn-x-y (posn-at-point (point)))) 0)
-                       lh)))
-               ;; (y-on-top (max 0 (- cfy height border)))
-               (y-on-bottom (+ cfy cfh (- border)))
+               (below-cursor
+                (>= cfy (+ lh (cadr (window-inside-pixel-edges))
+                           (window-tab-line-height)
+                           (or (cdr (posn-x-y (posn-at-point (point)))) 0))))
                (h-remaining-top (- cfy border border))
-               (h-remaining-bottom (- pfh y-on-bottom border border))
+               (h-remaining-bottom (- pfh cfy cfh border))
+               (h-top (min h-remaining-top height))
+               (h-bottom (min h-remaining-bottom height))
+               (y-on-top (max 0 (- cfy h-top border)))
+               (y-on-bottom (+ cfy cfh (- border)))
                (w-avail (min width (- pfw cfx border border))))
-    ;; TODO cleanup
-    (if cf-on-cursor-bottom
-        (progn
-          (setq height (min h-remaining-bottom height)
-                ;;height (min height (* (floor (/ height lh)) lh))
-                )
-          (list cfx y-on-bottom w-avail height 'vertical))
-      (setq height (min h-remaining-top height)
-            ;;height (min height (* (floor (/ height lh)) lh))
-            )
-      (list cfx
-            (max 0 (- cfy height border))
-            w-avail height 'vertical))))
+    (if below-cursor
+        (list cfx y-on-bottom w-avail h-bottom 'vertical)
+      (list cfx y-on-top w-avail h-top 'vertical))))
 
 (defun corfu-popupinfo--display-area (dir width height)
   "Calculate the display area for the info popup.
@@ -335,8 +324,7 @@ the candidate popup, its value is 'vertical, 'right or 'left."
                  ((and v-a `(,_v-x ,_v-y ,v-w ,v-h ,_v-d))
                   (corfu-popupinfo--display-area-vertical width height)))
       (pcase corfu-popupinfo-direction
-        ;; TODO Add proper support for corfu-popupinfo-direction 'always-left,
-        ;; 'always-right.
+        ;; TODO Add proper support for direction always-left and always-right.
         ('always-left       h-a)
         ('always-right      h-a)
         ('always-horizontal h-a)
