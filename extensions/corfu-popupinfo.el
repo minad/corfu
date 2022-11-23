@@ -368,8 +368,9 @@ the candidate popup, its value is 'vertical, 'right or 'left."
               (setf face-remapping-alist (copy-tree face-remapping-alist)
                     (alist-get 'default face-remapping-alist) 'corfu-popupinfo))
           (unless (eq corfu-popupinfo--toggle 'init)
-            (message "No %s available"
-                     (car (last (split-string (symbol-name corfu-popupinfo--function) "-+")))))
+            (message "No %s available for `%s'"
+                     (car (last (split-string (symbol-name corfu-popupinfo--function) "-+")))
+                     candidate))
           (corfu-popupinfo--hide)
           (setq cand-changed nil coords-changed nil)))
       (when (or cand-changed coords-changed)
