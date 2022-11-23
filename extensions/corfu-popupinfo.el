@@ -475,11 +475,12 @@ not be displayed until this command is called again, even if
             (if (or (eq delay t) (<= delay 0)
                     (equal candidate corfu-popupinfo--candidate))
                 (corfu-popupinfo--show candidate)
-              (cond
-               (corfu-popupinfo-hide
-                (corfu-popupinfo--hide))
-               (corfu-popupinfo--candidate
-                (corfu-popupinfo--show corfu-popupinfo--candidate)))
+              (when (corfu-popupinfo--visible-p)
+                (cond
+                  (corfu-popupinfo-hide
+                   (corfu-popupinfo--hide))
+                  (corfu-popupinfo--candidate
+                   (corfu-popupinfo--show corfu-popupinfo--candidate))))
               (setq corfu-popupinfo--timer
                     (run-at-time delay nil #'corfu-popupinfo--show candidate)))))
       (corfu-popupinfo--hide))))
