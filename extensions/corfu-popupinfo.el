@@ -250,7 +250,7 @@ in the form of (X Y WIDTH HEIGHT)."
 The WIDTH and HEIGHT of the info popup are in pixels.
 The calculated area is in the form (X Y WIDTH HEIGHT DIR).
 DIR indicates the horizontal position direction of the info popup
-relative to the candidate popup, its value can be 'right or 'left."
+relative to the candidate popup, its value can be \\='right or \\='left."
   (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                (`(,_pfx ,_pfy ,pfw ,_pfh)
                 (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
@@ -274,7 +274,7 @@ relative to the candidate popup, its value can be 'right or 'left."
 
 The WIDTH and HEIGHT of the info popup are in pixels.
 
-The calculated area is in the form (X Y WIDTH HEIGHT 'vertical)."
+The calculated area is in the form (X Y WIDTH HEIGHT \\='vertical)."
   (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                (lh (default-line-height))
                (`(,_pfx ,_pfy ,pfw ,pfh)
@@ -299,14 +299,14 @@ The calculated area is in the form (X Y WIDTH HEIGHT 'vertical)."
   "Calculate the display area for the info popup.
 
 If DIR is non-nil, the display area in the corresponding
-direction is calculated first, its value can be 'vertical, 'right
-or 'left.
+direction is calculated first, its value can be \\='vertical, \\='right
+or \\='left.
 
 The pixel size of the info popup can be specified by WIDTH and HEIGHT.
 
 The calculated area is in the form (X Y WIDTH HEIGHT DIR).
 DIR indicates the position direction of the info popup relative to
-the candidate popup, its value is 'vertical, 'right or 'left."
+the candidate popup, its value is \\='vertical, \\='right or \\='left."
   (unless (and width height)
     (let ((size (corfu-popupinfo--size)))
       (setq width (car size)
