@@ -235,8 +235,11 @@ all values are in pixels relative to the origin. See
               ;; since lines will get wrapped.
               (when (<= (car size) max-width)
                 (cons (+ margin (car size))
-                      ;; Ensure that popup has at least a height of 1,
-                      ;; which is the minimum frame height (#261).
+                      ;; XXX HACK: Ensure that popup has at least a height of 1,
+                      ;; which is the minimum frame height (#261). Maybe we
+                      ;; should ask upstream how smaller frames can be created.
+                      ;; I only managed to create smaller frames by setting
+                      ;; `window-safe-min-height' to 0, which feels problematic.
                       (min (max (cdr size) lh) max-height))))))
         (cons (+ margin max-width) max-height))))
 
@@ -383,7 +386,7 @@ the candidate popup, its value is 'vertical, 'right or 'left."
                 corfu-popupinfo--lock-dir area-d
                 corfu-popupinfo--candidate candidate
                 corfu-popupinfo--coordinates new-coords)
-          ;; HACK: Force margin update. For some reason, the call to
+          ;; XXX HACK: Force margin update. For some reason, the call to
           ;; `set-window-buffer' in `corfu--make-frame' is not effective the
           ;; first time. Why does Emacs have all these quirks?
           (when margin-quirk
