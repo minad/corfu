@@ -219,9 +219,10 @@ all values are in pixels relative to the origin. See
 (defun corfu-popupinfo--size ()
   "Return popup size as pair."
   (let* ((cw (default-font-width))
+         (lh (default-line-height))
          (margin (* cw (+ (alist-get 'left-margin-width corfu-popupinfo--buffer-parameters)
                           (alist-get 'right-margin-width corfu-popupinfo--buffer-parameters))))
-         (max-height (* (default-line-height) corfu-popupinfo-max-height))
+         (max-height (* lh corfu-popupinfo-max-height))
          (max-width (* cw corfu-popupinfo-max-width)))
     (or (when corfu-popupinfo-resize
           (with-current-buffer " *corfu-popupinfo*"
@@ -233,7 +234,8 @@ all values are in pixels relative to the origin. See
               ;; Check that width is not exceeded. Otherwise use full height,
               ;; since lines will get wrapped.
               (when (<= (car size) max-width)
-                (cons (+ margin (car size)) (min (cdr size) max-height))))))
+                (cons (+ margin (car size))
+                      (min (max (cdr size) lh) max-height))))))
         (cons (+ margin max-width) max-height))))
 
 (defun corfu-popupinfo--frame-geometry (frame)
