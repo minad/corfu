@@ -159,10 +159,10 @@ files can be opened at once with =find-file= if you enter a wildcard. You may al
 give the =initials= completion style a try.
 
 See also the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] and the [[https://github.com/minad/cape][Cape manual]] for additional Capf configuration
-tips. The Lsp-mode configuration is documented in the wiki. For more general
-documentation read the chapter about completion in the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Completion.html][Emacs manual]]. If you want
-to create your own Capfs, you can find documentation about completion in the
-[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
+tips. The Eglot and Lsp-mode configurations are documented in the wiki. For more
+general documentation read the chapter about completion in the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Completion.html][Emacs manual]]. If
+you want to create your own Capfs, you can find documentation about completion
+in the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
 
 ** Auto completion
 
