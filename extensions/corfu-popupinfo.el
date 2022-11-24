@@ -235,6 +235,8 @@ all values are in pixels relative to the origin. See
               ;; since lines will get wrapped.
               (when (<= (car size) max-width)
                 (cons (+ margin (car size))
+                      ;; Ensure that popup has at least a height of 1,
+                      ;; which is the minimum frame height (#261).
                       (min (max (cdr size) lh) max-height))))))
         (cons (+ margin max-width) max-height))))
 
