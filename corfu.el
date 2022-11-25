@@ -104,6 +104,8 @@ separator: Quit at boundary if no `corfu-separator' has been inserted."
 
 (defcustom corfu-quit-no-match 'separator
   "Automatically quit if no matching candidate is found.
+When staying alive even if there is no match a warning message is
+shown in the popup.
 nil: Stay alive even if there is no match.
 t: Quit if there is no match.
 separator: Only stay alive if there is no match and
