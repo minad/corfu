@@ -458,7 +458,7 @@ A scroll bar is displayed from LO to LO+BAR."
                         (- (frame-pixel-width) width))))
          (yb (+ (cadr edge) (window-tab-line-height) (or (cdr pos) 0) ch))
          (y (if (> (+ yb (* corfu-count ch) ch ch) (frame-pixel-height))
-                (- yb height ch 1)
+                (- yb height ch border border)
               yb))
          (row 0))
     (setq corfu--frame

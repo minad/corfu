@@ -260,8 +260,8 @@ relative to the candidate popup, its value can be right or left."
                (`(,cfx ,cfy ,cfw ,_cfh) (corfu-popupinfo--frame-geometry corfu--frame))
                (x-on-right (+ cfx cfw (- border)))
                (x-on-left (max 0 (- cfx width border)))
-               (w-remaining-right (- pfw 1 x-on-right border border))
-               (w-remaining-left (- cfx 1 border)))
+               (w-remaining-right (- pfw x-on-right border border))
+               (w-remaining-left (- cfx border)))
     (cond
      ((>= w-remaining-right width)
       (list x-on-right cfy width height 'right))
