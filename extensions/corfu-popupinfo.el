@@ -26,10 +26,6 @@
 
 ;;; Commentary:
 
-;; NOTE: This extension has been added recently to Corfu. It is still
-;; experimental. The extension may get renamed and the public interface
-;; may change any time.
-;;
 ;; Display an information popup for completion candidate when using
 ;; Corfu. The popup displays either the candidate documentation or the
 ;; candidate location. The `corfu-popupinfo-mode' must be enabled
