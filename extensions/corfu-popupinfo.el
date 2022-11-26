@@ -259,7 +259,7 @@ relative to the candidate popup, its value can be right or left."
                 (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
                (`(,cfx ,cfy ,cfw ,_cfh) (corfu-popupinfo--frame-geometry corfu--frame))
                (x-on-right (+ cfx cfw (- border)))
-               (x-on-left (- cfx width border))
+               (x-on-left (max (- cfx width border) 1))
                (w-remaining-right (- pfw 1 x-on-right border border))
                (w-remaining-left (- cfx 1 border)))
     (cond
