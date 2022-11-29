@@ -106,10 +106,10 @@ popup can be requested manually via `corfu-popupinfo-toggle',
            (const left)
            (const right)
            (const vertical)
-           (const always-horizontal)
-           (const always-vertical)
            (const always-left)
-           (const always-right)))
+           (const always-right)
+           (const always-horizontal)
+           (const always-vertical)))
   :group 'corfu)
 
 (defvar corfu-popupinfo-map

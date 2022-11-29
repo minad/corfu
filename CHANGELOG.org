@@ -5,6 +5,7 @@
 * Development
 
 - Bugfixes
+- =corfu-popupinfo-direction=: Variable must be a list of directions.
 
 * Version 0.33 (2022-11-21)
 
