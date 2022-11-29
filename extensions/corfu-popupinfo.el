@@ -454,24 +454,26 @@ not be displayed until this command is called again, even if
       (cancel-timer corfu-popupinfo--timer)
       (setq corfu-popupinfo--timer nil))
     (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
-        (when-let* ((delay (if (consp corfu-popupinfo-delay)
+        (let ((candidate (nth corfu--index corfu--candidates)))
+          (if-let* ((delay (if (consp corfu-popupinfo-delay)
                                (funcall (if (eq corfu-popupinfo--toggle 'init) #'car #'cdr)
                                         corfu-popupinfo-delay)
                              corfu-popupinfo-delay))
                     (corfu-popupinfo--toggle))
-          (let ((candidate (nth corfu--index corfu--candidates)))
-            (if (or (eq delay t) (<= delay 0)
-                    (and (equal candidate corfu-popupinfo--candidate)
-                         (corfu-popupinfo--visible-p)))
-                (corfu-popupinfo--show candidate)
-              (when (corfu-popupinfo--visible-p)
-                (cond
-                  (corfu-popupinfo-hide
-                   (corfu-popupinfo--hide))
-                  (corfu-popupinfo--candidate
-                   (corfu-popupinfo--show corfu-popupinfo--candidate))))
-              (setq corfu-popupinfo--timer
-                    (run-at-time delay nil #'corfu-popupinfo--show candidate)))))
+              (if (or (eq delay t) (<= delay 0)
+                      (and (equal candidate corfu-popupinfo--candidate)
+                           (corfu-popupinfo--visible-p)))
+                  (corfu-popupinfo--show candidate)
+                (when (corfu-popupinfo--visible-p)
+                  (cond
+                   (corfu-popupinfo-hide
+                    (corfu-popupinfo--hide))
+                   (corfu-popupinfo--candidate
+                    (corfu-popupinfo--show corfu-popupinfo--candidate))))
+                (setq corfu-popupinfo--timer
+                    (run-at-time delay nil #'corfu-popupinfo--show candidate)))
+            (unless (equal candidate corfu-popupinfo--candidate)
+              (corfu-popupinfo--hide))))
       (corfu-popupinfo--hide))))
 
 (defun corfu-popupinfo--teardown ()
