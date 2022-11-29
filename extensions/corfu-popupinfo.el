@@ -75,12 +75,22 @@ popup can be requested manually via `corfu-popupinfo-toggle',
   :group 'corfu)
 
 (defcustom corfu-popupinfo-max-width 80
-  "The max width of the info popup in characters."
+  "The maximum width of the info popup in characters."
+  :type 'integer
+  :group 'corfu)
+
+(defcustom corfu-popupinfo-min-width 30
+  "The minimum width of the info popup in characters."
   :type 'integer
   :group 'corfu)
 
 (defcustom corfu-popupinfo-max-height 10
-  "The max height of the info popup in characters."
+  "The maximum height of the info popup in characters."
+  :type 'integer
+  :group 'corfu)
+
+(defcustom corfu-popupinfo-min-height 1
+  "The minimum height of the info popup in characters."
   :type 'integer
   :group 'corfu)
 
@@ -89,15 +99,17 @@ popup can be requested manually via `corfu-popupinfo-toggle',
   :type 'boolean
   :group 'corfu)
 
-(defcustom corfu-popupinfo-direction 'horizontal
-  "Preferred direction for the popup."
-  :type '(choice (const horizontal)
-                 (const vertical)
-                 (const always-horizontal)
-                 (const always-vertical)
-                 ;; TODO always-left and always-right are unsupported
-                 (const always-left)
-                 (const always-right))
+(defcustom corfu-popupinfo-direction '(right left vertical)
+  "Preferred directionse for the popup in order."
+  :type '(repeat
+          (choice
+           (const left)
+           (const right)
+           (const vertical)
+           (const always-horizontal)
+           (const always-vertical)
+           (const always-left)
+           (const always-right)))
   :group 'corfu)
 
 (defvar corfu-popupinfo-map
@@ -247,90 +259,61 @@ in the form of (X Y WIDTH HEIGHT)."
   (pcase-let ((`(,x . ,y) (frame-position frame)))
     (list x y (frame-pixel-width frame) (frame-pixel-height frame))))
 
-(defun corfu-popupinfo--display-area-horizontal (width height)
-  "Calculate the horizontal display area for the info popup.
+(defun corfu-popupinfo--fits-p (size area)
+  "Check if SIZE fits into the AREA.
 
-The WIDTH and HEIGHT of the info popup are in pixels.
-The calculated area is in the form (X Y WIDTH HEIGHT DIR).
-DIR indicates the horizontal position direction of the info popup
-relative to the candidate popup, its value can be right or left."
-  (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
-               (`(,_pfx ,_pfy ,pfw ,_pfh)
-                (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
-               (`(,cfx ,cfy ,cfw ,_cfh) (corfu-popupinfo--frame-geometry corfu--frame))
-               (x-on-right (+ cfx cfw (- border)))
-               (x-on-left (max 0 (- cfx width border)))
-               (w-remaining-right (- pfw x-on-right border border))
-               (w-remaining-left (- cfx border)))
-    (cond
-     ((>= w-remaining-right width)
-      (list x-on-right cfy width height 'right))
-     ((>= w-remaining-left width)
-      (list x-on-left cfy width height 'left))
-     ((>= w-remaining-right w-remaining-left)
-      (list x-on-right cfy w-remaining-right height 'right))
-     (t
-      (list x-on-left cfy w-remaining-left height 'left)))))
+SIZE is in the form (WIDTH . HEIGHT).
+AREA is in the form (X Y WIDTH HEIGHT DIR)."
+  (and (>= (nth 2 area) (car size)) (>= (nth 3 area) (cdr size))))
 
-(defun corfu-popupinfo--display-area-vertical (width height)
-  "Calculate the vertical display area for the info popup.
+(defun corfu-popupinfo--larger-p (area1 area2)
+  "Check if AREA1 is larger than AREA2.
 
-The WIDTH and HEIGHT of the info popup are in pixels.
+AREA1 and AREA2 are both in the form (X Y WIDTH HEIGHT DIR)."
+  (>= (* (nth 2 area1) (nth 3 area1)) (* (nth 2 area2) (nth 3 area2))))
 
-The calculated area is in the form (X Y WIDTH HEIGHT DIR)."
-  (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
-               (lh (default-line-height))
-               (`(,_pfx ,_pfy ,pfw ,pfh)
-                (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
-               (`(,cfx ,cfy ,_cfw ,cfh) (corfu-popupinfo--frame-geometry corfu--frame))
-               (below-cursor
-                (>= cfy (+ lh (cadr (window-inside-pixel-edges))
-                           (window-tab-line-height)
-                           (or (cdr (posn-x-y (posn-at-point (point)))) 0))))
-               (h-remaining-top (- cfy border border))
-               (h-remaining-bottom (- pfh cfy cfh border))
-               (h-top (min h-remaining-top height))
-               (h-bottom (min h-remaining-bottom height))
-               (y-on-top (max 0 (- cfy h-top border)))
-               (y-on-bottom (+ cfy cfh (- border)))
-               (w-avail (min width (- pfw cfx border border))))
-    (if below-cursor
-        (list cfx y-on-bottom w-avail h-bottom 'vertical)
-      (list cfx y-on-top w-avail h-top 'vertical))))
-
-(defun corfu-popupinfo--display-area (dir width height)
+(defun corfu-popupinfo--area (ps)
   "Calculate the display area for the info popup.
 
-If DIR is non-nil, the display area in the corresponding
-direction is calculated first, its value can be vertical, right
-or left. The pixel size of the info popup can be specified by
-WIDTH and HEIGHT. The calculated area is in the form (X Y WIDTH
-HEIGHT DIR)."
-  (unless (and width height)
-    (let ((size (corfu-popupinfo--size)))
-      (setq width (car size)
-            height (cdr size))))
-  (cond
-   ((or (eq dir 'right) (eq dir 'left))
-    ;; TODO Direction handling is incomplete. Fix not only horizontal,
-    ;; but also left or right.
-    (corfu-popupinfo--display-area-horizontal width height))
-   ((eq dir 'vertical)
-    (corfu-popupinfo--display-area-vertical width height))
-   (t
-    (pcase-let* (((and h-a `(,_h-x ,_h-y ,h-w ,h-h ,_h-d))
-                  (corfu-popupinfo--display-area-horizontal width height))
-                 ((and v-a `(,_v-x ,_v-y ,v-w ,v-h ,_v-d))
-                  (corfu-popupinfo--display-area-vertical width height)))
-      (pcase corfu-popupinfo-direction
-        ;; TODO Add proper support for direction always-left and always-right.
-        ('always-left       h-a)
-        ('always-right      h-a)
-        ('always-horizontal h-a)
-        ('always-vertical   v-a)
-        ((and 'horizontal (guard (>= h-h height)) (guard (>= h-w width))) h-a)
-        ((and 'vertical   (guard (>= v-h height)) (guard (>= v-w width))) v-a)
-        (_ (if (>= (* v-w v-h) (* h-w h-h)) v-a h-a)))))))
+PS is the pixel size of the popup. The calculated area is in the
+form (X Y WIDTH HEIGHT DIR)."
+  (pcase-let* ((cw (default-font-width))
+               (lh (default-line-height))
+               (border (alist-get 'child-frame-border-width corfu--frame-parameters))
+               (`(,_pfx ,_pfy ,pfw ,pfh)
+                (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
+               (`(,cfx ,cfy ,cfw ,cfh) (corfu-popupinfo--frame-geometry corfu--frame))
+               ;; Left display area
+               (al (list (max 0 (- cfx (car ps) border)) cfy
+                         (min (- cfx border) (car ps)) (cdr ps) 'left))
+               ;; Right display area
+               (arx (+ cfx cfw (- border)))
+               (ar (list arx cfy (min (- pfw arx border border) (car ps))
+                         (cdr ps) 'right))
+               ;; Vertical display area
+               (avw (min (car ps) (- pfw cfx border border)))
+               (av (if (>= cfy (+ lh (cadr (window-inside-pixel-edges))
+                                  (window-tab-line-height)
+                                  (or (cdr (posn-x-y (posn-at-point (point)))) 0)))
+                       (list cfx (+ cfy cfh (- border)) avw (min (- pfh cfy cfh border) (cdr ps)) 'vertical)
+                     (let ((h (min (- cfy border border) (cdr ps))))
+                       (list cfx (max 0 (- cfy h border)) avw h 'vertical)))))
+    (unless (and corfu-popupinfo--lock-dir
+                 (corfu-popupinfo--fits-p
+                  (cons (* cw corfu-popupinfo-min-width) (* lh corfu-popupinfo-min-height))
+                  (pcase corfu-popupinfo--lock-dir ('left al) ('right ar) ('vertical av))))
+      (setq corfu-popupinfo--lock-dir nil))
+    (or
+     (cl-loop for dir in corfu-popupinfo-direction thereis
+              (pcase dir
+                ((or 'always-right (guard (eq corfu-popupinfo--lock-dir 'right))) ar)
+                ((or 'always-left (guard (eq corfu-popupinfo--lock-dir 'left))) al)
+                ((or 'always-vertical (guard (eq corfu-popupinfo--lock-dir 'vertical))) av)
+                ((and 'right (guard (corfu-popupinfo--fits-p ps ar))) ar)
+                ((and 'left (guard (corfu-popupinfo--fits-p ps al))) al)
+                ((and 'vertical (guard (corfu-popupinfo--fits-p ps av))) av)))
+     (let ((ah (if (corfu-popupinfo--larger-p ar al) ar al)))
+       (if (corfu-popupinfo--larger-p av ah) av ah)))))
 
 (defun corfu-popupinfo--show (candidate)
   "Show the info popup for CANDIDATE."
@@ -363,12 +346,12 @@ HEIGHT DIR)."
       (when (or cand-changed coords-changed)
         (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
-                      (corfu-popupinfo--display-area
-                       corfu-popupinfo--lock-dir
-                       (and (not cand-changed)
-                            (- (frame-pixel-width corfu-popupinfo--frame) border border))
-                       (and (not cand-changed)
-                            (- (frame-pixel-height corfu-popupinfo--frame) border border))))
+                      (corfu-popupinfo--area
+                       (if cand-changed
+                           (corfu-popupinfo--size)
+                         (cons
+                          (- (frame-pixel-width corfu-popupinfo--frame) border border)
+                          (- (frame-pixel-height corfu-popupinfo--frame) border border)))))
                      (margin-quirk (not corfu-popupinfo--frame)))
           (setq corfu-popupinfo--frame
                 (corfu--make-frame corfu-popupinfo--frame
