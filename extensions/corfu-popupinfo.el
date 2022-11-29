@@ -106,10 +106,10 @@ popup can be requested manually via `corfu-popupinfo-toggle',
            (const left)
            (const right)
            (const vertical)
-           (const always-left)
-           (const always-right)
-           (const always-horizontal)
-           (const always-vertical)))
+           (const force-left)
+           (const force-right)
+           (const force-horizontal)
+           (const force-vertical)))
   :group 'corfu)
 
 (defvar corfu-popupinfo-map
@@ -306,9 +306,9 @@ form (X Y WIDTH HEIGHT DIR)."
     (or
      (cl-loop for dir in corfu-popupinfo-direction thereis
               (pcase dir
-                ((or 'always-right (guard (eq corfu-popupinfo--lock-dir 'right))) ar)
-                ((or 'always-left (guard (eq corfu-popupinfo--lock-dir 'left))) al)
-                ((or 'always-vertical (guard (eq corfu-popupinfo--lock-dir 'vertical))) av)
+                ((or 'force-right (guard (eq corfu-popupinfo--lock-dir 'right))) ar)
+                ((or 'force-left (guard (eq corfu-popupinfo--lock-dir 'left))) al)
+                ((or 'force-vertical (guard (eq corfu-popupinfo--lock-dir 'vertical))) av)
                 ((and 'right (guard (corfu-popupinfo--fits-p ps ar))) ar)
                 ((and 'left (guard (corfu-popupinfo--fits-p ps al))) al)
                 ((and 'vertical (guard (corfu-popupinfo--fits-p ps av))) av)))
