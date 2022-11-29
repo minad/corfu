@@ -375,6 +375,7 @@ FRAME is the existing frame."
     (set-frame-parameter frame 'corfu--hide-timer nil))
   (let* ((window-min-height 1)
          (window-min-width 1)
+         (inhibit-redisplay t)
          (x-gtk-resize-child-frames
           (let ((case-fold-search t))
             (and
@@ -417,19 +418,28 @@ FRAME is the existing frame."
       (set-window-parameter win 'no-other-window t)
       ;; Mark window as dedicated to prevent frame reuse (#60)
       (set-window-dedicated-p win t))
-    (set-frame-size frame width height t)
-    (if (frame-visible-p frame)
-        ;; XXX HACK Avoid flicker when frame is already visible.
-        ;; Redisplay, wait for resize and then move the frame.
-        (unless (equal (frame-position frame) (cons x y))
-          (redisplay 'force)
-          (sleep-for 0.01)
-          (set-frame-position frame x y))
-      ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not
-      ;; display content.
-      (set-frame-position frame x y)
-      (redisplay 'force)
-      (make-frame-visible frame))
+    ;; XXX HACK: Child frame popup behavior improved on Emacs 29.
+    ;; It seems we may not need the Emacs 27/28 hacks anymore.
+    (if (eval-when-compile (< emacs-major-version 29))
+        (let (inhibit-redisplay)
+          (set-frame-size frame width height t)
+          (if (frame-visible-p frame)
+              ;; XXX HACK Avoid flicker when frame is already visible.
+              ;; Redisplay, wait for resize and then move the frame.
+              (unless (equal (frame-position frame) (cons x y))
+                (redisplay 'force)
+                (sleep-for 0.01)
+                (set-frame-position frame x y))
+            ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not
+            ;; display content.
+            (set-frame-position frame x y)
+            (redisplay 'force)
+            (make-frame-visible frame)))
+      (set-frame-size frame width height t)
+      (unless (equal (frame-position frame) (cons x y))
+        (set-frame-position frame x y))
+      (unless (frame-visible-p frame)
+        (make-frame-visible frame)))
     (redirect-frame-focus frame parent)
     frame))
 
