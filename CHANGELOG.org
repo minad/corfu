@@ -6,6 +6,7 @@
 
 - Bugfixes
 - =corfu-popupinfo-direction=: Variable must be a list of directions.
+- Support height adjustments of =corfu-default= face
 
 * Version 0.33 (2022-11-21)
 
