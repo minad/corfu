@@ -5,6 +5,7 @@
 * Development
 
 - Bugfixes
+- Popup frame code updated for Emacs 29. Please report any issues.
 - =corfu-popupinfo-direction=: Variable must be a list of directions.
 - Support height adjustments of =corfu-default= face
 
