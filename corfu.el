@@ -344,8 +344,8 @@ The completion backend can override this with
     map)
   "Ignore all mouse clicks.")
 
-(defun corfu--make-buffer (name content)
-  "Create buffer with NAME and CONTENT."
+(defun corfu--make-buffer (name)
+  "Create buffer with NAME."
   (let ((fr face-remapping-alist)
         (ls line-spacing)
         (buffer (get-buffer-create name)))
@@ -357,11 +357,7 @@ The completion backend can override this with
       (setq-local face-remapping-alist (copy-tree fr)
                   line-spacing ls)
       (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
-      (with-silent-modifications
-        (erase-buffer)
-        (insert content)
-        (goto-char (point-min))))
-    buffer))
+      buffer)))
 
 ;; Function adapted from posframe.el by tumashu
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
@@ -447,45 +443,49 @@ FRAME is the existing frame."
 WIDTH is the width of the popup.
 The current candidate CURR is highlighted.
 A scroll bar is displayed from LO to LO+BAR."
-  (let* ((ch (default-line-height))
-         (cw (default-font-width))
-         (ml (ceiling (* cw corfu-left-margin-width)))
-         (mr (ceiling (* cw corfu-right-margin-width)))
-         (bw (ceiling (min mr (* cw corfu-bar-width))))
-         (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
-         (marginr (and (> mr 0) (propertize " " 'display `(space :align-to right))))
-         (sbar (when (> bw 0)
-                 (concat (propertize " " 'display `(space :align-to (- right (,mr))))
-                         (propertize " " 'display `(space :width (,(- mr bw))))
-                         (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
-         (pos (posn-x-y (posn-at-point pos)))
-         (width (+ (* width cw) ml mr))
-         (height (* (length lines) ch))
-         (edge (window-inside-pixel-edges))
-         (border (alist-get 'child-frame-border-width corfu--frame-parameters))
-         (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
-                        (- (frame-pixel-width) width))))
-         (yb (+ (cadr edge) (window-tab-line-height) (or (cdr pos) 0) ch))
-         (y (if (> (+ yb (* corfu-count ch) ch ch) (frame-pixel-height))
-                (- yb height ch border border)
-              yb))
-         (row 0))
-    (setq corfu--frame
-          (corfu--make-frame
-           corfu--frame x y width height
-           (corfu--make-buffer
-            " *corfu*"
-            (mapconcat (lambda (line)
-                         (let ((str (concat marginl line
-                                            (if (and lo (<= lo row (+ lo bar)))
-                                                sbar
-                                              marginr))))
-                           (when (eq row curr)
-                             (add-face-text-property
-                              0 (length str) 'corfu-current 'append str))
-                           (cl-incf row)
-                           str))
-                       lines "\n"))))))
+  (let ((lh (default-line-height)))
+    (with-current-buffer (corfu--make-buffer " *corfu*")
+      (let* ((ch (default-line-height))
+             (cw (default-font-width))
+             (ml (ceiling (* cw corfu-left-margin-width)))
+             (mr (ceiling (* cw corfu-right-margin-width)))
+             (bw (ceiling (min mr (* cw corfu-bar-width))))
+             (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
+             (marginr (and (> mr 0) (propertize " " 'display `(space :align-to right))))
+             (sbar (when (> bw 0)
+                     (concat (propertize " " 'display `(space :align-to (- right (,mr))))
+                             (propertize " " 'display `(space :width (,(- mr bw))))
+                             (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
+             (pos (posn-x-y (posn-at-point pos)))
+             (width (+ (* width cw) ml mr))
+             ;; XXX HACK: Minimum popup height must be at least 1 line of the
+             ;; parent frame (#261).
+             (height (max lh (* (length lines) ch)))
+             (edge (window-inside-pixel-edges))
+             (border (alist-get 'child-frame-border-width corfu--frame-parameters))
+             (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
+                            (- (frame-pixel-width) width))))
+             (yb (+ (cadr edge) (window-tab-line-height) (or (cdr pos) 0) lh))
+             (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
+                    (- yb height lh border border)
+                  yb))
+             (row 0))
+        (with-silent-modifications
+          (erase-buffer)
+          (insert (mapconcat (lambda (line)
+                               (let ((str (concat marginl line
+                                                  (if (and lo (<= lo row (+ lo bar)))
+                                                      sbar
+                                                    marginr))))
+                                 (when (eq row curr)
+                                   (add-face-text-property
+                                    0 (length str) 'corfu-current 'append str))
+                                 (cl-incf row)
+                                 str))
+                             lines "\n"))
+          (goto-char (point-min)))
+        (setq corfu--frame (corfu--make-frame corfu--frame x y
+                                              width height (current-buffer)))))))
 
 (defun corfu--hide-frame-deferred (frame)
   "Deferred hiding of child FRAME."

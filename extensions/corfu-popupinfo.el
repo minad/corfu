@@ -328,11 +328,14 @@ form (X Y WIDTH HEIGHT DIR)."
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
       (when cand-changed
         (if-let (content (funcall corfu-popupinfo--function candidate))
-            (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*" content)
+            (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*")
+              (with-silent-modifications
+                (erase-buffer)
+                (insert content)
+                (goto-char (point-min)))
               ;; TODO Could we somehow refill the buffer intelligently?
-              ;;(let ((inhibit-read-only t))
-              ;;  (setq fill-column corfu-popupinfo-max-width)
-              ;;  (fill-region (point-min) (point-max)))
+              ;; (setq fill-column corfu-popupinfo-max-width)
+              ;; (fill-region (point-min) (point-max))
               (dolist (var corfu-popupinfo--buffer-parameters)
                 (set (make-local-variable (car var)) (cdr var)))
               (setf face-remapping-alist (copy-tree face-remapping-alist)
