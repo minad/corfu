@@ -357,8 +357,7 @@ The completion backend can override this with
       (setq-local face-remapping-alist (copy-tree fr)
                   line-spacing ls)
       (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
-      (let ((inhibit-modification-hooks t)
-            (inhibit-read-only t))
+      (with-silent-modifications
         (erase-buffer)
         (insert content)
         (goto-char (point-min))))
@@ -494,8 +493,7 @@ A scroll bar is displayed from LO to LO+BAR."
     (set-frame-parameter frame 'corfu--hide-timer nil)
     (make-frame-invisible frame)
     (with-current-buffer (window-buffer (frame-root-window frame))
-      (let ((inhibit-modification-hooks t)
-            (inhibit-read-only t))
+      (with-silent-modifications
         (erase-buffer)))))
 
 (defun corfu--hide-frame (frame)
