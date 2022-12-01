@@ -600,13 +600,6 @@ A scroll bar is displayed from LO to LO+BAR."
           (eq t (compare-strings word 0 len it 0 len
                                  completion-ignore-case))))))
 
-(defun corfu--filter-files (files)
-  "Filter FILES by `completion-ignored-extensions'."
-  (let ((re (concat "\\(?:\\(?:\\`\\|/\\)\\.\\.?/\\|"
-                    (regexp-opt completion-ignored-extensions)
-                    "\\)\\'")))
-    (or (seq-remove (lambda (x) (string-match-p re x)) files) files)))
-
 (defun corfu--sort-function ()
   "Return the sorting function."
   (or corfu-sort-override-function
@@ -632,7 +625,7 @@ A scroll bar is displayed from LO to LO+BAR."
     ;; Filter the ignored file extensions. We cannot use modified predicate for
     ;; this filtering, since this breaks the special casing in the
     ;; `completion-file-name-table' for `file-exists-p' and `file-directory-p'.
-    (when completing-file (setq all (corfu--filter-files all)))
+    (when completing-file (setq all (completion-pcm--filename-try-filter all)))
     (setq all (delete-consecutive-dups (funcall (or (corfu--sort-function) #'identity) all)))
     (setq all (corfu--move-prefix-candidates-to-front field all))
     (when (and completing-file (not (string-suffix-p "/" field)))
