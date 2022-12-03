@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 0.34 (2022-12-03)
 
 - Bugfixes
 - Popup frame code updated for Emacs 29. Please report any issues.
