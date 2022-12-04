@@ -119,6 +119,8 @@ popup can be requested manually via `corfu-popupinfo-toggle',
     (define-key map "\M-t" #'corfu-popupinfo-toggle)
     (define-key map [remap scroll-other-window] #'corfu-popupinfo-scroll-up)
     (define-key map [remap scroll-other-window-down] #'corfu-popupinfo-scroll-down)
+    (define-key map [remap end-of-buffer-other-window] #'corfu-popupinfo-end)
+    (define-key map [remap beginning-of-buffer-other-window] #'corfu-popupinfo-beginning)
     map)
   "Additional keymap activated in popupinfo mode.")
 
@@ -378,11 +380,32 @@ form (X Y WIDTH HEIGHT DIR)."
   "Clear the info popup buffer content and hide it."
   (corfu--hide-frame corfu-popupinfo--frame))
 
+(defun corfu-popupinfo-end (&optional n)
+  "Scroll text of info popup window to its end.
+
+If arg N is omitted or nil, scroll to end.  If a numerical value,
+put point N/10 of the way from the end.  If the info popup is not
+visible, the other window is moved to beginning or end."
+  (interactive "P")
+  (if (corfu-popupinfo--visible-p)
+      (with-selected-frame corfu-popupinfo--frame
+        (with-current-buffer " *corfu-popupinfo*"
+          (with-no-warnings
+            (end-of-buffer n))))
+    (end-of-buffer-other-window n)))
+
+(defun corfu-popupinfo-beginning (&optional n)
+  "Scroll text of info popup window to beginning of buffer.
+
+See `corfu-popupinfo-end-of-buffer' for the argument N."
+  (interactive "P")
+  (corfu-popupinfo-end (- 10 (if (numberp n) n 0))))
+
 (defun corfu-popupinfo-scroll-up (&optional n)
   "Scroll text of info popup window upward N lines.
 
 If ARG is omitted or nil, scroll upward by a near full screen.
-See `scroll-up' for details. If the info popup is not visible,
+See `scroll-up' for details.  If the info popup is not visible,
 the other window is scrolled."
   (interactive "p")
   (if (corfu-popupinfo--visible-p)
