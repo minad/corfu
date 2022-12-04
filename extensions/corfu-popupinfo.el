@@ -211,6 +211,7 @@ all values are in pixels relative to the origin. See
   (when-let* ((fun (plist-get corfu--extra :company-doc-buffer))
               (res (save-excursion
                      (let ((inhibit-message t)
+			   (inhibit-redisplay t) ; some doc-buffer funcs split window
                            (message-log-max nil)
                            ;; Reduce print length for elisp backend (#249)
                            (print-level 3)
