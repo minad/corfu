@@ -183,6 +183,7 @@ all values are in pixels relative to the origin. See
                              (or (and (bufferp (car loc)) (car loc))
                                  (get-file-buffer (car loc))
                                  (let ((inhibit-message t)
+                                       (inhibit-redisplay t)
                                        (enable-dir-local-variables nil)
                                        (enable-local-variables :safe)
                                        (non-essential t)
@@ -213,6 +214,7 @@ all values are in pixels relative to the origin. See
   (when-let* ((fun (plist-get corfu--extra :company-doc-buffer))
               (res (save-excursion
                      (let ((inhibit-message t)
+                           (inhibit-redisplay t)
                            (message-log-max nil)
                            ;; Reduce print length for elisp backend (#249)
                            (print-level 3)
