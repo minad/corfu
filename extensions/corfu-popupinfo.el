@@ -294,7 +294,7 @@ form (X Y WIDTH HEIGHT DIR)."
                ;; Left display area
                (ahy (if (or below (< (cdr ps) cfh))
                         cfy
-                      (- (+ cfy cfh) (cdr ps) border border)))
+                      (max 0 (- (+ cfy cfh) (cdr ps) border border))))
                (al (list (max 0 (- cfx (car ps) border)) ahy
                          (min (- cfx border) (car ps)) (cdr ps) 'left))
                ;; Right display area
