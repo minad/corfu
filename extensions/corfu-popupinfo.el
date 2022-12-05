@@ -397,7 +397,7 @@ visible, the other window is moved to beginning or end."
 (defun corfu-popupinfo-beginning (&optional n)
   "Scroll text of info popup window to beginning of buffer.
 
-See `corfu-popupinfo-end-of-buffer' for the argument N."
+See `corfu-popupinfo-end' for the argument N."
   (interactive "P")
   (corfu-popupinfo-end (- 10 (if (numberp n) n 0))))
 
