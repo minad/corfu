@@ -291,12 +291,15 @@ form (X Y WIDTH HEIGHT DIR)."
                (below (>= cfy (+ lh (cadr (window-inside-pixel-edges))
                                  (window-tab-line-height)
                                  (or (cdr (posn-x-y (posn-at-point (point)))) 0))))
+               ;; Popups aligned at top
+               (top-aligned (or below (< (cdr ps) cfh)))
                ;; Left display area
-               (`(,ahy ,ahh)
-                 (if (or below (< (cdr ps) cfh))
-                     (list cfy (min (- pfh cfy) (cdr ps)))
-                   (list (max 0 (- (+ cfy cfh) (cdr ps) border border))
-                         (min (- (+ cfy cfh) border border) (cdr ps)))))
+               (ahy (if top-aligned
+                        cfy
+                      (max 0 (- (+ cfy cfh) border border (cdr ps)))))
+               (ahh (if top-aligned
+                        (min (- pfh cfy) (cdr ps))
+                      (min (- (+ cfy cfh) border border) (cdr ps))))
                (al (list (max 0 (- cfx (car ps) border)) ahy
                          (min (- cfx border) (car ps)) ahh 'left))
                ;; Right display area
