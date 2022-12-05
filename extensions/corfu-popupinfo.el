@@ -287,18 +287,21 @@ form (X Y WIDTH HEIGHT DIR)."
                (`(,_pfx ,_pfy ,pfw ,pfh)
                 (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
                (`(,cfx ,cfy ,cfw ,cfh) (corfu-popupinfo--frame-geometry corfu--frame))
+               ;; Candidates popup below input
+               (below (>= cfy (+ lh (cadr (window-inside-pixel-edges))
+                                 (window-tab-line-height)
+                                 (or (cdr (posn-x-y (posn-at-point (point)))) 0))))
                ;; Left display area
-               (al (list (max 0 (- cfx (car ps) border)) cfy
+               (ahy (if below cfy (- (+ cfy cfh) (cdr ps) border border)))
+               (al (list (max 0 (- cfx (car ps) border)) ahy
                          (min (- cfx border) (car ps)) (cdr ps) 'left))
                ;; Right display area
                (arx (+ cfx cfw (- border)))
-               (ar (list arx cfy (min (- pfw arx border border) (car ps))
+               (ar (list arx ahy (min (- pfw arx border border) (car ps))
                          (cdr ps) 'right))
                ;; Vertical display area
                (avw (min (car ps) (- pfw cfx border border)))
-               (av (if (>= cfy (+ lh (cadr (window-inside-pixel-edges))
-                                  (window-tab-line-height)
-                                  (or (cdr (posn-x-y (posn-at-point (point)))) 0)))
+               (av (if below
                        (list cfx (+ cfy cfh (- border)) avw (min (- pfh cfy cfh border) (cdr ps)) 'vertical)
                      (let ((h (min (- cfy border border) (cdr ps))))
                        (list cfx (max 0 (- cfy h border)) avw h 'vertical)))))
