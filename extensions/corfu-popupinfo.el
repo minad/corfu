@@ -287,11 +287,12 @@ form (X Y WIDTH HEIGHT DIR)."
                (`(,cfx ,cfy ,cfw ,cfh) (corfu-popupinfo--frame-geometry corfu--frame))
                ;; Left display area
                (al (list (max 0 (- cfx (car ps) border)) cfy
-                         (min (- cfx border) (car ps)) (cdr ps) 'left))
+                         (min (- cfx border) (car ps))
+			 (min (cdr ps) (- pfh cfy)) 'left))
                ;; Right display area
                (arx (+ cfx cfw (- border)))
                (ar (list arx cfy (min (- pfw arx border border) (car ps))
-                         (cdr ps) 'right))
+                         (min (cdr ps) (- pfh cfy)) 'right))
                ;; Vertical display area
                (avw (min (car ps) (- pfw cfx border border)))
                (av (if (>= cfy (+ lh (cadr (window-inside-pixel-edges))
