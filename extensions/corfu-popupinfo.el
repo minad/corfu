@@ -292,7 +292,9 @@ form (X Y WIDTH HEIGHT DIR)."
                                  (window-tab-line-height)
                                  (or (cdr (posn-x-y (posn-at-point (point)))) 0))))
                ;; Left display area
-               (ahy (if below cfy (- (+ cfy cfh) (cdr ps) border border)))
+               (ahy (if (or below (< (cdr ps) cfh))
+                        cfy
+                      (- (+ cfy cfh) (cdr ps) border border)))
                (al (list (max 0 (- cfx (car ps) border)) ahy
                          (min (- cfx border) (car ps)) (cdr ps) 'left))
                ;; Right display area
