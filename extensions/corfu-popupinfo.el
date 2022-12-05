@@ -391,7 +391,8 @@ visible, the other window is moved to beginning or end."
   (if (corfu-popupinfo--visible-p)
       (with-selected-frame corfu-popupinfo--frame
         (with-current-buffer " *corfu-popupinfo*"
-          (with-no-warnings (end-of-buffer n))))
+          (with-no-warnings
+	    (end-of-buffer n))))
     (end-of-buffer-other-window n)))
 
 (defun corfu-popupinfo-beginning (&optional n)
