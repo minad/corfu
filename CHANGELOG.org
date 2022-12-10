@@ -2,6 +2,11 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- =corfu-popupinfo=: Add commands =corfu-popupinfo-beginning/end=
+- =corfu-popupinfo=: Improve popup placement
+
 * Version 0.34 (2022-12-03)
 
 - Bugfixes
