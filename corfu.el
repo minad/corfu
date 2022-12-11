@@ -1192,10 +1192,9 @@ Auto completion is only performed if the tick did not change."
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function))))
 
-(defun corfu--auto-capf-wrapper-async (fun callback)
-  "Call asynchronous capf FUN with CALLBACK."
-  (when (and (symbolp fun) (get fun 'async-completion-at-point-function))
-    (funcall fun callback)))
+(defun corfu--auto-capf-wrapper-async (fun cb)
+  "Call asynchronous capf FUN with CB."
+  (and (symbolp fun) (get fun 'async-completion-at-point-function) (funcall fun cb)))
 
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
