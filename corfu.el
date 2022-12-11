@@ -1135,7 +1135,8 @@ RESULT may be a capf result, if already present."
                                           #'corfu--capf-wrapper)))
       (`(,fun ,beg ,end ,table . ,plist)
        (let ((completion-in-region-mode-predicate
-              (if result fun (lambda () (eq beg (car-safe (funcall fun))))))
+              (or (plist-get plist :continue-predicate)
+                  (if result fun (lambda () (eq beg (car-safe (funcall fun)))))))
              (completion-extra-properties plist))
          (setq completion-in-region--data
                (list (if (markerp beg) beg (copy-marker beg))
