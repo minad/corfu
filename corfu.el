@@ -1125,20 +1125,37 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
     (define-key map (vector last-command-event) replace)
     (funcall replace)))
 
-(defun corfu--auto-deferred (tick &optional result)
+(defun corfu--auto-deferred (tick &optional async)
   "Initiate auto completion if TICK did not change.
-RESULT may be a capf result, if already present."
+ASYNC may be an asynchronous capf result."
   (setq corfu--auto-cancel nil)
   (when (and (not completion-in-region-mode) (equal tick (corfu--auto-tick)))
-    (pcase (or result (while-no-input ;; Interruptible capf query
+    (pcase (or async (while-no-input ;; Interruptible capf query
                         (run-hook-wrapped 'completion-at-point-functions
                                           #'corfu--capf-wrapper)))
       (`(,fun ,beg ,end ,table . ,plist)
        (let ((completion-in-region-mode-predicate
-              (or (plist-get plist :continue-predicate)
-                  (if fun
-                      (lambda () (eq beg (car-safe (funcall fun))))
-                    (lambda () t))))
+              (if async
+                  (lambda ()
+                    ;; Ask the backend for refreshing
+                    (funcall fun (lambda (ret)
+                                   (pcase ret
+                                     (`(,beg ,end ,table . ,plist)
+                                      ;; TODO ensure that this runs in the correct buffer.
+                                      ;; TODO check validity of boundaries
+                                      ;; If valid, update completion data and UI.
+                                      (setq completion-in-region--data
+                                            (list (if (markerp beg) beg (copy-marker beg))
+                                                  (copy-marker end t)
+                                                  table
+                                                  (plist-get plist :predicate))
+                                            corfu--extra plist)
+                                      (corfu--post-command))
+                                     ;; TODO ensure correct buffer
+                                     (_ (corfu-quit)))))
+                    ;; Return t, since the predicate is invoked asynchronously
+                    t)
+                (lambda () (eq beg (car-safe (funcall fun))))))
              (completion-extra-properties plist))
          (setq completion-in-region--data
                (list (if (markerp beg) beg (copy-marker beg))
@@ -1163,7 +1180,8 @@ RESULT may be a capf result, if already present."
             (run-hook-wrapped 'completion-at-point-functions
                               #'corfu--async-capf-wrapper
                               (lambda (result)
-                                (corfu--auto-deferred tick (cons nil result)))))
+                                ;; TODO ensure that this runs in the correct buffer
+                                (corfu--auto-deferred tick (or result t)))))
       (unless corfu--auto-cancel
         (if (<= corfu-auto-delay 0)
             (corfu--auto-deferred tick)
@@ -1197,7 +1215,10 @@ Auto completion is only performed if the tick did not change."
 
 (defun corfu--async-capf-wrapper (fun cb)
   "Call asynchronous capf FUN with CB."
-  (and (symbolp fun) (get fun 'async-completion-at-point-function) (funcall fun cb)))
+  (and (symbolp fun)
+       (get fun 'async-completion-at-point-function)
+       (when-let (ret (funcall fun cb))
+         (cons fun ret))))
 
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
