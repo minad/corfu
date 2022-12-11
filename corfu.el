@@ -1137,6 +1137,7 @@ ASYNC may be an asynchronous capf result."
        (let ((completion-in-region-mode-predicate
               (if async
                   (lambda ()
+                    ;; TODO Implement cancellation.
                     ;; Ask the backend for refreshing
                     (funcall fun (lambda (ret)
                                    ;; TODO ensure that this runs in the correct buffer.
