@@ -1134,7 +1134,9 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
              (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
       (`(,fun ,beg ,end ,table . ,plist)
        (let ((completion-in-region-mode-predicate
-              (lambda () (eq beg (car-safe (funcall fun)))))
+              (lambda ()
+                (when-let (newbeg (car-safe (funcall fun)))
+                  (= newstart beg))))
              (completion-extra-properties plist))
          (setq completion-in-region--data
                (list (if (markerp beg) beg (copy-marker beg))
