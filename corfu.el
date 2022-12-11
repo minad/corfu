@@ -1161,7 +1161,7 @@ RESULT may be a capf result, if already present."
     (let ((tick (corfu--auto-tick)))
       (setq corfu--auto-cancel
             (run-hook-wrapped 'completion-at-point-functions
-                              #'corfu--auto-capf-wrapper-async
+                              #'corfu--async-capf-wrapper
                               (lambda (result)
                                 (corfu--auto-deferred tick (cons nil result)))))
       (unless corfu--auto-cancel
@@ -1195,7 +1195,7 @@ Auto completion is only performed if the tick did not change."
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function))))
 
-(defun corfu--auto-capf-wrapper-async (fun cb)
+(defun corfu--async-capf-wrapper (fun cb)
   "Call asynchronous capf FUN with CB."
   (and (symbolp fun) (get fun 'async-completion-at-point-function) (funcall fun cb)))
 
