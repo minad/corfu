@@ -1136,7 +1136,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
        (let ((completion-in-region-mode-predicate
               (lambda ()
                 (when-let (newbeg (car-safe (funcall fun)))
-                  (= newstart beg))))
+                  (= newbeg beg))))
              (completion-extra-properties plist))
          (setq completion-in-region--data
                (list (if (markerp beg) beg (copy-marker beg))
