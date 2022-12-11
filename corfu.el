@@ -232,8 +232,8 @@ The completion backend can override this with
     map)
   "Corfu keymap used when popup is shown.")
 
-(defvar corfu--auto-timer nil
-  "Auto completion timer.")
+(defvar corfu--auto-cancel nil
+  "Auto completion cancellation function.")
 
 (defvar-local corfu--candidates nil
   "List of candidates.")
@@ -1125,42 +1125,55 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
     (define-key map (vector last-command-event) replace)
     (funcall replace)))
 
-(defun corfu--auto-complete-deferred (&optional tick)
+(defun corfu--auto-deferred (tick)
   "Initiate auto completion if TICK did not change."
-  (setq corfu--auto-timer nil)
+  (setq corfu--auto-cancel nil)
   (when (and (not completion-in-region-mode)
-             (or (not tick) (equal tick (corfu--auto-tick))))
-    (pcase (while-no-input ;; Interruptible capf query
-             (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
-      (`(,fun ,beg ,end ,table . ,plist)
-       (let ((completion-in-region-mode-predicate
-              (lambda () (eq beg (car-safe (funcall fun)))))
-             (completion-extra-properties plist))
-         (setq completion-in-region--data
-               (list (if (markerp beg) beg (copy-marker beg))
-                     (copy-marker end t)
-                     table
-                     (plist-get plist :predicate)))
-         (corfu--setup)
-         (corfu--exhibit 'auto))))))
+             (equal tick (corfu--auto-tick)))
+    (corfu--auto-result
+     (while-no-input ;; Interruptible capf query
+       (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper)))))
+
+(defun corfu--auto-result (result)
+  "Handle capf RESULT for auto completion."
+  (pcase result
+    (`(,fun ,beg ,end ,table . ,plist)
+     (let ((completion-in-region-mode-predicate
+            (lambda () (eq beg (car-safe (funcall fun)))))
+           (completion-extra-properties plist))
+       (setq completion-in-region--data
+             (list (if (markerp beg) beg (copy-marker beg))
+                   (copy-marker end t)
+                   table
+                   (plist-get plist :predicate)))
+       (corfu--setup)
+       (corfu--exhibit 'auto)))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
-  (when corfu--auto-timer
-    (cancel-timer corfu--auto-timer)
-    (setq corfu--auto-timer nil))
+  (when corfu--auto-cancel
+    (funcall corfu--auto-cancel)
+    (setq corfu--auto-cancel nil))
   (when (and (not completion-in-region-mode)
              (not defining-kbd-macro)
              (not buffer-read-only)
              (corfu--match-symbol-p corfu-auto-commands this-command)
              (corfu--popup-support-p))
-    (if (<= corfu-auto-delay 0)
-        (corfu--auto-complete-deferred)
-      ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
-      ;; in particular if flyspell-mode is enabled.
-      (setq corfu--auto-timer
-            (run-at-time corfu-auto-delay nil
-                         #'corfu--auto-complete-deferred (corfu--auto-tick))))))
+    (let ((tick (corfu--auto-tick)))
+      (setq corfu--auto-cancel
+            (run-hook-wrapped 'completion-at-point-functions
+                              #'corfu--auto-capf-wrapper-async
+                              (lambda (result)
+                                (setq corfu--auto-cancel nil)
+                                (when (and (not completion-in-region-mode)
+                                           (equal tick (corfu--auto-tick)))
+                                  (corfu--auto-result result)))))
+      (unless corfu--auto-cancel
+        (if (<= corfu-auto-delay 0)
+            (corfu--auto-deferred tick)
+          (let ((timer (run-at-time corfu-auto-delay nil
+                                    #'corfu--auto-deferred tick)))
+            (setq corfu--auto-cancel (lambda () (cancel-timer timer)))))))))
 
 (defun corfu--auto-tick ()
   "Return the current tick/status of the buffer.
@@ -1185,6 +1198,11 @@ Auto completion is only performed if the tick did not change."
    (t
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function))))
+
+(defun corfu--auto-capf-wrapper-async (fun callback)
+  "Call asynchronous capf FUN with CALLBACK."
+  (when (and (symbolp fun) (get fun 'corfu-async))
+    (funcall fun callback)))
 
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
