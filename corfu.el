@@ -1136,7 +1136,9 @@ RESULT may be a capf result, if already present."
       (`(,fun ,beg ,end ,table . ,plist)
        (let ((completion-in-region-mode-predicate
               (or (plist-get plist :continue-predicate)
-                  (if result fun (lambda () (eq beg (car-safe (funcall fun)))))))
+                  (if fun
+                      (lambda () (eq beg (car-safe (funcall fun))))
+                    (lambda () t))))
              (completion-extra-properties plist))
          (setq completion-in-region--data
                (list (if (markerp beg) beg (copy-marker beg))
@@ -1161,7 +1163,7 @@ RESULT may be a capf result, if already present."
             (run-hook-wrapped 'completion-at-point-functions
                               #'corfu--auto-capf-wrapper-async
                               (lambda (result)
-                                (corfu--auto-deferred tick (or result t)))))
+                                (corfu--auto-deferred tick (cons nil result)))))
       (unless corfu--auto-cancel
         (if (<= corfu-auto-delay 0)
             (corfu--auto-deferred tick)
