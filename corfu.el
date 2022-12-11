@@ -1140,15 +1140,15 @@ ASYNC may be an asynchronous capf result."
                     ;; Ask the backend for refreshing
                     (funcall fun (lambda (ret)
                                    ;; TODO ensure that this runs in the correct buffer.
-                                   (pcase ret
-                                     (`(,beg ,end ,table . ,plist)
-                                      ;; TODO Check validity of boundaries.
-                                      ;; If valid, update UI. Otherwise quit.
-                                      (corfu--post-command))
-                                     (_ (corfu-quit)))))
-                    ;; Return t, since the predicate is invoked asynchronously
+                                   (if-let* ((newbeg (car-safe ret))
+                                             ((= newbeg beg)))
+                                       (corfu--post-command)
+                                     (corfu-quit))))
+                    ;; Return t, since the predicate is invoked asynchronously.
                     t)
-                (lambda () (eq beg (car-safe (funcall fun))))))
+                (lambda ()
+                  (when-let (newbeg (car-safe (funcall fun)))
+                    (= newbeg beg)))))
              (completion-extra-properties plist))
          (setq completion-in-region--data
                (list (if (markerp beg) beg (copy-marker beg))
