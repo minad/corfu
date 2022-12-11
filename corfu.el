@@ -1194,7 +1194,7 @@ Auto completion is only performed if the tick did not change."
 
 (defun corfu--auto-capf-wrapper-async (fun callback)
   "Call asynchronous capf FUN with CALLBACK."
-  (when (and (symbolp fun) (get fun 'corfu-async))
+  (when (and (symbolp fun) (get fun 'async-completion-at-point-function))
     (funcall fun callback)))
 
 (defun corfu--capf-wrapper (fun &optional prefix)
