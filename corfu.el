@@ -1125,29 +1125,25 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
     (define-key map (vector last-command-event) replace)
     (funcall replace)))
 
-(defun corfu--auto-deferred (tick)
-  "Initiate auto completion if TICK did not change."
+(defun corfu--auto-deferred (tick &optional result)
+  "Initiate auto completion if TICK did not change.
+RESULT may be a capf result, if already present."
   (setq corfu--auto-cancel nil)
-  (when (and (not completion-in-region-mode)
-             (equal tick (corfu--auto-tick)))
-    (corfu--auto-result
-     (while-no-input ;; Interruptible capf query
-       (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper)))))
-
-(defun corfu--auto-result (result)
-  "Handle capf RESULT for auto completion."
-  (pcase result
-    (`(,fun ,beg ,end ,table . ,plist)
-     (let ((completion-in-region-mode-predicate
-            (lambda () (eq beg (car-safe (funcall fun)))))
-           (completion-extra-properties plist))
-       (setq completion-in-region--data
-             (list (if (markerp beg) beg (copy-marker beg))
-                   (copy-marker end t)
-                   table
-                   (plist-get plist :predicate)))
-       (corfu--setup)
-       (corfu--exhibit 'auto)))))
+  (when (and (not completion-in-region-mode) (equal tick (corfu--auto-tick)))
+    (pcase (or result (while-no-input ;; Interruptible capf query
+                        (run-hook-wrapped 'completion-at-point-functions
+                                          #'corfu--capf-wrapper)))
+      (`(,fun ,beg ,end ,table . ,plist)
+       (let ((completion-in-region-mode-predicate
+              (lambda () (eq beg (car-safe (funcall fun)))))
+             (completion-extra-properties plist))
+         (setq completion-in-region--data
+               (list (if (markerp beg) beg (copy-marker beg))
+                     (copy-marker end t)
+                     table
+                     (plist-get plist :predicate)))
+         (corfu--setup)
+         (corfu--exhibit 'auto))))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
@@ -1164,10 +1160,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
             (run-hook-wrapped 'completion-at-point-functions
                               #'corfu--auto-capf-wrapper-async
                               (lambda (result)
-                                (setq corfu--auto-cancel nil)
-                                (when (and (not completion-in-region-mode)
-                                           (equal tick (corfu--auto-tick)))
-                                  (corfu--auto-result result)))))
+                                (corfu--auto-deferred tick (or result t)))))
       (unless corfu--auto-cancel
         (if (<= corfu-auto-delay 0)
             (corfu--auto-deferred tick)
