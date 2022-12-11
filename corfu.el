@@ -1139,19 +1139,12 @@ ASYNC may be an asynchronous capf result."
                   (lambda ()
                     ;; Ask the backend for refreshing
                     (funcall fun (lambda (ret)
+                                   ;; TODO ensure that this runs in the correct buffer.
                                    (pcase ret
                                      (`(,beg ,end ,table . ,plist)
-                                      ;; TODO ensure that this runs in the correct buffer.
-                                      ;; TODO check validity of boundaries
-                                      ;; If valid, update completion data and UI.
-                                      (setq completion-in-region--data
-                                            (list (if (markerp beg) beg (copy-marker beg))
-                                                  (copy-marker end t)
-                                                  table
-                                                  (plist-get plist :predicate))
-                                            corfu--extra plist)
+                                      ;; TODO Check validity of boundaries.
+                                      ;; If valid, update UI. Otherwise quit.
                                       (corfu--post-command))
-                                     ;; TODO ensure correct buffer
                                      (_ (corfu-quit)))))
                     ;; Return t, since the predicate is invoked asynchronously
                     t)
