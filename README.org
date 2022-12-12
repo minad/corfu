@@ -256,6 +256,16 @@ completion UI, the following snippet should yield the desired result.
   (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
 #+end_src
 
+You might want to disable Corfu when you're asked for a passphrase in minibuffer
+(by ~read-passwd~). For this, simply replace the the conditional in the above
+snippet with the following, as described [[https://github.com/minad/corfu/issues/217#issuecomment-1219128327][here]]:
+
+#+begin_src emacs-lisp
+(or (bound-and-true-p mct--active)
+  (bound-and-true-p vertico--input)
+  (equal (current-local-map) read-passwd-map))
+#+end_src
+
 ** Completing in the Eshell or Shell
 
 When completing in the Eshell I recommend conservative local settings without
