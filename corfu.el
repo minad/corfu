@@ -386,7 +386,11 @@ FRAME is the existing frame."
              'resize-mode)))
          (after-make-frame-functions)
          (parent (window-frame)))
-    (unless (and (frame-live-p frame) (eq (frame-parent frame) parent))
+    (unless (and (frame-live-p frame)
+                 (eq (frame-parent frame) parent)
+                 ;; XXX HACK: It seems the frame can be alive but have a dead window?
+                 ;; Is this a Emacs 29 regression?
+                 (window-live-p (frame-root-window frame)))
       (when frame (delete-frame frame))
       (setq frame (make-frame
                    `((parent-frame . ,parent)
