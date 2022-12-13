@@ -241,14 +241,16 @@ effect.
 #+end_src
 
 You can also enable Corfu more generally for every minibuffer, as long as no
-other completion UI is active. If you use Mct or Vertico as your main minibuffer
-completion UI, the following snippet should yield the desired result.
+completion UI is active. In the following example we check for Mct and Vertico.
+Furthermore we ensure that Corfu is not enabled if a password is read from the
+minibuffer.
 
 #+begin_src emacs-lisp
   (defun corfu-enable-always-in-minibuffer ()
     "Enable Corfu in the minibuffer if Vertico/Mct are not active."
     (unless (or (bound-and-true-p mct--active)
-                (bound-and-true-p vertico--input))
+                (bound-and-true-p vertico--input)
+                (eq (current-local-map) read-passwd-map))
       ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
       (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
                   corfu-popupinfo-delay nil)
