@@ -517,8 +517,9 @@ not be displayed until this command is called again, even if
     (advice-remove #'corfu--teardown #'corfu-popupinfo--teardown))))
 
 ;; Emacs 28: Do not show Corfu commands with M-X
-(dolist (sym '(corfu-popupinfo-scroll-down corfu-popupinfo-scroll-down
+(dolist (sym '(corfu-popupinfo-scroll-down corfu-popupinfo-scroll-up
                corfu-popupinfo-documentation corfu-popupinfo-location
+               corfu-popupinfo-beginning corfu-popupinfo-end
                corfu-popupinfo-toggle))
   (put sym 'completion-predicate #'ignore))
 
