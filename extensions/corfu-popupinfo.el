@@ -224,7 +224,7 @@ all values are in pixels relative to the origin. See
     (with-current-buffer (or (car-safe res) res)
       (setq res (string-trim
                  (replace-regexp-in-string
-                  "[\\s-\n]*\\[back\\][\\s-\n]*" ""
+                  "[\n\t ]*\\[back\\][\n\t ]*" ""
                   (buffer-string))))
       (and (not (string-blank-p res)) res))))
 
