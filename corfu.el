@@ -640,8 +640,10 @@ A scroll bar is displayed from LO to LO+BAR."
       (corfu--candidates . ,all)
       (corfu--total . ,(length all))
       (corfu--highlight . ,hl)
-      ;; Select the prompt when the input is a valid completion
-      ;; and if it is not equal to the first candidate.
+      ;; Select the prompt when the input is a valid completion and if it is not
+      ;; equal to the first candidate. This condition prevents jumping to prompt
+      ;; during completion for the full candidate when the incomplete candidate
+      ;; is invalid.
       (corfu--preselect . ,(if (or (not corfu-preselect-first) (not all)
                                    (and (not (equal field (car all)))
                                         (not (and completing-file (equal (concat field "/") (car all))))
