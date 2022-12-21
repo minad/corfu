@@ -648,10 +648,13 @@ A scroll bar is displayed from LO to LO+BAR."
                                    (and (eq corfu-preselect 'valid)
                                         (not (equal field (car all)))
                                         (not (and completing-file (equal (concat field "/") (car all))))
+                                        (test-completion str table pred))
+                                   (and completing-file (eq corfu-preselect 'directory)
+                                        (= (length corfu--base) (length str))
                                         (test-completion str table pred)))
                                -1 0)))))
 
-(defvar corfu-preselect 'prompt) ;; 'prompt 'first 'valid
+(defvar corfu-preselect 'directory) ;; 'directory 'prompt 'first 'valid
 
 (defun corfu--update (&optional interruptible)
   "Update state, optionally INTERRUPTIBLE."
