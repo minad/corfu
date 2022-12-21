@@ -81,9 +81,16 @@ If the variable has the value `insert', the candidate is automatically
 inserted on further input."
   :type '(choice boolean (const insert)))
 
-(defcustom corfu-preselect-first t
-  "Preselect first candidate."
-  :type 'boolean)
+(defcustom corfu-preselect 'valid
+  "Configure if the prompt or first candidate is preselected.
+- prompt: Always select the prompt.
+- first: Always select the first candidate.
+- valid: Only select the prompt if valid and not equal to the first candidate.
+- directory: Like first, but select the prompt if it is a directory."
+  :type '(choice (const prompt) (const valid) (const first) (const directory)))
+
+(defvar corfu-preselect-first t)
+(make-obsolete-variable 'corfu-preselect-first "Use `corfu-preselect' instead." "0.34")
 
 (defcustom corfu-separator ?\s
   "Component separator character.
@@ -640,12 +647,12 @@ A scroll bar is displayed from LO to LO+BAR."
       (corfu--candidates . ,all)
       (corfu--total . ,(length all))
       (corfu--highlight . ,hl)
-      ;; Select the prompt when the input is a valid completion and if it is not
-      ;; equal to the first candidate. This condition prevents jumping to prompt
-      ;; during completion for the full candidate when the incomplete candidate
-      ;; is invalid.
-      (corfu--preselect . ,(if (or (not corfu-preselect-first) (not all)
-                                   (and (not (equal field (car all)))
+      (corfu--preselect . ,(if (or (eq corfu-preselect 'prompt) (not all)
+                                   (and completing-file (eq corfu-preselect 'directory)
+                                        (= (length corfu--base) (length str))
+                                        (test-completion str table pred))
+                                   (and (eq corfu-preselect 'valid)
+                                        (not (equal field (car all)))
                                         (not (and completing-file (equal (concat field "/") (car all))))
                                         (test-completion str table pred)))
                                -1 0)))))

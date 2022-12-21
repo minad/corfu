@@ -6,6 +6,7 @@
 
 - =corfu-popupinfo=: Add commands =corfu-popupinfo-beginning/end=
 - =corfu-popupinfo=: Improve popup placement
+- Add =corfu-preselect= option, deprecate =corfu-preselect-first=.
 
 * Version 0.34 (2022-12-03)
 
