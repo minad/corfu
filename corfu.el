@@ -644,11 +644,14 @@ A scroll bar is displayed from LO to LO+BAR."
       ;; equal to the first candidate. This condition prevents jumping to prompt
       ;; during completion for the full candidate when the incomplete candidate
       ;; is invalid.
-      (corfu--preselect . ,(if (or (not corfu-preselect-first) (not all)
-                                   (and (not (equal field (car all)))
+      (corfu--preselect . ,(if (or (eq corfu-preselect 'prompt) (not all)
+                                   (and (eq corfu-preselect 'valid)
+                                        (not (equal field (car all)))
                                         (not (and completing-file (equal (concat field "/") (car all))))
                                         (test-completion str table pred)))
                                -1 0)))))
+
+(defvar corfu-preselect 'prompt) ;; 'prompt 'first 'valid
 
 (defun corfu--update (&optional interruptible)
   "Update state, optionally INTERRUPTIBLE."
