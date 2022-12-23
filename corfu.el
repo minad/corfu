@@ -876,9 +876,11 @@ See `corfu-separator' for more details."
 (defun corfu--continue-p ()
   "Continue completion?"
   (pcase-let ((pt (point))
+              (buf (current-buffer))
               (`(,beg ,end . ,_) completion-in-region--data))
     (and beg end
-         (eq (marker-buffer beg) (current-buffer))
+         (eq buf (marker-buffer beg))
+         (eq buf (window-buffer))
          ;; Check ranges
          (<= beg pt end)
          (save-excursion
@@ -1180,7 +1182,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 (defun corfu--auto-tick ()
   "Return the current tick/status of the buffer.
 Auto completion is only performed if the tick did not change."
-  (list (current-buffer) (buffer-chars-modified-tick) (point)))
+  (list (selected-window) (current-buffer) (buffer-chars-modified-tick) (point)))
 
 ;;;###autoload
 (define-minor-mode corfu-mode
