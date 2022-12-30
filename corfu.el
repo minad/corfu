@@ -366,8 +366,22 @@ The completion backend can override this with
       (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
       buffer)))
 
-;; Function adapted from posframe.el by tumashu
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
+(defvar corfu--gtk-resize-child-frames
+  (let ((case-fold-search t))
+    (and
+     ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
+     ;; More information:
+     ;; * https://github.com/minad/corfu/issues/17
+     ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
+     ;; * https://lists.gnu.org/archive/html/emacs-devel/2020-02/msg00001.html
+     (string-match-p "gtk3" system-configuration-features)
+     (string-match-p "gnome\\|cinnamon"
+                     (or (getenv "XDG_CURRENT_DESKTOP")
+                         (getenv "DESKTOP_SESSION") ""))
+     'resize-mode)))
+
+;; Function adapted from posframe.el by tumashu
 (defun corfu--make-frame (frame x y width height buffer)
   "Show BUFFER in child frame at X/Y with WIDTH/HEIGHT.
 FRAME is the existing frame."
@@ -378,19 +392,7 @@ FRAME is the existing frame."
   (let* ((window-min-height 1)
          (window-min-width 1)
          (inhibit-redisplay t)
-         (x-gtk-resize-child-frames
-          (let ((case-fold-search t))
-            (and
-             ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
-             ;; More information:
-             ;; * https://github.com/minad/corfu/issues/17
-             ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
-             ;; * https://lists.gnu.org/archive/html/emacs-devel/2020-02/msg00001.html
-             (string-match-p "gtk3" system-configuration-features)
-             (string-match-p "gnome\\|cinnamon"
-                             (or (getenv "XDG_CURRENT_DESKTOP")
-                                 (getenv "DESKTOP_SESSION") ""))
-             'resize-mode)))
+         (x-gtk-resize-child-frames corfu--gtk-resize-child-frames)
          (after-make-frame-functions)
          (parent (window-frame)))
     (unless (and (frame-live-p frame)
