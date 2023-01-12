@@ -46,7 +46,7 @@
   (require 'subr-x))
 
 (defface corfu-popupinfo
-  '((t :inherit corfu-default :height 0.8))
+  '((t :inherit corfu-default))
   "Face used for the info popup."
   :group 'corfu-faces)
 
