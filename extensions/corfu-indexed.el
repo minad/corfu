@@ -60,7 +60,7 @@
   "Advice for `corfu--affixate' which prefixes the CANDS with an index."
   (setq cands (cdr cands))
   (let* ((space #(" " 0 1 (face (:height 0.5 :inherit corfu-indexed))))
-         (width (if (> (+ corfu-indexed-start (length cands)) 10) 2 1))
+         (width (if (length> cands (- 10 corfu-indexed-start)) 2 1))
          (fmt (concat space
                       (propertize (format "%%%ds" width)
                                   'face 'corfu-indexed)

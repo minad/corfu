@@ -6,7 +6,7 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
 ;; Version: 0.34
-;; Package-Requires: ((emacs "27.1"))
+;; Package-Requires: ((emacs "27.1") (compat "29.1.1.0"))
 ;; Homepage: https://github.com/minad/corfu
 
 ;; This file is part of GNU Emacs.
@@ -33,6 +33,7 @@
 
 ;;; Code:
 
+(require 'compat)
 (require 'seq)
 (eval-when-compile
   (require 'cl-lib)
@@ -213,31 +214,29 @@ The completion backend can override this with
   '((t :inherit shadow :strike-through t))
   "Face used for deprecated candidates.")
 
-(defvar corfu-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map [remap beginning-of-buffer] #'corfu-first)
-    (define-key map [remap end-of-buffer] #'corfu-last)
-    (define-key map [remap scroll-down-command] #'corfu-scroll-down)
-    (define-key map [remap scroll-up-command] #'corfu-scroll-up)
-    (define-key map [remap next-line] #'corfu-next)
-    (define-key map [remap previous-line] #'corfu-previous)
-    (define-key map [remap completion-at-point] #'corfu-complete)
-    (define-key map [down] #'corfu-next)
-    (define-key map [up] #'corfu-previous)
-    (define-key map [remap keyboard-escape-quit] #'corfu-reset)
-    ;; XXX [tab] is bound because of org-mode
-    ;; The binding should be removed from org-mode-map.
-    (define-key map [tab] #'corfu-complete)
-    (define-key map "\M-n" #'corfu-next)
-    (define-key map "\M-p" #'corfu-previous)
-    (define-key map "\C-g" #'corfu-quit)
-    (define-key map "\r" #'corfu-insert)
-    (define-key map "\t" #'corfu-complete)
-    (define-key map "\M-g" 'corfu-info-location)
-    (define-key map "\M-h" 'corfu-info-documentation)
-    (define-key map "\M- " #'corfu-insert-separator)
-    map)
-  "Corfu keymap used when popup is shown.")
+(defvar-keymap corfu-map
+  :doc "Corfu keymap used when popup is shown."
+  "<remap> <beginning-of-buffer>" #'corfu-first
+  "<remap> <end-of-buffer>" #'corfu-last
+  "<remap> <scroll-down-command>" #'corfu-scroll-down
+  "<remap> <scroll-up-command>" #'corfu-scroll-up
+  "<remap> <next-line>" #'corfu-next
+  "<remap> <previous-line>" #'corfu-previous
+  "<remap> <completion-at-point>" #'corfu-complete
+  "<remap> <keyboard-escape-quit>" #'corfu-reset
+  "<down>" #'corfu-next
+  "<up>" #'corfu-previous
+  ;; XXX [tab] is bound because of org-mode
+  ;; The binding should be removed from org-mode-map.
+  "<tab>" #'corfu-complete
+  "M-n" #'corfu-next
+  "M-p" #'corfu-previous
+  "C-g" #'corfu-quit
+  "RET" #'corfu-insert
+  "TAB" #'corfu-complete
+  "M-g" 'corfu-info-location
+  "M-h" 'corfu-info-documentation
+  "M-SPC" #'corfu-insert-separator)
 
 (defvar corfu--auto-timer nil
   "Auto completion timer.")
@@ -887,8 +886,7 @@ See `corfu-separator' for more details."
          (<= beg pt end)
          (save-excursion
            (goto-char beg)
-           (let ((inhibit-field-text-motion t))
-             (<= (line-beginning-position) pt (line-end-position))))
+           (<= (pos-bol) pt (pos-eol)))
          (or
           ;; We keep Corfu alive if a `overriding-terminal-local-map' is
           ;; installed, e.g., the `universal-argument-map'. It would be good to
@@ -1082,7 +1080,7 @@ Quit if no candidate is selected."
          (exit (plist-get completion-extra-properties :exit-function))
          (threshold (completion--cycle-threshold metadata))
          (completion-in-region-mode-predicate
-          (or completion-in-region-mode-predicate (lambda () t))))
+          (or completion-in-region-mode-predicate #'always)))
     (pcase (completion-try-completion str table pred pt metadata)
       ('nil (corfu--message "No match") nil)
       ('t (goto-char end)

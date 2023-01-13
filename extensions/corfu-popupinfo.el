@@ -112,17 +112,15 @@ popup can be requested manually via `corfu-popupinfo-toggle',
            (const force-vertical)))
   :group 'corfu)
 
-(defvar corfu-popupinfo-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "\M-d" #'corfu-popupinfo-documentation)
-    (define-key map "\M-l" #'corfu-popupinfo-location)
-    (define-key map "\M-t" #'corfu-popupinfo-toggle)
-    (define-key map [remap scroll-other-window] #'corfu-popupinfo-scroll-up)
-    (define-key map [remap scroll-other-window-down] #'corfu-popupinfo-scroll-down)
-    (define-key map [remap end-of-buffer-other-window] #'corfu-popupinfo-end)
-    (define-key map [remap beginning-of-buffer-other-window] #'corfu-popupinfo-beginning)
-    map)
-  "Additional keymap activated in popupinfo mode.")
+(defvar-keymap corfu-popupinfo-map
+  :doc "Additional keymap activated in popupinfo mode."
+  "M-d" #'corfu-popupinfo-documentation
+  "M-l" #'corfu-popupinfo-location
+  "M-t" #'corfu-popupinfo-toggle
+  "<remap> <scroll-other-window>" #'corfu-popupinfo-scroll-up
+  "<remap> <scroll-other-window-down>" #'corfu-popupinfo-scroll-down
+  "<remap> <end-of-buffer-other-window>" #'corfu-popupinfo-end
+  "<remap> <beginning-of-buffer-other-window>" #'corfu-popupinfo-beginning)
 
 (defvar corfu-popupinfo--buffer-parameters
   '((truncate-partial-width-windows . nil)
