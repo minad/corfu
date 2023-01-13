@@ -374,7 +374,7 @@ The completion backend can override this with
      ;; * https://github.com/minad/corfu/issues/17
      ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
      ;; * https://lists.gnu.org/archive/html/emacs-devel/2020-02/msg00001.html
-     (string-search "gtk3" system-configuration-features)
+     (string-match-p "gtk3" system-configuration-features)
      (string-match-p "gnome\\|cinnamon"
                      (or (getenv "XDG_CURRENT_DESKTOP")
                          (getenv "DESKTOP_SESSION") ""))
