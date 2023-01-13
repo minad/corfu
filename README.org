@@ -421,7 +421,7 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
     (let ((completion-extra-properties corfu--extra)
           completion-cycle-threshold completion-cycling)
       (apply #'consult-completion-in-region completion-in-region--data)))
-  (define-key corfu-map "\M-m" #'corfu-move-to-minibuffer)
+  (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
 #+end_src
 
 * Key bindings
