@@ -86,8 +86,9 @@ inserted on further input."
 - prompt: Always select the prompt.
 - first: Always select the first candidate.
 - valid: Only select the prompt if valid and not equal to the first candidate.
-- directory: Like first, but select the prompt if it is a directory."
-  :type '(choice (const prompt) (const valid) (const first) (const directory)))
+- directory: Like first, but select the prompt if it is a directory.
+- A custom function taking the list of candidates as argument."
+  :type '(choice (const prompt) (const valid) (const first) (const directory) function))
 
 (defvar corfu-preselect-first t)
 (make-obsolete-variable 'corfu-preselect-first "Use `corfu-preselect' instead." "0.34")
@@ -649,15 +650,17 @@ A scroll bar is displayed from LO to LO+BAR."
       (corfu--candidates . ,all)
       (corfu--total . ,(length all))
       (corfu--highlight . ,hl)
-      (corfu--preselect . ,(if (or (eq corfu-preselect 'prompt) (not all)
-                                   (and completing-file (eq corfu-preselect 'directory)
-                                        (= (length corfu--base) (length str))
-                                        (test-completion str table pred))
-                                   (and (eq corfu-preselect 'valid)
-                                        (not (equal field (car all)))
-                                        (not (and completing-file (equal (concat field "/") (car all))))
-                                        (test-completion str table pred)))
-                               -1 0)))))
+      (corfu--preselect . ,(if (memq corfu-preselect '(prompt valid directory first))
+                               (if (or (eq corfu-preselect 'prompt) (not all)
+                                       (and completing-file (eq corfu-preselect 'directory)
+                                            (= (length corfu--base) (length str))
+                                            (test-completion str table pred))
+                                       (and (eq corfu-preselect 'valid)
+                                            (not (equal field (car all)))
+                                            (not (and completing-file (equal (concat field "/") (car all))))
+                                            (test-completion str table pred)))
+                                   -1 0)
+                             (funcall corfu-preselect all))))))
 
 (defun corfu--update (&optional interruptible)
   "Update state, optionally INTERRUPTIBLE."
