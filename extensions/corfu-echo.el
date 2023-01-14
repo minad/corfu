@@ -26,7 +26,7 @@
 
 ;;; Commentary:
 
-;; Show candidate documentation in echo area. Enable `corfu-echo-mode'.
+;; Show candidate documentation in echo area.  Enable `corfu-echo-mode'.
 
 ;;; Code:
 
@@ -41,7 +41,7 @@
 
 (defcustom corfu-echo-delay '(2.0 . 1.0)
   "Show documentation string in the echo area after that number of seconds.
-Set to t for an instant message. The value can be a pair of two
+Set to t for an instant message.  The value can be a pair of two
 floats to specify initial and subsequent delay."
   :type '(choice (const :tag "Never" nil)
                  (const :tag "Instant" t)

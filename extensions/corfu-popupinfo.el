@@ -27,10 +27,10 @@
 ;;; Commentary:
 
 ;; Display an information popup for completion candidate when using
-;; Corfu. The popup displays either the candidate documentation or the
-;; candidate location. The `corfu-popupinfo-mode' must be enabled
-;; globally. Set `corfu-popupinfo-delay' to nil if the info popup should
-;; not update automatically. If the popup should not appear initially,
+;; Corfu.  The popup displays either the candidate documentation or the
+;; candidate location.  The `corfu-popupinfo-mode' must be enabled
+;; globally.  Set `corfu-popupinfo-delay' to nil if the info popup should
+;; not update automatically.  If the popup should not appear initially,
 ;; but update automatically afterwards, use `(setq corfu-popupinfo-delay
 ;; (cons nil 1.0))'.
 
@@ -53,10 +53,10 @@
 (defcustom corfu-popupinfo-delay '(2.0 . 1.0)
   "Automatically update info popup after that number of seconds.
 
-Set to t for an instant update. The value can be a pair of two
-floats to specify initial and subsequent delay. If the value is
+Set to t for an instant update.  The value can be a pair of two
+floats to specify initial and subsequent delay.  If the value is
 non-nil or the car of the pair is non-nil, the popup will
-automatically appear for the preselected candidate. Otherwise the
+automatically appear for the preselected candidate.  Otherwise the
 popup can be requested manually via `corfu-popupinfo-toggle',
 `corfu-popupinfo-documentation' and `corfu-popupinfo-location'."
   :type '(choice (const :tag "Never" nil)
@@ -150,7 +150,7 @@ popup can be requested manually via `corfu-popupinfo-toggle',
 (defvar-local corfu-popupinfo--coordinates nil
   "Coordinates of the candidate popup.
 The coordinates list has the form (LEFT TOP RIGHT BOTTOM) where
-all values are in pixels relative to the origin. See
+all values are in pixels relative to the origin.  See
 `frame-edges' for details.")
 
 (defvar-local corfu-popupinfo--lock-dir nil
@@ -277,7 +277,7 @@ AREA1 and AREA2 are both in the form (X Y WIDTH HEIGHT DIR)."
 (defun corfu-popupinfo--area (ps)
   "Calculate the display area for the info popup.
 
-PS is the pixel size of the popup. The calculated area is in the
+PS is the pixel size of the popup.  The calculated area is in the
 form (X Y WIDTH HEIGHT DIR)."
   (pcase-let* ((cw (default-font-width))
                (lh (default-line-height))

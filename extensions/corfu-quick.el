@@ -27,8 +27,8 @@
 ;;; Commentary:
 
 ;; This package is a Corfu extension, which prefixes candidates with
-;; quick keys. Typing these quick keys allows you to select the
-;; candidate in front of them. This is designed to be a faster
+;; quick keys.  Typing these quick keys allows you to select the
+;; candidate in front of them.  This is designed to be a faster
 ;; alternative to selecting a candidate with `corfu-next' and
 ;; `corfu-previous'.
 ;; (keymap-set corfu-map "M-q" #'corfu-quick-complete)

@@ -27,8 +27,8 @@
 ;;; Commentary:
 
 ;; This package is a Corfu extension, which prefixes candidates with indices if
-;; enabled via `corfu-indexed-mode'. It allows you to select candidates with
-;; prefix arguments. This is designed to be a faster alternative to selecting a
+;; enabled via `corfu-indexed-mode'.  It allows you to select candidates with
+;; prefix arguments.  This is designed to be a faster alternative to selecting a
 ;; candidate with `corfu-next' and `corfu-previous'.
 
 ;;; Code:

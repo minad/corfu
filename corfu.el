@@ -27,8 +27,8 @@
 ;;; Commentary:
 
 ;; Corfu enhances the default completion in region function with a
-;; completion overlay. The current candidates are shown in a popup
-;; below or above the point. Corfu can be considered the minimalistic
+;; completion overlay.  The current candidates are shown in a popup
+;; below or above the point.  Corfu can be considered the minimalistic
 ;; completion-in-region counterpart of Vertico.
 
 ;;; Code:
@@ -95,11 +95,11 @@ inserted on further input."
 
 (defcustom corfu-separator ?\s
   "Component separator character.
-The character used for separating components in the input. The presence
+The character used for separating components in the input.  The presence
 of this separator character will inhibit quitting at completion
-boundaries, so that any further characters can be entered. To enter the
+boundaries, so that any further characters can be entered.  To enter the
 first separator character, call `corfu-insert-separator' (bound to M-SPC
-by default). Useful for multi-component completion styles such as
+by default).  Useful for multi-component completion styles such as
 Orderless."
   :type 'character)
 
@@ -139,7 +139,7 @@ separator: Only stay alive if there is no match and
 (defcustom corfu-margin-formatters nil
   "Registry for margin formatter functions.
 Each function of the list is called with the completion metadata as
-argument until an appropriate formatter is found. The function should
+argument until an appropriate formatter is found.  The function should
 return a formatter function, which takes the candidate string and must
 return a string, possibly an icon."
   :type 'hook)
@@ -704,8 +704,8 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (defun corfu-reset ()
   "Reset Corfu completion.
-This command can be executed multiple times by hammering the ESC key. If a
-candidate is selected, unselect the candidate. Otherwise reset the input. If
+This command can be executed multiple times by hammering the ESC key.  If a
+candidate is selected, unselect the candidate.  Otherwise reset the input.  If
 there hasn't been any input, then quit."
   (interactive)
   (if (/= corfu--index corfu--preselect)
@@ -1206,7 +1206,7 @@ Auto completion is only performed if the tick did not change."
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
 The wrapper determines if the capf is applicable at the current position
-and performs sanity checking on the returned result. PREFIX is a prefix
+and performs sanity checking on the returned result.  PREFIX is a prefix
 length override, set to t for manual completion."
   (pcase (funcall fun)
     ((and res `(,beg ,end ,table . ,plist))
