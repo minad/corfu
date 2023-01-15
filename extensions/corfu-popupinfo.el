@@ -174,20 +174,20 @@ all values are in pixels relative to the origin.  See
   (save-excursion
     (let ((old-buffers (buffer-list)) (buffer nil))
       (unwind-protect
-          (when-let* ((fun (plist-get corfu--extra :company-location))
-                      ;; BUG: company-location may throw errors if location is not found
-                      (loc (ignore-errors (funcall fun candidate)))
-                      ((setq buffer
-                             (or (and (bufferp (car loc)) (car loc))
-                                 (get-file-buffer (car loc))
-                                 (let ((inhibit-message t)
-                                       (inhibit-redisplay t)
-                                       (enable-dir-local-variables nil)
-                                       (enable-local-variables :safe)
-                                       (non-essential t)
-                                       (delay-mode-hooks t)
-                                       (find-file-hook '(global-font-lock-mode-check-buffers)))
-                                   (find-file-noselect (car loc) t))))))
+          (when-let ((fun (plist-get corfu--extra :company-location))
+                     ;; BUG: company-location may throw errors if location is not found
+                     (loc (ignore-errors (funcall fun candidate)))
+                     ((setq buffer
+                            (or (and (bufferp (car loc)) (car loc))
+                                (get-file-buffer (car loc))
+                                (let ((inhibit-message t)
+                                      (inhibit-redisplay t)
+                                      (enable-dir-local-variables nil)
+                                      (enable-local-variables :safe)
+                                      (non-essential t)
+                                      (delay-mode-hooks t)
+                                      (find-file-hook '(global-font-lock-mode-check-buffers)))
+                                  (find-file-noselect (car loc) t))))))
             (with-current-buffer buffer
               (save-excursion
                 (save-restriction
@@ -209,16 +209,16 @@ all values are in pixels relative to the origin.  See
 
 (defun corfu-popupinfo--get-documentation (candidate)
   "Get the documentation for CANDIDATE."
-  (when-let* ((fun (plist-get corfu--extra :company-doc-buffer))
-              (res (save-excursion
-                     (let ((inhibit-message t)
-                           (inhibit-redisplay t)
-                           (message-log-max nil)
-                           ;; Reduce print length for elisp backend (#249)
-                           (print-level 3)
-                           (print-length (* corfu-popupinfo-max-width
-                                            corfu-popupinfo-max-height)))
-                       (funcall fun candidate)))))
+  (when-let ((fun (plist-get corfu--extra :company-doc-buffer))
+             (res (save-excursion
+                    (let ((inhibit-message t)
+                          (inhibit-redisplay t)
+                          (message-log-max nil)
+                          ;; Reduce print length for elisp backend (#249)
+                          (print-level 3)
+                          (print-length (* corfu-popupinfo-max-width
+                                           corfu-popupinfo-max-height)))
+                      (funcall fun candidate)))))
     (with-current-buffer (or (car-safe res) res)
       (setq res (string-trim
                  (replace-regexp-in-string
@@ -473,11 +473,11 @@ not be displayed until this command is called again, even if
       (setq corfu-popupinfo--timer nil))
     (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
         (let ((candidate (nth corfu--index corfu--candidates)))
-          (if-let* ((delay (if (consp corfu-popupinfo-delay)
-                               (funcall (if (eq corfu-popupinfo--toggle 'init) #'car #'cdr)
-                                        corfu-popupinfo-delay)
-                             corfu-popupinfo-delay))
-                    (corfu-popupinfo--toggle))
+          (if-let ((delay (if (consp corfu-popupinfo-delay)
+                              (funcall (if (eq corfu-popupinfo--toggle 'init) #'car #'cdr)
+                                       corfu-popupinfo-delay)
+                            corfu-popupinfo-delay))
+                   (corfu-popupinfo--toggle))
               (if (or (eq delay t) (<= delay 0)
                       (and (equal candidate corfu-popupinfo--candidate)
                            (corfu-popupinfo--visible-p)))
