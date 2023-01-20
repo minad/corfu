@@ -41,6 +41,8 @@
 
 (defgroup corfu nil
   "Completion Overlay Region FUnction."
+  :link '(url-link "https://github.com/minad/corfu")
+  :link '(info-link "(corfu)")
   :group 'convenience
   :prefix "corfu-")
 
