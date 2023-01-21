@@ -41,9 +41,12 @@
 
 (defgroup corfu nil
   "Completion Overlay Region FUnction."
-  :link '(url-link "https://github.com/minad/corfu")
-  :link '(info-link "(corfu)")
+  :link '(info-link :tag "Info Manual" "(corfu)")
+  :link '(url-link :tag "Homepage" "https://github.com/minad/corfu")
+  :link '(emacs-library-link :tag "Library Source" "corfu.el")
   :group 'convenience
+  :group 'tools
+  :group 'matching
   :prefix "corfu-")
 
 (defcustom corfu-count 10
