@@ -290,27 +290,32 @@ define the advice ~corfu-send-shell~ which sends the candidate after insertion.
   (advice-add #'corfu-insert :after #'corfu-send-shell)
 #+end_src
 
-Shell completion uses the flexible ~Pcomplete~ mechanism internally, which allows
+Shell completion uses the flexible Pcomplete mechanism internally, which allows
 you to program the completions per shell command. If you want to know more, look
-into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure Pcomplete for git commands.
-Since Emacs 29 Pcomplete offers the =pcomplete-from-help= function which parses
-the --help output of a command and produces completions. This functionality is
-similar to the Fish shell, which also uses --help output parsing to dynamically
+into the [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure Pcomplete for git commands.
+Since Emacs 29, Pcomplete offers the =pcomplete-from-help= function which parses
+the ~--help~ output of a command and produces completions. This functionality is
+similar to the Fish shell, which also takes advantage of ~--help~ to dynamically
 generate completions.
 
-Unfortunately Pcomplete has a few technical issues, which we can work around
-with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers,
-which sanitize the Pcomplete function. Ideally the bugs in Pcomplete should be
-fixed upstream. *For now these two advices are strongly recommended to achieve a
-sane Eshell experience.*
+Unfortunately Pcomplete had a few technical issues on Emacs 28 and older. We can
+work around the issues with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions).
+Cape provides wrappers which sanitize the Pcomplete function. If you use Emacs
+28 or older installing these advices is strongly recommend such that Pcomplete
+works properly. On Emacs 29 the advices are not necessary, since the related
+bugs have been fixed. I therefore recommend to not remove the the advices on
+Emacs 29 and eventually report any Pcomplete issues upstream, such that they can
+be fixed at the root.
 
 #+begin_src emacs-lisp
-  ;; Silence the pcomplete capf, no errors or messages!
-  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+  ;; The advices are only needed on Emacs 28 and older.
+  (when (< emacs-major-version 29)
+    ;; Silence the pcomplete capf, no errors or messages!
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
 
-  ;; Ensure that pcomplete does not write to the buffer
-  ;; and behaves as a pure `completion-at-point-function'.
-  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+    ;; Ensure that pcomplete does not write to the buffer
+    ;; and behaves as a pure `completion-at-point-function'.
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
 #+end_src
 
 ** Orderless completion
