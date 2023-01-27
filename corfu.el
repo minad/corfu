@@ -351,7 +351,7 @@ The completion backend can override this with
   (let ((map (make-sparse-keymap)))
     (dotimes (i 7)
       (dolist (k '(mouse down-mouse drag-mouse double-mouse triple-mouse))
-        (define-key map (vector (intern (format "%s-%s" k (1+ i)))) #'ignore)))
+        (keymap-set map (format "<%s-%s>" k (1+ i)) #'ignore)))
     map)
   "Ignore all mouse clicks.")
 
