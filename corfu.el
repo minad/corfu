@@ -579,10 +579,6 @@ A scroll bar is displayed from LO to LO+BAR."
   "Sorting predicate which compares X and Y first by length then by `string<'."
   (or (< (length x) (length y)) (and (= (length x) (length y)) (string< x y))))
 
-(defun corfu-sort-length-alpha (list)
-  "Sort LIST by length and alphabetically."
-  (sort list #'corfu--length-string<))
-
 (defmacro corfu--partition! (list form)
   "Evaluate FORM for every element and partition LIST."
   (let ((head1 (make-symbol "head1"))
@@ -700,26 +696,6 @@ A scroll bar is displayed from LO to LO+BAR."
                 thereis (if (symbolp x)
                             (eq sym x)
                           (string-match-p x (symbol-name sym))))))
-
-(defun corfu-quit ()
-  "Quit Corfu completion."
-  (interactive)
-  (completion-in-region-mode -1))
-
-(defun corfu-reset ()
-  "Reset Corfu completion.
-This command can be executed multiple times by hammering the ESC key.  If a
-candidate is selected, unselect the candidate.  Otherwise reset the input.  If
-there hasn't been any input, then quit."
-  (interactive)
-  (if (/= corfu--index corfu--preselect)
-      (progn
-        (corfu--goto -1)
-        (setq this-command #'corfu-first))
-    ;; Cancel all changes and start new change group.
-    (cancel-change-group corfu--change-group)
-    (activate-change-group (setq corfu--change-group (prepare-change-group)))
-    (when (eq last-command #'corfu-reset) (corfu-quit))))
 
 (defun corfu--affixate (cands)
   "Annotate CANDS with annotation function."
@@ -872,12 +848,6 @@ AUTO is non-nil when initializing auto completion."
                       (corfu--match-symbol-p corfu-continue-commands this-command))))
     (corfu--insert 'exact)))
 
-(defun corfu-insert-separator ()
-  "Insert a separator character, inhibiting quit on completion boundary.
-See `corfu-separator' for more details."
-  (interactive)
-  (insert corfu-separator))
-
 (defun corfu--continue-p ()
   "Continue completion?"
   (pcase-let ((pt (point))
@@ -920,85 +890,6 @@ See `corfu-separator' for more details."
   "Go to candidate with INDEX."
   (setq corfu--index (max corfu--preselect (min index (1- corfu--total)))))
 
-(defun corfu-next (&optional n)
-  "Go forward N candidates."
-  (interactive "p")
-  (let ((index (+ corfu--index (or n 1))))
-    (corfu--goto
-     (cond
-      ((not corfu-cycle) index)
-      ((= corfu--total 0) -1)
-      ((< corfu--preselect 0) (1- (mod (1+ index) (1+ corfu--total))))
-      (t (mod index corfu--total))))))
-
-(defun corfu-previous (&optional n)
-  "Go backward N candidates."
-  (interactive "p")
-  (corfu-next (- (or n 1))))
-
-(defun corfu-scroll-down (&optional n)
-  "Go back by N pages."
-  (interactive "p")
-  (corfu--goto (max 0 (- corfu--index (* (or n 1) corfu-count)))))
-
-(defun corfu-scroll-up (&optional n)
-  "Go forward by N pages."
-  (interactive "p")
-  (corfu-scroll-down (- (or n 1))))
-
-(defun corfu-first ()
-  "Go to first candidate, or to the prompt when the first candidate is selected."
-  (interactive)
-  (corfu--goto (if (> corfu--index 0) 0 -1)))
-
-(defun corfu-last ()
-  "Go to last candidate."
-  (interactive)
-  (corfu--goto (1- corfu--total)))
-
-(defun corfu-complete ()
-  "Try to complete current input.
-If a candidate is selected, insert it."
-  (interactive)
-  (pcase-let ((`(,beg ,end ,table ,pred) completion-in-region--data))
-    (if (>= corfu--index 0)
-        ;; Continue completion with selected candidate
-        (progn
-          (corfu--insert nil)
-          ;; Exit with status 'finished if input is a valid match and no further
-          ;; completion is possible. Furthermore treat the completion as
-          ;; finished if we are at the end of a boundary, even if other longer
-          ;; candidates would still match, since the user invoked `corfu-complete'
-          ;; with an explicitly selected candidate!
-          (let ((newstr (buffer-substring-no-properties beg end)))
-            (when (and (test-completion newstr table pred)
-                       (or
-                        (not (consp (completion-try-completion
-                                     newstr table pred (length newstr)
-                                     (completion-metadata newstr table pred))))
-                        (equal (completion-boundaries newstr table pred "") '(0 . 0))))
-              (corfu--done newstr 'finished))))
-      ;; Try to complete the current input string
-      (let* ((pt (max 0 (- (point) beg)))
-             (str (buffer-substring-no-properties beg end))
-             (metadata (completion-metadata (substring str 0 pt) table pred)))
-        (pcase (completion-try-completion str table pred pt metadata)
-          ('t
-           (goto-char end)
-           (corfu--done str 'finished))
-          (`(,newstr . ,newpt)
-           (unless (equal str newstr)
-             ;; bug#55205: completion--replace removes properties!
-             (completion--replace beg end (concat newstr)))
-           (goto-char (+ beg newpt))
-           ;; Exit with status 'finished if input is a valid match
-           ;; and no further completion is possible.
-           (when (and (test-completion newstr table pred)
-                      (not (consp (completion-try-completion
-                                   newstr table pred newpt
-                                   (completion-metadata (substring newstr 0 newpt) table pred)))))
-             (corfu--done newstr 'finished))))))))
-
 (defun corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
   (pcase-let* ((`(,beg ,end . ,_) completion-in-region--data)
@@ -1024,14 +915,6 @@ If a candidate is selected, insert it."
     (undo-amalgamate-change-group corfu--change-group)
     (corfu-quit)
     (when exit (funcall exit str status))))
-
-(defun corfu-insert ()
-  "Insert current candidate.
-Quit if no candidate is selected."
-  (interactive)
-  (if (>= corfu--index 0)
-      (corfu--insert 'finished)
-    (corfu-quit)))
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
@@ -1187,6 +1070,123 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   "Return the current tick/status of the buffer.
 Auto completion is only performed if the tick did not change."
   (list (selected-window) (current-buffer) (buffer-chars-modified-tick) (point)))
+
+(defun corfu-sort-length-alpha (list)
+  "Sort LIST by length and alphabetically."
+  (sort list #'corfu--length-string<))
+
+(defun corfu-quit ()
+  "Quit Corfu completion."
+  (interactive)
+  (completion-in-region-mode -1))
+
+(defun corfu-reset ()
+  "Reset Corfu completion.
+This command can be executed multiple times by hammering the ESC key.  If a
+candidate is selected, unselect the candidate.  Otherwise reset the input.  If
+there hasn't been any input, then quit."
+  (interactive)
+  (if (/= corfu--index corfu--preselect)
+      (progn
+        (corfu--goto -1)
+        (setq this-command #'corfu-first))
+    ;; Cancel all changes and start new change group.
+    (cancel-change-group corfu--change-group)
+    (activate-change-group (setq corfu--change-group (prepare-change-group)))
+    (when (eq last-command #'corfu-reset) (corfu-quit))))
+
+(defun corfu-insert-separator ()
+  "Insert a separator character, inhibiting quit on completion boundary.
+See `corfu-separator' for more details."
+  (interactive)
+  (insert corfu-separator))
+
+(defun corfu-next (&optional n)
+  "Go forward N candidates."
+  (interactive "p")
+  (let ((index (+ corfu--index (or n 1))))
+    (corfu--goto
+     (cond
+      ((not corfu-cycle) index)
+      ((= corfu--total 0) -1)
+      ((< corfu--preselect 0) (1- (mod (1+ index) (1+ corfu--total))))
+      (t (mod index corfu--total))))))
+
+(defun corfu-previous (&optional n)
+  "Go backward N candidates."
+  (interactive "p")
+  (corfu-next (- (or n 1))))
+
+(defun corfu-scroll-down (&optional n)
+  "Go back by N pages."
+  (interactive "p")
+  (corfu--goto (max 0 (- corfu--index (* (or n 1) corfu-count)))))
+
+(defun corfu-scroll-up (&optional n)
+  "Go forward by N pages."
+  (interactive "p")
+  (corfu-scroll-down (- (or n 1))))
+
+(defun corfu-first ()
+  "Go to first candidate, or to the prompt when the first candidate is selected."
+  (interactive)
+  (corfu--goto (if (> corfu--index 0) 0 -1)))
+
+(defun corfu-last ()
+  "Go to last candidate."
+  (interactive)
+  (corfu--goto (1- corfu--total)))
+
+(defun corfu-complete ()
+  "Try to complete current input.
+If a candidate is selected, insert it."
+  (interactive)
+  (pcase-let ((`(,beg ,end ,table ,pred) completion-in-region--data))
+    (if (>= corfu--index 0)
+        ;; Continue completion with selected candidate
+        (progn
+          (corfu--insert nil)
+          ;; Exit with status 'finished if input is a valid match and no further
+          ;; completion is possible. Furthermore treat the completion as
+          ;; finished if we are at the end of a boundary, even if other longer
+          ;; candidates would still match, since the user invoked `corfu-complete'
+          ;; with an explicitly selected candidate!
+          (let ((newstr (buffer-substring-no-properties beg end)))
+            (when (and (test-completion newstr table pred)
+                       (or
+                        (not (consp (completion-try-completion
+                                     newstr table pred (length newstr)
+                                     (completion-metadata newstr table pred))))
+                        (equal (completion-boundaries newstr table pred "") '(0 . 0))))
+              (corfu--done newstr 'finished))))
+      ;; Try to complete the current input string
+      (let* ((pt (max 0 (- (point) beg)))
+             (str (buffer-substring-no-properties beg end))
+             (metadata (completion-metadata (substring str 0 pt) table pred)))
+        (pcase (completion-try-completion str table pred pt metadata)
+          ('t
+           (goto-char end)
+           (corfu--done str 'finished))
+          (`(,newstr . ,newpt)
+           (unless (equal str newstr)
+             ;; bug#55205: completion--replace removes properties!
+             (completion--replace beg end (concat newstr)))
+           (goto-char (+ beg newpt))
+           ;; Exit with status 'finished if input is a valid match
+           ;; and no further completion is possible.
+           (when (and (test-completion newstr table pred)
+                      (not (consp (completion-try-completion
+                                   newstr table pred newpt
+                                   (completion-metadata (substring newstr 0 newpt) table pred)))))
+             (corfu--done newstr 'finished))))))))
+
+(defun corfu-insert ()
+  "Insert current candidate.
+Quit if no candidate is selected."
+  (interactive)
+  (if (>= corfu--index 0)
+      (corfu--insert 'finished)
+    (corfu-quit)))
 
 ;;;###autoload
 (define-minor-mode corfu-mode
