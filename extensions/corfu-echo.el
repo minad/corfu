@@ -97,6 +97,7 @@ floats to specify initial and subsequent delay."
   (corfu-echo--cancel))
 
 (cl-defmethod corfu--prepare :before (&context (corfu-echo-mode (eql t)))
+  ;; The refreshing is needed to prevent flicker if corfu-echo-delay=t.
   (corfu-echo--cancel corfu-echo--message))
 
 ;;;###autoload
