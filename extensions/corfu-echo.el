@@ -96,7 +96,7 @@ floats to specify initial and subsequent delay."
 (cl-defmethod corfu--teardown :before (&context (corfu-echo-mode (eql t)))
   (corfu-echo--cancel))
 
-(cl-defmethod corfu--pre-command :before (&context (corfu-echo-mode (eql t)))
+(cl-defmethod corfu--prepare :before (&context (corfu-echo-mode (eql t)))
   (corfu-echo--cancel corfu-echo--message))
 
 ;;;###autoload

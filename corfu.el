@@ -832,7 +832,7 @@ A scroll bar is displayed from LO to LO+BAR."
   (undo-boundary) ;; Necessary to support `corfu-reset'
   (activate-change-group (setq corfu--change-group (prepare-change-group)))
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
-  (add-hook 'pre-command-hook #'corfu--pre-command nil 'local)
+  (add-hook 'pre-command-hook #'corfu--prepare nil 'local)
   (add-hook 'post-command-hook #'corfu--post-command)
   ;; Disable default post-command handling, since we have our own
   ;; checks in `corfu--post-command'.
@@ -1017,7 +1017,7 @@ Auto completion is only performed if the tick did not change."
                (add-face-text-property 0 (length c) 'corfu-deprecated 'append c)))
     (cons mf cands)))
 
-(cl-defgeneric corfu--pre-command ()
+(cl-defgeneric corfu--prepare ()
   "Insert selected candidate unless command is marked to continue completion."
   (when corfu--preview-ov
     (delete-overlay corfu--preview-ov)
@@ -1065,7 +1065,7 @@ AUTO is non-nil when initializing auto completion."
 (cl-defgeneric corfu--teardown ()
   "Teardown Corfu."
   (corfu--popup-hide)
-  (remove-hook 'pre-command-hook #'corfu--pre-command 'local)
+  (remove-hook 'pre-command-hook #'corfu--prepare 'local)
   (remove-hook 'post-command-hook #'corfu--post-command)
   (when corfu--preview-ov (delete-overlay corfu--preview-ov))
   (accept-change-group corfu--change-group)
