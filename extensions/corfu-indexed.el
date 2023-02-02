@@ -69,8 +69,8 @@
           (funcall orig)))
     (apply orig args)))
 
-(cl-defmethod corfu--affixate (cands &context (corfu-indexed-mode (eql t)))
-  (setq cands (cdr cands))
+(cl-defmethod corfu--affixate :around (cands &context (corfu-indexed-mode (eql t)))
+  (setq cands (cdr (cl-call-next-method cands)))
   (let* ((space #(" " 0 1 (face (:height 0.5 :inherit corfu-indexed))))
          (width (if (length> cands (- 10 corfu-indexed-start)) 2 1))
          (fmt (concat space
