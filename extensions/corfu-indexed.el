@@ -56,18 +56,17 @@
   '(corfu-insert corfu-complete)
   "Commands that should be indexed.")
 
-(defun corfu-indexed--handle-prefix (orig &rest args)
-  "Handle prefix argument before calling ORIG function with ARGS."
-  (if (and current-prefix-arg (called-interactively-p t))
-      (let ((corfu--index (+ corfu--scroll
-                             (- (prefix-numeric-value current-prefix-arg)
-                                corfu-indexed-start))))
-        (if (or (< corfu--index 0)
-                (>= corfu--index corfu--total)
-                (>= corfu--index (+ corfu--scroll corfu-count)))
-            (message "Out of range")
-          (funcall orig)))
-    (apply orig args)))
+(cl-defmethod corfu--prepare :before (&context (corfu-indexed-mode (eql t)))
+  (when (and prefix-arg (memq this-command corfu-indexed--commands))
+    (let ((index (+ corfu--scroll
+                    (- (prefix-numeric-value prefix-arg)
+                       corfu-indexed-start))))
+      (if (and (>= index 0)
+               (< index corfu--total)
+               (< index (+ corfu--scroll corfu-count)))
+          (setq corfu--index index)
+        (message "Out of range")
+        (setq this-command #'ignore)))))
 
 (cl-defmethod corfu--affixate :around (cands &context (corfu-indexed-mode (eql t)))
   (setq cands (cdr (cl-call-next-method cands)))
@@ -92,14 +91,7 @@
 ;;;###autoload
 (define-minor-mode corfu-indexed-mode
   "Prefix candidates with indices."
-  :global t :group 'corfu
-  ;; TODO I had forgotten that `corfu-indexed-mode' is double evil, since it
-  ;; uses advices and the forbidden function `called-interactively-p'. Find a
-  ;; better implementation which avoids these kludges.
-  (dolist (cmd corfu-indexed--commands)
-    (if corfu-indexed-mode
-        (advice-add cmd :around #'corfu-indexed--handle-prefix)
-      (advice-remove cmd #'corfu-indexed--handle-prefix))))
+  :global t :group 'corfu)
 
 (provide 'corfu-indexed)
 ;;; corfu-indexed.el ends here
