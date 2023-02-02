@@ -56,8 +56,20 @@
   '(corfu-insert corfu-complete)
   "Commands that should be indexed.")
 
-(defun corfu-indexed--affixate (cands)
-  "Advice for `corfu--affixate' which prefixes the CANDS with an index."
+(defun corfu-indexed--handle-prefix (orig &rest args)
+  "Handle prefix argument before calling ORIG function with ARGS."
+  (if (and current-prefix-arg (called-interactively-p t))
+      (let ((corfu--index (+ corfu--scroll
+                             (- (prefix-numeric-value current-prefix-arg)
+                                corfu-indexed-start))))
+        (if (or (< corfu--index 0)
+                (>= corfu--index corfu--total)
+                (>= corfu--index (+ corfu--scroll corfu-count)))
+            (message "Out of range")
+          (funcall orig)))
+    (apply orig args)))
+
+(cl-defmethod corfu--affixate (cands &context (corfu-indexed-mode (eql t)))
   (setq cands (cdr cands))
   (let* ((space #(" " 0 1 (face (:height 0.5 :inherit corfu-indexed))))
          (width (if (length> cands (- 10 corfu-indexed-start)) 2 1))
@@ -77,32 +89,17 @@
              (cadr cand))))
     (cons t cands)))
 
-(defun corfu-indexed--handle-prefix (orig &rest args)
-  "Handle prefix argument before calling ORIG function with ARGS."
-  (if (and current-prefix-arg (called-interactively-p t))
-      (let ((corfu--index (+ corfu--scroll
-                             (- (prefix-numeric-value current-prefix-arg)
-                                corfu-indexed-start))))
-        (if (or (< corfu--index 0)
-                (>= corfu--index corfu--total)
-                (>= corfu--index (+ corfu--scroll corfu-count)))
-            (message "Out of range")
-          (funcall orig)))
-    (apply orig args)))
-
 ;;;###autoload
 (define-minor-mode corfu-indexed-mode
   "Prefix candidates with indices."
   :global t :group 'corfu
-  (cond
-   (corfu-indexed-mode
-    (advice-add #'corfu--affixate :filter-return #'corfu-indexed--affixate)
-    (dolist (cmd corfu-indexed--commands)
-      (advice-add cmd :around #'corfu-indexed--handle-prefix)))
-   (t
-    (advice-remove #'corfu--affixate #'corfu-indexed--affixate)
-    (dolist (cmd corfu-indexed--commands)
-      (advice-remove cmd #'corfu-indexed--handle-prefix)))))
+  ;; TODO I had forgotten that `corfu-indexed-mode' is double evil, since it
+  ;; uses advices and the forbidden function `called-interactively-p'. Find a
+  ;; better implementation which avoids these kludges.
+  (dolist (cmd corfu-indexed--commands)
+    (if corfu-indexed-mode
+        (advice-add cmd :around #'corfu-indexed--handle-prefix)
+      (advice-remove cmd #'corfu-indexed--handle-prefix))))
 
 (provide 'corfu-indexed)
 ;;; corfu-indexed.el ends here

@@ -463,8 +463,7 @@ not be displayed until this command is called again, even if
   (interactive)
   (corfu-popupinfo--toggle corfu-popupinfo--function))
 
-(defun corfu-popupinfo--exhibit (&rest _)
-  "Update the info popup automatically."
+(cl-defmethod corfu--exhibit :after (&context (corfu-popupinfo-mode (eql t)) &optional _auto)
   (when completion-in-region-mode
     (setf (alist-get #'corfu-popupinfo-mode minor-mode-overriding-map-alist)
           corfu-popupinfo-map)
@@ -494,8 +493,7 @@ not be displayed until this command is called again, even if
               (corfu-popupinfo--hide))))
       (corfu-popupinfo--hide))))
 
-(defun corfu-popupinfo--teardown ()
-  "Teardown the info popup state."
+(cl-defmethod corfu--teardown :before (&context (corfu-popupinfo-mode (eql t)))
   (corfu-popupinfo--hide)
   (mapc #'kill-local-variable corfu-popupinfo--state-vars)
   (setq minor-mode-overriding-map-alist
@@ -505,14 +503,7 @@ not be displayed until this command is called again, even if
 ;;;###autoload
 (define-minor-mode corfu-popupinfo-mode
   "Corfu info popup minor mode."
-  :global t :group 'corfu
-  (cond
-   (corfu-popupinfo-mode
-    (advice-add #'corfu--exhibit :after #'corfu-popupinfo--exhibit)
-    (advice-add #'corfu--teardown :before #'corfu-popupinfo--teardown))
-   (t
-    (advice-remove #'corfu--exhibit #'corfu-popupinfo--exhibit)
-    (advice-remove #'corfu--teardown #'corfu-popupinfo--teardown))))
+  :global t :group 'corfu)
 
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-popupinfo-scroll-down corfu-popupinfo-scroll-up

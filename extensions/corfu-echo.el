@@ -57,10 +57,6 @@ floats to specify initial and subsequent delay."
 (defvar-local corfu-echo--message nil
   "Last echo message.")
 
-(defun corfu-echo--refresh ()
-  "Refresh message to avoid flicker."
-  (corfu-echo--cancel corfu-echo--message))
-
 (defun corfu-echo--cancel (&optional msg)
   "Cancel echo timer and refresh MSG."
   (when corfu-echo--timer
@@ -80,8 +76,7 @@ floats to specify initial and subsequent delay."
                              msg
                            (propertize msg 'face 'corfu-echo)))))
 
-(defun corfu-echo--exhibit (&rest _)
-  "Show documentation string of current candidate in echo area."
+(cl-defmethod corfu--exhibit :after (&context (corfu-echo-mode (eql t)) &optional _auto)
   (if-let ((delay (if (consp corfu-echo-delay)
                       (funcall (if corfu-echo--message #'cdr #'car)
                                corfu-echo-delay)
@@ -98,19 +93,16 @@ floats to specify initial and subsequent delay."
                              (corfu-echo--show (funcall fun cand))))))
     (corfu-echo--cancel)))
 
+(cl-defmethod corfu--teardown :before (&context (corfu-echo-mode (eql t)))
+  (corfu-echo--cancel))
+
+(cl-defmethod corfu--pre-command :before (&context (corfu-echo-mode (eql t)))
+  (corfu-echo--cancel corfu-echo--message))
+
 ;;;###autoload
 (define-minor-mode corfu-echo-mode
   "Show candidate documentation in echo area."
-  :global t :group 'corfu
-  (cond
-   (corfu-echo-mode
-    (advice-add #'corfu--pre-command :before #'corfu-echo--refresh)
-    (advice-add #'corfu--exhibit :after #'corfu-echo--exhibit)
-    (advice-add #'corfu--teardown :before #'corfu-echo--cancel))
-   (t
-    (advice-remove #'corfu--pre-command #'corfu-echo--refresh)
-    (advice-remove #'corfu--exhibit #'corfu-echo--exhibit)
-    (advice-remove #'corfu--teardown #'corfu-echo--cancel))))
+  :global t :group 'corfu)
 
 (provide 'corfu-echo)
 ;;; corfu-echo.el ends here
