@@ -76,14 +76,6 @@
   (cl-loop for cand on candidates do (setcar cand (caar cand)))
   candidates)
 
-(cl-defmethod corfu--insert :before (_status &context (corfu-history-mode (eql t)))
-  (when (>= corfu--index 0)
-    (add-to-history 'corfu-history
-                    (substring-no-properties
-                     (nth corfu--index corfu--candidates))
-                    corfu-history-length)
-    (setq corfu-history--hash nil)))
-
 ;;;###autoload
 (define-minor-mode corfu-history-mode
   "Update Corfu history and sort completions by history."
@@ -91,6 +83,14 @@
   (if corfu-history-mode
       (add-function :override corfu-sort-function #'corfu-history--sort)
     (remove-function corfu-sort-function #'corfu-history--sort)))
+
+(cl-defmethod corfu--insert :before (_status &context (corfu-history-mode (eql t)))
+  (when (>= corfu--index 0)
+    (add-to-history 'corfu-history
+                    (substring-no-properties
+                     (nth corfu--index corfu--candidates))
+                    corfu-history-length)
+    (setq corfu-history--hash nil)))
 
 (provide 'corfu-history)
 ;;; corfu-history.el ends here

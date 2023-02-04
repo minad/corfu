@@ -56,6 +56,11 @@
   '(corfu-insert corfu-complete)
   "Commands that should be indexed.")
 
+;;;###autoload
+(define-minor-mode corfu-indexed-mode
+  "Prefix candidates with indices."
+  :global t :group 'corfu)
+
 (cl-defmethod corfu--prepare :before (&context (corfu-indexed-mode (eql t)))
   (when (and prefix-arg (memq this-command corfu-indexed--commands))
     (let ((index (+ corfu--scroll
@@ -87,11 +92,6 @@
              align
              (cadr cand))))
     (cons t cands)))
-
-;;;###autoload
-(define-minor-mode corfu-indexed-mode
-  "Prefix candidates with indices."
-  :global t :group 'corfu)
 
 (provide 'corfu-indexed)
 ;;; corfu-indexed.el ends here

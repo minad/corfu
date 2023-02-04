@@ -463,6 +463,11 @@ not be displayed until this command is called again, even if
   (interactive)
   (corfu-popupinfo--toggle corfu-popupinfo--function))
 
+;;;###autoload
+(define-minor-mode corfu-popupinfo-mode
+  "Corfu info popup minor mode."
+  :global t :group 'corfu)
+
 (cl-defmethod corfu--exhibit :after (&context (corfu-popupinfo-mode (eql t)) &optional _auto)
   (when completion-in-region-mode
     (setf (alist-get #'corfu-popupinfo-mode minor-mode-overriding-map-alist)
@@ -499,11 +504,6 @@ not be displayed until this command is called again, even if
   (setq minor-mode-overriding-map-alist
         (assq-delete-all #'corfu-popupinfo-mode
                          minor-mode-overriding-map-alist)))
-
-;;;###autoload
-(define-minor-mode corfu-popupinfo-mode
-  "Corfu info popup minor mode."
-  :global t :group 'corfu)
 
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-popupinfo-scroll-down corfu-popupinfo-scroll-up

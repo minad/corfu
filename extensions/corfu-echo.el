@@ -76,6 +76,11 @@ floats to specify initial and subsequent delay."
                              msg
                            (propertize msg 'face 'corfu-echo)))))
 
+;;;###autoload
+(define-minor-mode corfu-echo-mode
+  "Show candidate documentation in echo area."
+  :global t :group 'corfu)
+
 (cl-defmethod corfu--exhibit :after (&context (corfu-echo-mode (eql t)) &optional _auto)
   (if-let ((delay (if (consp corfu-echo-delay)
                       (funcall (if corfu-echo--message #'cdr #'car)
@@ -99,11 +104,6 @@ floats to specify initial and subsequent delay."
 (cl-defmethod corfu--prepare :before (&context (corfu-echo-mode (eql t)))
   ;; The refreshing is needed to prevent flicker if corfu-echo-delay=t.
   (corfu-echo--cancel corfu-echo--message))
-
-;;;###autoload
-(define-minor-mode corfu-echo-mode
-  "Show candidate documentation in echo area."
-  :global t :group 'corfu)
 
 (provide 'corfu-echo)
 ;;; corfu-echo.el ends here
