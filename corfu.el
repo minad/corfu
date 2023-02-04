@@ -621,8 +621,7 @@ FRAME is the existing frame."
       ;; without the user explicitly requesting it via M-TAB.
       (pcase (let ((non-essential t))
                ;; XXX Guard against errors during candidate generation.
-               ;; For example dabbrev throws error "No dynamic expansion ... found".
-               ;; TODO Report this as a bug? Are completion tables supposed to throw errors?
+               ;; bug#61274: `dabbrev-capf' signals errors.
                (condition-case err
                    (if interruptible
                        (while-no-input (corfu--recompute str pt table pred))
