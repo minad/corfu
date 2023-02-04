@@ -434,6 +434,8 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
 Corfu uses a transient keymap ~corfu-map~ which is active while the popup is
 shown. The keymap defines the following remappings and bindings:
 
+- ~move-beginning-of-line~ -> ~corfu-prompt-beginning~
+- ~move-end-of-line~ -> ~corfu-prompt-end~
 - ~beginning-of-buffer~ -> ~corfu-first~
 - ~end-of-buffer~ -> ~corfu-last~
 - ~scroll-down-command~ -> ~corfu-scroll-down~

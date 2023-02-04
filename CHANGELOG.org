@@ -4,8 +4,9 @@
 
 * Development
 
-- =corfu-popupinfo=: Add commands =corfu-popupinfo-beginning/end=
-- =corfu-popupinfo=: Improve popup placement
+- =corfu-popupinfo=: Add commands =corfu-popupinfo-beginning/end=.
+- =corfu-popupinfo=: Improve popup placement.
+- Add =corfu-prompt-beginning= and =corfu-prompt-end= commands.
 - Add =corfu-preselect= option, deprecate =corfu-preselect-first=.
 - Use =cl-defgeneric= internally as mechanism to allow extensions to override
   functionality, e.g., the candidate formatting and display.

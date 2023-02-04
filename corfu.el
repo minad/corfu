@@ -221,6 +221,8 @@ The completion backend can override this with
 
 (defvar-keymap corfu-map
   :doc "Corfu keymap used when popup is shown."
+  "<remap> <move-beginning-of-line>" #'corfu-prompt-beginning
+  "<remap> <move-end-of-line>" #'corfu-prompt-end
   "<remap> <beginning-of-buffer>" #'corfu-first
   "<remap> <end-of-buffer>" #'corfu-last
   "<remap> <scroll-down-command>" #'corfu-scroll-down
@@ -1128,7 +1130,8 @@ See `corfu-separator' for more details."
   (corfu-scroll-down (- (or n 1))))
 
 (defun corfu-first ()
-  "Go to first candidate, or to the prompt when the first candidate is selected."
+  "Go to first candidate.
+If the first candidate is already selected, go to the prompt."
   (interactive)
   (corfu--goto (if (> corfu--index 0) 0 -1)))
 
@@ -1136,6 +1139,28 @@ See `corfu-separator' for more details."
   "Go to last candidate."
   (interactive)
   (corfu--goto (1- corfu--total)))
+
+(defun corfu-prompt-beginning ()
+  "Move to beginning of the prompt line.
+If the point is already the beginning of the prompt move to the
+beginning of the line."
+  (interactive)
+  (let ((beg (car completion-in-region--data)))
+    (if (and (= corfu--preselect corfu--index) (= (point) beg))
+        (move-beginning-of-line nil)
+      (corfu--goto -1)
+      (goto-char beg))))
+
+(defun corfu-prompt-end ()
+  "Move to end of the prompt line.
+If the point is already the end of the prompt move to the end of
+the line."
+  (interactive)
+  (let ((end (cadr completion-in-region--data)))
+    (if (and (= corfu--preselect corfu--index) (= (point) end))
+        (move-end-of-line nil)
+      (corfu--goto -1)
+      (goto-char end))))
 
 (defun corfu-complete ()
   "Try to complete current input.
