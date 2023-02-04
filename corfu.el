@@ -233,6 +233,9 @@ The completion backend can override this with
   "<remap> <keyboard-escape-quit>" #'corfu-reset
   "<down>" #'corfu-next
   "<up>" #'corfu-previous
+  ;; XXX C-a is bound because of eshell.
+  ;; Ideally eshell would remap move-beginning-of-line.
+  "C-a" #'corfu-prompt-beginning
   ;; XXX [tab] is bound because of org-mode
   ;; The binding should be removed from org-mode-map.
   "<tab>" #'corfu-complete
@@ -1140,25 +1143,29 @@ If the first candidate is already selected, go to the prompt."
   (interactive)
   (corfu--goto (1- corfu--total)))
 
-(defun corfu-prompt-beginning ()
+(defun corfu-prompt-beginning (arg)
   "Move to beginning of the prompt line.
 If the point is already the beginning of the prompt move to the
-beginning of the line."
-  (interactive)
+beginning of the line.  If ARG is not 1 or nil, move backward ARG - 1
+lines first."
+  (interactive "^p")
   (let ((beg (car completion-in-region--data)))
-    (if (and (= corfu--preselect corfu--index) (= (point) beg))
-        (move-beginning-of-line nil)
+    (if (or (not (eq arg 1))
+            (and (= corfu--preselect corfu--index) (= (point) beg)))
+        (move-beginning-of-line arg)
       (corfu--goto -1)
       (goto-char beg))))
 
-(defun corfu-prompt-end ()
+(defun corfu-prompt-end (arg)
   "Move to end of the prompt line.
 If the point is already the end of the prompt move to the end of
-the line."
-  (interactive)
+the line.  If ARG is not 1 or nil, move forward ARG - 1 lines
+first."
+  (interactive "^p")
   (let ((end (cadr completion-in-region--data)))
-    (if (and (= corfu--preselect corfu--index) (= (point) end))
-        (move-end-of-line nil)
+    (if (or (not (eq arg 1))
+            (and (= corfu--preselect corfu--index) (= (point) end)))
+        (move-end-of-line arg)
       (corfu--goto -1)
       (goto-char end))))
 
