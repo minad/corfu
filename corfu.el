@@ -6,7 +6,7 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
 ;; Version: 0.34
-;; Package-Requires: ((emacs "27.1") (compat "29.1.3.0"))
+;; Package-Requires: ((emacs "27.1") (compat "29.1.3.3"))
 ;; Homepage: https://github.com/minad/corfu
 
 ;; This file is part of GNU Emacs.
@@ -34,7 +34,6 @@
 ;;; Code:
 
 (require 'compat)
-(require 'seq)
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x))
@@ -529,10 +528,7 @@ FRAME is the existing frame."
 
 (defmacro corfu--partition! (list form)
   "Evaluate FORM for every element and partition LIST."
-  (let ((head1 (make-symbol "head1"))
-        (head2 (make-symbol "head2"))
-        (tail1 (make-symbol "tail1"))
-        (tail2 (make-symbol "tail2")))
+  (cl-with-gensyms (head1 head2 tail1 tail2)
     `(let* ((,head1 (cons nil nil))
             (,head2 (cons nil nil))
             (,tail1 ,head1)
