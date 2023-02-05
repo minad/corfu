@@ -242,7 +242,9 @@ all values are in pixels relative to the origin.  See
                        ((window-buffer) (current-buffer))
                        (size (window-text-pixel-size
                               nil (point-min) (point-max)
-                              max-width max-height)))
+                              ;; Use 3*max-height as y-limit, to take more text
+                              ;; into account.
+                              max-width (* 3 max-height))))
               ;; Check that width is not exceeded. Otherwise use full height,
               ;; since lines will get wrapped.
               (when (<= (car size) max-width)
