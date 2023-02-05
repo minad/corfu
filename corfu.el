@@ -529,10 +529,7 @@ FRAME is the existing frame."
 
 (defmacro corfu--partition! (list form)
   "Evaluate FORM for every element and partition LIST."
-  (let ((head1 (make-symbol "head1"))
-        (head2 (make-symbol "head2"))
-        (tail1 (make-symbol "tail1"))
-        (tail2 (make-symbol "tail2")))
+  (cl-with-gensyms (head1 head2 tail1 tail2)
     `(let* ((,head1 (cons nil nil))
             (,head2 (cons nil nil))
             (,tail1 ,head1)
