@@ -114,9 +114,9 @@ popup can be requested manually via `corfu-popupinfo-toggle',
 
 (defvar-keymap corfu-popupinfo-map
   :doc "Additional keymap activated in popupinfo mode."
-  "M-d" #'corfu-popupinfo-documentation
-  "M-l" #'corfu-popupinfo-location
   "M-t" #'corfu-popupinfo-toggle
+  "<remap> <corfu-info-documentation>" #'corfu-popupinfo-documentation
+  "<remap> <corfu-info-location>" #'corfu-popupinfo-location
   "<remap> <scroll-other-window>" #'corfu-popupinfo-scroll-up
   "<remap> <scroll-other-window-down>" #'corfu-popupinfo-scroll-down
   "<remap> <end-of-buffer-other-window>" #'corfu-popupinfo-end
