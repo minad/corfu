@@ -1231,7 +1231,7 @@ Quit if no candidate is selected."
     ;; issue has been mentioned. We never uninstall this advice since the
     ;; advice is active *globally*.
     (advice-add #'completion--capf-wrapper :around #'corfu--capf-wrapper-advice)
-    (advice-add #'eldoc-display-message-no-interference-p :before-while #'corfu--allow-eldoc)
+    (advice-add #'eldoc-display-message-no-interference-p :before-while #'corfu--eldoc-advice)
     (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
     (setq-local completion-in-region-function #'corfu--in-region))
    (t
@@ -1280,7 +1280,7 @@ The ORIG function takes the FUN and WHICH arguments."
               (memq major-mode corfu-excluded-modes))
     (corfu-mode 1)))
 
-(defun corfu--allow-eldoc ()
+(defun corfu--eldoc-advice ()
   "Return non-nil if Corfu is currently not active."
   (not (and corfu-mode completion-in-region-mode)))
 
