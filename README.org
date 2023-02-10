@@ -303,8 +303,8 @@ work around the issues with the [[https://github.com/minad/cape][Cape]] library 
 Cape provides wrappers which sanitize the Pcomplete function. If you use Emacs
 28 or older installing these advices is strongly recommend such that Pcomplete
 works properly. On Emacs 29 the advices are not necessary anymore, since almost
-all of the related bugs have been fixed. I therefore recommend to not remove the
-the advices on Emacs 29 and eventually report any remaining Pcomplete issues
+all of the related bugs have been fixed. I therefore recommend to remove the
+advices on Emacs 29 and eventually report any remaining Pcomplete issues
 upstream, such that they can be fixed at the root.
 
 #+begin_src emacs-lisp
