@@ -309,8 +309,6 @@ The completion backend can override this with
     (no-focus-on-map . t)
     (min-width . t)
     (min-height . t)
-    (width . 0)
-    (height . 0)
     (border-width . 0)
     (child-frame-border-width . 1)
     (left-fringe . 0)
@@ -324,7 +322,6 @@ The completion backend can override this with
     (unsplittable . t)
     (undecorated . t)
     (cursor-type . nil)
-    (visibility . nil)
     (no-special-glyphs . t)
     (desktop-dont-save . t))
   "Default child frame parameters.")
@@ -412,10 +409,20 @@ FRAME is the existing frame."
       (setq frame (make-frame
                    `((parent-frame . ,parent)
                      (minibuffer . ,(minibuffer-window parent))
+                     (width . 0) (height . 0) (visibility . nil)
                      ;; Set `internal-border-width' for Emacs 27
                      (internal-border-width
                       . ,(alist-get 'child-frame-border-width corfu--frame-parameters))
                      ,@corfu--frame-parameters))))
+    ;; Reset frame parameters if they changed.  For example `tool-bar-mode'
+    ;; overrides the parameter `tool-bar-lines' for every frame, including child
+    ;; frames.  The child frame API is a pleasure to work with.  It is full of
+    ;; lovely suprises.
+    (when-let ((params (frame-parameters frame))
+               (reset (seq-remove
+                       (lambda (p) (equal (alist-get (car p) params) (cdr p)))
+                       corfu--frame-parameters)))
+      (modify-frame-parameters frame reset))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
     ;; on Mac. We have to apply the face background before adjusting the frame
