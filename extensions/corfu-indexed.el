@@ -80,17 +80,15 @@
          (fmt (concat space
                       (propertize (format "%%%ds" width)
                                   'face 'corfu-indexed)
-                      space))
-         (align
-          (propertize (make-string width ?\s)
-                      'display
-                      `(space :align-to (+ left ,(1+ width))))))
+                      space)))
     (cl-loop for cand in cands for index from corfu-indexed-start do
       (setf (cadr cand)
             (concat
+             (cadr cand)
              (propertize " " 'display (format fmt index))
-             align
-             (cadr cand))))
+             (propertize (make-string width ? )
+                         'display
+                         `(space :align-to (+ left ,(+ 1 (length (cadr cand)) width)))))))
     (cons t cands)))
 
 (provide 'corfu-indexed)
