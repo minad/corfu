@@ -94,9 +94,6 @@ inserted on further input."
 - directory: Like first, but select the prompt if it is a directory."
   :type '(choice (const prompt) (const valid) (const first) (const directory)))
 
-(defvar corfu-preselect-first t)
-(make-obsolete-variable 'corfu-preselect-first "Use `corfu-preselect' instead." "0.34")
-
 (defcustom corfu-separator ?\s
   "Component separator character.
 The character used for separating components in the input.  The presence
