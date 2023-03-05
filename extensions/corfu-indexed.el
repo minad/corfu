@@ -50,7 +50,7 @@
 (defcustom corfu-indexed-start 0
   "Start of the indexing."
   :group 'corfu
-  :type 'integer)
+  :type 'natnum)
 
 (defvar corfu-indexed--commands
   '(corfu-insert corfu-complete)

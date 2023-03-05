@@ -43,7 +43,7 @@
 
 (defcustom corfu-history-length nil
   "Corfu history length."
-  :type '(choice (const nil) integer)
+  :type '(choice (const nil) natnum)
   :group 'corfu)
 
 (defvar corfu-history--hash nil

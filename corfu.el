@@ -6,7 +6,7 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
 ;; Version: 0.35
-;; Package-Requires: ((emacs "27.1") (compat "29.1.3.4"))
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.0"))
 ;; Homepage: https://github.com/minad/corfu
 
 ;; This file is part of GNU Emacs.
@@ -50,20 +50,20 @@
 
 (defcustom corfu-count 10
   "Maximal number of candidates to show."
-  :type 'integer)
+  :type 'natnum)
 
 (defcustom corfu-scroll-margin 2
   "Number of lines at the top and bottom when scrolling.
 The value should lie between 0 and corfu-count/2."
-  :type 'integer)
+  :type 'natnum)
 
 (defcustom corfu-min-width 15
   "Popup minimum width in characters."
-  :type 'integer)
+  :type 'natnum)
 
 (defcustom corfu-max-width 100
   "Popup maximum width in characters."
-  :type 'integer)
+  :type 'natnum)
 
 (defcustom corfu-cycle nil
   "Enable cycling for `corfu-next' and `corfu-previous'."
@@ -160,7 +160,7 @@ return a string, possibly an icon."
   "Minimum length of prefix for auto completion.
 The completion backend can override this with
 :company-prefix-length."
-  :type 'integer)
+  :type 'natnum)
 
 (defcustom corfu-auto-delay 0.2
   "Delay for auto completion."

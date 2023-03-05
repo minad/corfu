@@ -76,22 +76,22 @@ popup can be requested manually via `corfu-popupinfo-toggle',
 
 (defcustom corfu-popupinfo-max-width 80
   "The maximum width of the info popup in characters."
-  :type 'integer
+  :type 'natnum
   :group 'corfu)
 
 (defcustom corfu-popupinfo-min-width 30
   "The minimum width of the info popup in characters."
-  :type 'integer
+  :type 'natnum
   :group 'corfu)
 
 (defcustom corfu-popupinfo-max-height 10
   "The maximum height of the info popup in characters."
-  :type 'integer
+  :type 'natnum
   :group 'corfu)
 
 (defcustom corfu-popupinfo-min-height 1
   "The minimum height of the info popup in characters."
-  :type 'integer
+  :type 'natnum
   :group 'corfu)
 
 (defcustom corfu-popupinfo-resize t
