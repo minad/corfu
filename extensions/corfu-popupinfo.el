@@ -53,14 +53,17 @@
 (defcustom corfu-popupinfo-delay '(2.0 . 1.0)
   "Automatically update info popup after that number of seconds.
 
-Set to t for an instant update.  The value can be a pair of two
-floats to specify initial and subsequent delay.  If the value is
-non-nil or the car of the pair is non-nil, the popup will
-automatically appear for the preselected candidate.  Otherwise the
-popup can be requested manually via `corfu-popupinfo-toggle',
-`corfu-popupinfo-documentation' and `corfu-popupinfo-location'."
+The value can be a pair of two floats to specify initial and
+subsequent delay.  If the value is non-nil or the car of the pair
+is non-nil, the popup will automatically appear for the
+preselected candidate.  Otherwise the popup can be requested
+manually via `corfu-popupinfo-toggle',
+`corfu-popupinfo-documentation' and `corfu-popupinfo-location'.
+
+It is *not recommended* to use a very small delay, since this
+will create high load for Emacs since retrieving the
+documentation is usually expensive."
   :type '(choice (const :tag "Never" nil)
-                 (const :tag "Instant" t)
                  (number :tag "Delay in seconds")
                  (cons :tag "Two Delays"
                        (choice :tag "Initial   "
@@ -484,7 +487,7 @@ not be displayed until this command is called again, even if
                                        corfu-popupinfo-delay)
                             corfu-popupinfo-delay))
                    (corfu-popupinfo--toggle))
-              (if (or (eq delay t) (<= delay 0)
+              (if (or (<= delay 0)
                       (and (equal candidate corfu-popupinfo--candidate)
                            (corfu-popupinfo--visible-p)))
                   (corfu-popupinfo--show candidate)

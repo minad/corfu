@@ -41,10 +41,9 @@
 
 (defcustom corfu-echo-delay '(2.0 . 1.0)
   "Show documentation string in the echo area after that number of seconds.
-Set to t for an instant message.  The value can be a pair of two
-floats to specify initial and subsequent delay."
+The value can be a pair of two floats to specify initial and
+subsequent delay."
   :type '(choice (const :tag "Never" nil)
-                 (const :tag "Instant" t)
                  (number :tag "Delay in seconds")
                  (cons :tag "Two Delays"
                        (choice :tag "Initial   " number)
@@ -89,7 +88,7 @@ floats to specify initial and subsequent delay."
            (fun (plist-get corfu--extra :company-docsig))
            (cand (and (>= corfu--index 0)
                       (nth corfu--index corfu--candidates))))
-      (if (or (eq delay t) (<= delay 0))
+      (if (<= delay 0)
           (corfu-echo--show (funcall fun cand))
         (corfu-echo--cancel)
         (setq corfu-echo--timer
