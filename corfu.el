@@ -159,11 +159,16 @@ return a string, possibly an icon."
 (defcustom corfu-auto-prefix 3
   "Minimum length of prefix for auto completion.
 The completion backend can override this with
-:company-prefix-length."
+:company-prefix-length.  It is *not recommended* to use a small
+value here (below 2), since this will create high load for
+Emacs.  See also `corfu-auto-delay'."
   :type 'natnum)
 
 (defcustom corfu-auto-delay 0.2
-  "Delay for auto completion."
+  "Delay for auto completion.
+It is *not recommended* to use a very small value or even 0,
+since this will create high load for Emacs in particular if the
+completion backend in use is expensive."
   :type 'float)
 
 (defcustom corfu-auto-commands
