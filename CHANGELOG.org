@@ -8,6 +8,7 @@
 - =corfu-popupinfo-delay= and =corfu-echo-delay=: Remove support for value =t=.
   Instant updates are not recommended. It is still possible to use a small value
   for the delay.
+- Rename =corfu-excluded-modes= to =corfu-exclude-modes= (Naming convention).
 
 * Version 0.35 (2023-02-17)
 
