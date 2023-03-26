@@ -96,7 +96,7 @@ Here is an example configuration:
 
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since Dabbrev can be used globally (M-/).
-    ;; See also `corfu-excluded-modes'.
+    ;; See also `corfu-exclude-modes'.
     :init
     (global-corfu-mode))
 
