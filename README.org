@@ -509,11 +509,12 @@ enhance your setup.
 * Alternatives
 
 - [[https://github.com/company-mode/company-mode][Company]]: Company is a widely used and mature completion package, which
-  implements a similar interaction model and popup UI as Corfu. While Corfu
-  relies exclusively on the standard Emacs completion API (Capfs), Company
-  defines its own API for the backends. Company includes its completion
-  backends, which are incompatible with the Emacs completion infrastructure. As
-  a result of this design, Company is a more complex package than Corfu. Company
+  implements a similar UI as Corfu. While Corfu relies exclusively on the
+  standard Emacs completion API (Capfs), Company defines its own API for the
+  backends. Company includes its own completion backends, following its own API,
+  which are incompatible with the Emacs completion infrastructure. Company
+  provides an adapter ~company-capf~ to handle Capfs as a Company backend. As a
+  result of this design, Company is a more complex package than Corfu. Company
   by default uses overlays for the popup in contrast to the child frames used by
   Corfu. Overall both packages work well, but Company integrates less tightly
   with Emacs. The ~completion-styles~ support is more limited and the
