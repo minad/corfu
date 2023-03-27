@@ -782,7 +782,6 @@ FRAME is the existing frame."
   "Setup Corfu completion state."
   (setq corfu--extra completion-extra-properties)
   (completion-in-region-mode 1)
-  (undo-boundary) ;; Necessary to support `corfu-reset'
   (activate-change-group (setq corfu--change-group (prepare-change-group)))
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
   (add-hook 'pre-command-hook #'corfu--prepare nil 'local)
