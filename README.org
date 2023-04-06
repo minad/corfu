@@ -485,25 +485,23 @@ enhance your setup.
 - [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]]: The corfu-terminal package provides an overlay-based display
   for Corfu, such that you can use Corfu in terminal Emacs.
 
-- [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced
-  [[https://github.com/oantolin/orderless][Orderless]] completion style, where the filtering expressions are separated by
-  spaces or another character (see ~corfu-separator~).
+- [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced =orderless=
+  completion style, where the filtering expressions are separated by spaces or
+  another character (see ~corfu-separator~).
 
-- [[https://github.com/minad/cape][Cape]]: Additional Capf backends and =completion-in-region= commands
-  are provided by the [[https://github.com/minad/cape][Cape]] package. Among others, the package supplies a file
-  path and a Dabbrev completion backend. Cape provides the ~cape-company-to-capf~
-  adapter to reuse Company backends in Corfu. Furthermore the function
-  ~cape-super-capf~ can merge multiple Capfs, such that the candidates of multiple
-  Capfs are displayed together at the same time.
+- [[https://github.com/minad/cape][Cape]]: Additional Capf backends and =completion-in-region= commands are provided
+  by the Cape package. Among others, the package supplies the file completion
+  backend =cape-file= and the Dabbrev backend =cape-dabbrev=. Cape provides the
+  ~cape-company-to-capf~ adapter to reuse Company backends in Corfu.
 
-- [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via an external package. For example
-  the [[https://github.com/jdtsmith/kind-icon][kind-icon]] package provides beautifully styled SVG icons based on
-  monochromatic icon sets like material design.
+- [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via an external package. The kind-icon
+  package provides beautifully styled SVG icons based on monochromatic icon sets
+  like material design.
 
 - [[https://github.com/minad/tempel][Tempel]]: Tiny template/snippet package with templates in Lisp syntax, which
   can be used in conjunction with Corfu.
 
-- [[https://github.com/minad/vertico][Vertico]]: You may also want to look into my [[https://github.com/minad/vertico][Vertico]] package. Vertico is the
+- [[https://github.com/minad/vertico][Vertico]]: You may also want to look into my Vertico package. Vertico is the
   minibuffer completion counterpart of Corfu.
 
 * Alternatives
