@@ -445,6 +445,7 @@ FRAME is the existing frame."
       (set-window-parameter win 'no-other-window t)
       ;; Mark window as dedicated to prevent frame reuse (#60)
       (set-window-dedicated-p win t))
+    (redirect-frame-focus frame parent)
     ;; XXX HACK: Child frame popup behavior improved on Emacs 29.
     ;; It seems we may not need the Emacs 27/28 hacks anymore.
     (if (eval-when-compile (< emacs-major-version 29))
@@ -467,7 +468,6 @@ FRAME is the existing frame."
         (set-frame-position frame x y))
       (unless (frame-visible-p frame)
         (make-frame-visible frame)))
-    (redirect-frame-focus frame parent)
     frame))
 
 (defun corfu--hide-frame-deferred (frame)
