@@ -401,6 +401,7 @@ FRAME is the existing frame."
          (window-min-width 1)
          (inhibit-redisplay t)
          (x-gtk-resize-child-frames corfu--gtk-resize-child-frames)
+         (before-make-frame-hook)
          (after-make-frame-functions)
          (parent (window-frame)))
     (unless (and (frame-live-p frame)
