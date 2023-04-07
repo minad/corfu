@@ -385,7 +385,7 @@ form (X Y WIDTH HEIGHT DIR)."
           ;; first time. Why does Emacs have all these quirks?
           (when margin-quirk
             (set-window-buffer
-             (frame-root-window corfu-popupinfo--frame)
+             (frame-selected-window corfu-popupinfo--frame)
              " *corfu-popupinfo*")))))))
 
 (defun corfu-popupinfo--hide ()

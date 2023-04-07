@@ -404,11 +404,7 @@ FRAME is the existing frame."
          (before-make-frame-hook)
          (after-make-frame-functions)
          (parent (window-frame)))
-    (unless (and (frame-live-p frame)
-                 (eq (frame-parent frame) parent)
-                 ;; XXX HACK: It seems the frame can be alive but have a dead window?
-                 ;; Is this a Emacs 29 regression?
-                 (window-live-p (frame-root-window frame)))
+    (unless (and (frame-live-p frame) (eq (frame-parent frame) parent))
       (when frame (delete-frame frame))
       (setq frame (make-frame
                    `((parent-frame . ,parent)
@@ -438,7 +434,7 @@ FRAME is the existing frame."
     (let ((new (face-attribute 'corfu-default :background nil 'default)))
       (unless (equal (frame-parameter frame 'background-color) new)
         (set-frame-parameter frame 'background-color new)))
-    (let ((win (frame-root-window frame)))
+    (let ((win (frame-selected-window frame)))
       (set-window-buffer win buffer)
       ;; Disallow selection of root window (#63)
       (set-window-parameter win 'no-delete-other-windows t)
@@ -475,7 +471,7 @@ FRAME is the existing frame."
   (when (and (frame-live-p frame) (frame-visible-p frame))
     (set-frame-parameter frame 'corfu--hide-timer nil)
     (make-frame-invisible frame)
-    (with-current-buffer (window-buffer (frame-root-window frame))
+    (with-current-buffer (window-buffer (frame-selected-window frame))
       (with-silent-modifications
         (erase-buffer)))))
 
