@@ -406,8 +406,8 @@ FRAME is the existing frame."
          (parent (window-frame)))
     (unless (and (frame-live-p frame)
                  (eq (frame-parent frame) parent)
-                 ;; XXX HACK: It seems the frame can be alive but have a dead window?
-                 ;; Is this a Emacs 29 regression?
+                 ;; If there is more than one window, `frame-root-window' may
+                 ;; return nil.  Recreate the frame in this case.
                  (window-live-p (frame-root-window frame)))
       (when frame (delete-frame frame))
       (setq frame (make-frame
@@ -421,7 +421,7 @@ FRAME is the existing frame."
     ;; Reset frame parameters if they changed.  For example `tool-bar-mode'
     ;; overrides the parameter `tool-bar-lines' for every frame, including child
     ;; frames.  The child frame API is a pleasure to work with.  It is full of
-    ;; lovely suprises.
+    ;; lovely surprises.
     (when-let ((params (frame-parameters frame))
                (reset (seq-remove
                        (lambda (p) (equal (alist-get (car p) params) (cdr p)))
