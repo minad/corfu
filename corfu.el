@@ -418,15 +418,6 @@ FRAME is the existing frame."
                      (internal-border-width
                       . ,(alist-get 'child-frame-border-width corfu--frame-parameters))
                      ,@corfu--frame-parameters))))
-    ;; Reset frame parameters if they changed.  For example `tool-bar-mode'
-    ;; overrides the parameter `tool-bar-lines' for every frame, including child
-    ;; frames.  The child frame API is a pleasure to work with.  It is full of
-    ;; lovely surprises.
-    (when-let ((params (frame-parameters frame))
-               (reset (seq-remove
-                       (lambda (p) (equal (alist-get (car p) params) (cdr p)))
-                       corfu--frame-parameters)))
-      (modify-frame-parameters frame reset))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
     ;; on Mac. We have to apply the face background before adjusting the frame
@@ -435,9 +426,17 @@ FRAME is the existing frame."
            (new (face-attribute 'corfu-border :background nil 'default)))
       (unless (equal (face-attribute face :background frame 'default) new)
         (set-face-background face new frame)))
-    (let ((new (face-attribute 'corfu-default :background nil 'default)))
-      (unless (equal (frame-parameter frame 'background-color) new)
-        (set-frame-parameter frame 'background-color new)))
+    ;; Reset frame parameters if they changed.  For example `tool-bar-mode'
+    ;; overrides the parameter `tool-bar-lines' for every frame, including child
+    ;; frames.  The child frame API is a pleasure to work with.  It is full of
+    ;; lovely surprises.
+    (when-let ((params (frame-parameters frame))
+               (reset (seq-remove
+                       (lambda (p) (equal (alist-get (car p) params) (cdr p)))
+                       `((background-color
+                          . ,(face-attribute 'corfu-default :background nil 'default))
+                         ,@corfu--frame-parameters))))
+      (modify-frame-parameters frame reset))
     (let ((win (frame-root-window frame)))
       (set-window-buffer win buffer)
       ;; Disallow selection of root window (#63)
