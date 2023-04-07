@@ -460,14 +460,12 @@ FRAME is the existing frame."
             ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not
             ;; display content.
             (set-frame-position frame x y)
-            (redisplay 'force)
-            (make-frame-visible frame)))
+            (redisplay 'force)))
       (set-frame-size frame width height t)
       (unless (equal (frame-position frame) (cons x y))
-        (set-frame-position frame x y))
-      (unless (frame-visible-p frame)
-        (make-frame-visible frame)))
-    frame))
+        (set-frame-position frame x y))))
+  (make-frame-visible frame)
+  frame)
 
 (defun corfu--hide-frame-deferred (frame)
   "Deferred hiding of child FRAME."
