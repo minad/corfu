@@ -421,12 +421,13 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
 ~completing-read~.
 
 #+begin_src emacs-lisp
-  (defun corfu-move-to-minibuffer ()
-    (interactive)
+(defun corfu-move-to-minibuffer ()
+  (interactive)
+  (when completion-in-region--data
     (let ((completion-extra-properties corfu--extra)
           completion-cycle-threshold completion-cycling)
-      (apply #'consult-completion-in-region completion-in-region--data)))
-  (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
+      (apply #'consult-completion-in-region completion-in-region--data))))
+(keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
 #+end_src
 
 * Key bindings
