@@ -2,6 +2,10 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- Ensure that the popup font matches the font of the parent frame.
+
 * Version 0.36 (2023-03-27)
 
 - Drop obsolete =corfu-preselect-first=.

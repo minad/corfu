@@ -415,9 +415,6 @@ FRAME is the existing frame."
                    `((parent-frame . ,parent)
                      (minibuffer . ,(minibuffer-window parent))
                      (width . 0) (height . 0) (visibility . nil)
-                     ;; Set `internal-border-width' for Emacs 27
-                     (internal-border-width
-                      . ,(alist-get 'child-frame-border-width corfu--frame-parameters))
                      ,@corfu--frame-parameters))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
@@ -436,6 +433,10 @@ FRAME is the existing frame."
                        (lambda (p) (equal (alist-get (car p) params) (cdr p)))
                        `((background-color
                           . ,(face-attribute 'corfu-default :background nil 'default))
+                         ;; Set `internal-border-width' for Emacs 27
+                         (internal-border-width
+                          . ,(alist-get 'child-frame-border-width corfu--frame-parameters))
+                         (font . ,(frame-parameter parent 'font))
                          ,@corfu--frame-parameters))))
       (modify-frame-parameters frame reset))
     (let ((win (frame-root-window frame)))
