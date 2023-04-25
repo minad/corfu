@@ -236,8 +236,8 @@ completion backend in use is expensive."
   "<remap> <keyboard-escape-quit>" #'corfu-reset
   "<down>" #'corfu-next
   "<up>" #'corfu-previous
-  ;; XXX C-a is bound because of eshell.
-  ;; Ideally eshell would remap move-beginning-of-line.
+  ;; XXX C-a is bound because of Eshell.
+  ;; Ideally Eshell would remap move-beginning-of-line.
   "C-a" #'corfu-prompt-beginning
   ;; XXX [tab] is bound because of org-mode
   ;; The binding should be removed from org-mode-map.
@@ -772,7 +772,7 @@ FRAME is the existing frame."
 (defun corfu--done (str status)
   "Call the `:exit-function' with STR and STATUS and exit completion."
   (let ((exit (plist-get corfu--extra :exit-function)))
-    ;; For successfull completions, amalgamate undo operations,
+    ;; For successful completions, amalgamate undo operations,
     ;; such that completion can be undone in a single step.
     (undo-amalgamate-change-group corfu--change-group)
     (corfu-quit)
@@ -792,7 +792,7 @@ FRAME is the existing frame."
   (let ((sym (make-symbol "corfu--teardown"))
         (buf (current-buffer)))
     (fset sym (lambda ()
-                ;; Ensure that the teardown runs in the correct buffer, if still alive.
+                ;; Ensure that the tear-down runs in the correct buffer, if still alive.
                 (unless completion-in-region-mode
                   (remove-hook 'completion-in-region-mode-hook sym)
                   (with-current-buffer (if (buffer-live-p buf) buf (current-buffer))
@@ -884,7 +884,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   (setq corfu--auto-timer nil)
   (when (and (not completion-in-region-mode)
              (or (not tick) (equal tick (corfu--auto-tick))))
-    (pcase (while-no-input ;; Interruptible capf query
+    (pcase (while-no-input ;; Interruptible Capf query
              (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
       (`(,fun ,beg ,end ,table . ,plist)
        (let ((completion-in-region-mode-predicate
@@ -1072,7 +1072,7 @@ AUTO is non-nil when initializing auto completion."
      ((or auto corfu--input) (corfu-quit)))))
 
 (cl-defgeneric corfu--teardown ()
-  "Teardown Corfu."
+  "Tear-down Corfu."
   (corfu--popup-hide)
   (remove-hook 'pre-command-hook #'corfu--prepare 'local)
   (remove-hook 'post-command-hook #'corfu--post-command)
@@ -1231,7 +1231,7 @@ Quit if no candidate is selected."
   (cond
    (corfu-mode
     ;; FIXME: Install advice which fixes `completion--capf-wrapper', such that
-    ;; it respects the completion styles for non-exclusive capfs. See FIXME in
+    ;; it respects the completion styles for non-exclusive Capfs. See FIXME in
     ;; the `completion--capf-wrapper' function in minibuffer.el, where the
     ;; issue has been mentioned. We never uninstall this advice since the
     ;; advice is active *globally*.
@@ -1245,19 +1245,19 @@ Quit if no candidate is selected."
 
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
-The wrapper determines if the capf is applicable at the current position
+The wrapper determines if the Capf is applicable at the current position
 and performs sanity checking on the returned result.  PREFIX is a prefix
 length override, set to t for manual completion."
   (pcase (funcall fun)
     ((and res `(,beg ,end ,table . ,plist))
-     (and (integer-or-marker-p beg) ;; Valid capf result
+     (and (integer-or-marker-p beg) ;; Valid Capf result
           (<= beg (point) end)      ;; Sanity checking
           ;; When auto completing, check the prefix length!
           (let ((len (or prefix
                          (plist-get plist :company-prefix-length)
                          (- (point) beg))))
             (or (eq len t) (>= len corfu-auto-prefix)))
-          ;; For non-exclusive capfs, check for valid completion.
+          ;; For non-exclusive Capfs, check for valid completion.
           (or (not (eq 'no (plist-get plist :exclusive)))
               (let* ((str (buffer-substring-no-properties beg end))
                      (pt (- (point) beg))
