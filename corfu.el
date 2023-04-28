@@ -1,4 +1,4 @@
-;;; corfu.el --- Completion Overlay Region FUnction -*- lexical-binding: t -*-
+;;; corfu.el --- COmpletion Region FUnction -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
 
@@ -27,10 +27,11 @@
 
 ;;; Commentary:
 
-;; Corfu enhances the default completion in region function with a
-;; completion overlay.  The current candidates are shown in a popup
-;; below or above the point.  Corfu can be considered the minimalistic
-;; completion-in-region counterpart of Vertico.
+;; Corfu enhances in-buffer completion with a small completion
+;; popup. The current candidates are shown in a popup below or above
+;; the point. The candidates can be selected by moving up and
+;; down. Corfu is the minimalistic in-buffer completion counterpart of
+;; the Vertico minibuffer UI.
 
 ;;; Code:
 
@@ -40,7 +41,7 @@
   (require 'subr-x))
 
 (defgroup corfu nil
-  "Completion Overlay Region FUnction."
+  "COmpletion Region FUnction."
   :link '(info-link :tag "Info Manual" "(corfu)")
   :link '(url-link :tag "Homepage" "https://github.com/minad/corfu")
   :link '(emacs-library-link :tag "Library Source" "corfu.el")
@@ -1230,7 +1231,7 @@ Quit if no candidate is selected."
 
 ;;;###autoload
 (define-minor-mode corfu-mode
-  "Completion Overlay Region FUnction."
+  "COmpletion Region FUnction."
   :global nil :group 'corfu
   (cond
    (corfu-mode
