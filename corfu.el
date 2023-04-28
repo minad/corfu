@@ -1,4 +1,4 @@
-;;; corfu.el --- COmpletion Region FUnction -*- lexical-binding: t -*-
+;;; corfu.el --- COmpletion in Region FUnction -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
 
@@ -27,11 +27,11 @@
 
 ;;; Commentary:
 
-;; Corfu enhances in-buffer completion with a small completion
-;; popup. The current candidates are shown in a popup below or above
-;; the point. The candidates can be selected by moving up and
-;; down. Corfu is the minimalistic in-buffer completion counterpart of
-;; the Vertico minibuffer UI.
+;; Corfu enhances in-buffer completion with a small completion popup.
+;; The current candidates are shown in a popup below or above the
+;; point.  The candidates can be selected by moving up and down.
+;; Corfu is the minimalistic in-buffer completion counterpart of the
+;; Vertico minibuffer UI.
 
 ;;; Code:
 
@@ -41,7 +41,7 @@
   (require 'subr-x))
 
 (defgroup corfu nil
-  "COmpletion Region FUnction."
+  "COmpletion in Region FUnction."
   :link '(info-link :tag "Info Manual" "(corfu)")
   :link '(url-link :tag "Homepage" "https://github.com/minad/corfu")
   :link '(emacs-library-link :tag "Library Source" "corfu.el")
@@ -1231,7 +1231,7 @@ Quit if no candidate is selected."
 
 ;;;###autoload
 (define-minor-mode corfu-mode
-  "COmpletion Region FUnction."
+  "COmpletion in Region FUnction."
   :global nil :group 'corfu
   (cond
    (corfu-mode
