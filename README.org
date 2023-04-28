@@ -20,11 +20,11 @@ concentrates on providing a polished completion UI. In-buffer completion UIs in
 Emacs can hook into ~completion-in-region~, which implements the interaction with
 the user. Completions at point are either provided by commands like
 ~dabbrev-completion~ or by pluggable backends (~completion-at-point-functions~,
-Capfs) and are then passed to ~completion-in-region~. Most programming language
-major modes implement a Capf. The Emacs language server clients use Capfs, which
-retrieve completions from the server via the language server protocol (LSP).
-Corfu does not include its own completion backends. The Emacs built-in Capfs and
-the Capfs provided by other programming language packages are usually
+Capfs) and are then passed to ~completion-in-region~. Most programming, text and
+shell major modes implement a Capf. The Emacs language server clients use Capfs,
+which retrieve completions from the server via the language server protocol
+(LSP). Corfu does not include its own completion backends. The Emacs built-in
+Capfs and the Capfs provided by other programming language packages are usually
 sufficient. A few additional Capfs and completion utilities are provided by the
 [[https://github.com/minad/cape][Cape]] package.
 
