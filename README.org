@@ -75,7 +75,7 @@ such that you can adapt it precisely to your requirements. However in order to
 quickly try out the Corfu completion package, it should be sufficient to
 activate ~global-corfu-mode~. You can experiment with manual completion for
 example in an Elisp buffer or in an Eshell or Shell buffer. For auto completion,
-set ~corfu-auto=t~ before turning on ~global-corfu-mode~.
+set ~corfu-auto~ to t before turning on ~global-corfu-mode~.
 
 Here is an example configuration:
 
@@ -170,9 +170,9 @@ in the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.ht
 
 ** Auto completion
 
-Auto completion is disabled by default, but can be enabled by setting
-~corfu-auto=t~. Furthermore you may want to configure Corfu to quit completion
-eagerly, such that the completion popup stays out of your way when it appeared
+Auto completion is disabled by default, but can be enabled by setting ~corfu-auto~
+to t. Furthermore you may want to configure Corfu to quit completion eagerly,
+such that the completion popup stays out of your way when it appeared
 unexpectedly.
 
 #+begin_src emacs-lisp
@@ -337,14 +337,14 @@ space, by default) to the primary character of your orderless component
 separator.
 
 Then, when a new orderless component is desired, use =M-SPC=
-(~corfu-insert-separator~) to enter the /first/ component separator in the input,
+(~corfu-insert-separator~) to enter the first component separator in the input,
 and arbitrary orderless search terms and new separators can be entered
 thereafter.
 
 To treat the entire input as Orderless input, you can set the customization
-option ~corfu-quit-at-boundary=t~. This disables the predicate which checks if the
-current completion boundary has been left. In contrast, if you /always/ want to
-quit at the boundary, simply set ~corfu-quit-at-boundary=nil~. By default
+option ~corfu-quit-at-boundary~ to t. This disables the predicate which checks if
+the current completion boundary has been left. In contrast, if you always want
+to quit at the boundary, set ~corfu-quit-at-boundary~ to ~nil~. By default
 ~corfu-quit-at-boundary~ is set to ~separator~ which quits at completion boundaries
 as long as no separator has been inserted with ~corfu-insert-separator~.
 
