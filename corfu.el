@@ -126,7 +126,6 @@ separator: Only stay alive if there is no match and
 (defcustom corfu-exclude-modes nil
   "List of modes excluded by `global-corfu-mode'."
   :type '(repeat symbol))
-(define-obsolete-function-alias 'corfu-excluded-modes 'corfu-exclude-modes "0.35")
 
 (defcustom corfu-left-margin-width 0.5
   "Width of the left margin in units of the character width."
@@ -1288,7 +1287,7 @@ The ORIG function takes the FUN and WHICH arguments."
   (unless (or noninteractive
               buffer-read-only
               (eq (aref (buffer-name) 0) ?\s)
-              (memq major-mode corfu-exclude-modes))
+              (apply #'derived-mode-p corfu-exclude-modes))
     (corfu-mode 1)))
 
 (defun corfu--eldoc-advice ()
