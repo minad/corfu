@@ -49,6 +49,15 @@ or the property `history-length' of `corfu-history'.")
 (defvar corfu-history--hash nil
   "Hash table of Corfu candidates.")
 
+(defun corfu-history--variable ()
+  "Return history variable symbol."
+  (if (and (minibufferp)
+           (eq minibuffer-completion-table (caddr completion-in-region--data))
+           (symbolp minibuffer-history-variable)
+           (not (eq minibuffer-history-variable t)))
+      minibuffer-history-variable
+    'corfu-history))
+
 (defun corfu-history--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
   (or (< (cdr x) (cdr y))
@@ -57,14 +66,15 @@ or the property `history-length' of `corfu-history'.")
 
 (defun corfu-history--sort (candidates)
   "Sort CANDIDATES by history."
-  (unless corfu-history--hash
-    (setq corfu-history--hash (make-hash-table :test #'equal :size (length corfu-history)))
-    (cl-loop for elem in corfu-history for index from 0 do
-             (unless (gethash elem corfu-history--hash)
-               (puthash elem index corfu-history--hash))))
-  ;; Decorate each candidate with (index<<13) + length. This way we sort first by index and then by
-  ;; length. We assume that the candidates are shorter than 2**13 characters and that the history is
-  ;; shorter than 2**16 entries.
+  (unless nil ;;corfu-history--hash
+    (let ((hist (symbol-value (corfu-history--variable))))
+      (setq corfu-history--hash (make-hash-table :test #'equal :size (length hist)))
+      (cl-loop for elem in hist for index from 0 do
+               (unless (gethash elem corfu-history--hash)
+                 (puthash elem index corfu-history--hash)))))
+  ;; Decorate each candidate with (index<<13) + length. This way we sort first
+  ;; by index and then by length. We assume that the candidates are shorter than
+  ;; 2**13 characters and that the history is shorter than 2**16 entries.
   (cl-loop for cand on candidates do
            (setcar cand (cons (car cand)
                               (+ (ash (gethash (car cand) corfu-history--hash #xFFFF) 13)
@@ -83,9 +93,8 @@ or the property `history-length' of `corfu-history'.")
 
 (cl-defmethod corfu--insert :before (_status &context (corfu-history-mode (eql t)))
   (when (>= corfu--index 0)
-    (add-to-history 'corfu-history
-                    (substring-no-properties
-                     (nth corfu--index corfu--candidates)))
+    (add-to-history (corfu-history--variable)
+                    (substring-no-properties (nth corfu--index corfu--candidates)))
     (setq corfu-history--hash nil)))
 
 (provide 'corfu-history)
