@@ -41,11 +41,6 @@
 (eval-when-compile
   (require 'cl-lib))
 
-(defcustom corfu-history-length nil
-  "Corfu history length."
-  :type '(choice (const nil) natnum)
-  :group 'corfu)
-
 (defvar corfu-history--hash nil
   "Hash table of Corfu candidates.")
 
@@ -88,8 +83,7 @@
   (when (>= corfu--index 0)
     (add-to-history 'corfu-history
                     (substring-no-properties
-                     (nth corfu--index corfu--candidates))
-                    corfu-history-length)
+                     (nth corfu--index corfu--candidates)))
     (setq corfu-history--hash nil)))
 
 (provide 'corfu-history)

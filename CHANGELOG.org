@@ -6,6 +6,8 @@
 
 - Ensure that the popup font matches the font of the parent frame.
 - Close popup when window selection changes.
+- Remove =corfu-history-length=. Instead set the =history-length= property of
+  =corfu-history= variable.
 
 * Version 0.36 (2023-03-27)
 
