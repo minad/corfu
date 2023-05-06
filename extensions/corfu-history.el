@@ -41,11 +41,13 @@
 (eval-when-compile
   (require 'cl-lib))
 
+(defvar corfu-history nil
+  "History of Corfu candidates.
+The maximum length is determined by the variable `history-length'
+or the property `history-length' of `corfu-history'.")
+
 (defvar corfu-history--hash nil
   "Hash table of Corfu candidates.")
-
-(defvar corfu-history nil
-  "History of Corfu candidates.")
 
 (defun corfu-history--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
