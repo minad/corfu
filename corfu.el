@@ -577,7 +577,7 @@ FRAME is the existing frame."
   (pcase-let* ((before (substring str 0 pt))
                (after (substring str pt))
                (corfu--metadata (completion-metadata before table pred))
-               ;; bug#47678: `completion-boundaries` fails for `partial-completion`
+               ;; bug#47678: `completion-boundaries' fails for `partial-completion'
                ;; if the cursor is moved between the slashes of "~//".
                ;; See also vertico.el which has the same issue.
                (bounds (or (condition-case nil
