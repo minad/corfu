@@ -645,7 +645,8 @@ FRAME is the existing frame."
 (defun corfu--match-symbol-p (pattern sym)
   "Return non-nil if SYM is matching an element of the PATTERN list."
   (and (symbolp sym)
-       (cl-loop for x in pattern
+       (cl-loop with case-fold-search = nil
+                for x in pattern
                 thereis (if (symbolp x)
                             (eq sym x)
                           (string-match-p x (symbol-name sym))))))
