@@ -8,6 +8,8 @@
 - Close popup when window selection changes.
 - Remove =corfu-history-length=. Instead set the =history-length= property of
   =corfu-history= variable.
+- =corfu-info-documentation=, =corfu-info-location=: Make buffer and window
+  persistent if called with prefix argument.
 
 * Version 0.36 (2023-03-27)
 

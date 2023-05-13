@@ -103,7 +103,7 @@ documentation is usually expensive."
   :group 'corfu)
 
 (defcustom corfu-popupinfo-direction '(right left vertical)
-  "Preferred directionse for the popup in order."
+  "Preferred directions for the popup in order."
   :type '(repeat
           (choice
            (const left)
