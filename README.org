@@ -302,10 +302,10 @@ I recommend the [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]] pack
 support and helpful annotation support for more commands. Similar to the Fish
 shell, =pcmpl-args= uses man page parsing and ~--help~ output parsing to dynamically
 generate completions. This package brings Eshell completion to another level!
-(Since Emacs 29, Pcomplete offers the =pcomplete-from-help= function which parses
+Since Emacs 29, Pcomplete offers the =pcomplete-from-help= function which parses
 the ~--help~ output of a command and produces completions. This Emacs 29
-functionality is still unfinished and for example doesn't work properly in
-Eshell.)
+functionality is not completely equivalent. For example it does not display
+annotations in Eshell, but this may get fixed in Emacs 30.
 
 Unfortunately Pcomplete had a few technical issues on Emacs 28 and older. We can
 work around the issues with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions).
