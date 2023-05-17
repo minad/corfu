@@ -1298,7 +1298,7 @@ The ORIG function takes the FUN and WHICH arguments."
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-next corfu-previous corfu-first corfu-last corfu-quit corfu-reset
                corfu-complete corfu-insert corfu-scroll-up corfu-scroll-down
-               corfu-insert-separator))
+               corfu-insert-separator corfu-prompt-beginning corfu-prompt-end))
   (put sym 'completion-predicate #'ignore))
 
 (provide 'corfu)
