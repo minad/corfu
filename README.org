@@ -437,6 +437,7 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
           completion-cycle-threshold completion-cycling)
       (apply #'consult-completion-in-region completion-in-region--data))))
 (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
+(add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer)
 #+end_src
 
 * Key bindings
