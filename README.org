@@ -440,6 +440,43 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
 (add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer)
 #+end_src
 
+
+** Same key used for both the separator and the insertion
+
+One might want to set a separator using a key, and when pressing that key twice, it inserts the selected candidate. This saves a keypress and is particularly efficient with "SPC".
+
+This code can do this :
+
+#+begin_src emacs-lisp
+
+  ;; SPC as separator
+  (setq corfu-separator 32)
+
+  ;; highly recommanded to use corfu-separator with "32" (space)
+  (define-key corfu-map (kbd "SPC")
+    (lambda ()
+      (interactive)
+      (if current-prefix-arg
+	  ;;we suppose that we want leave the word like that, so do a space
+	  (progn 
+	    (corfu-quit)
+	    (insert " "))
+	(if (and (= (char-before) corfu-separator)
+		 (or
+		  ;; check if space, return or nothing after
+		  (not (char-after))
+		  (= (char-after) ?\s)
+		  (= (char-after) ?\n)))
+	    (progn
+	      (corfu-insert)
+	      (insert " "))
+	  (corfu-insert-separator)))))
+
+#+end_src
+
+Now you can type "spc" to insert a separator, and "spc spc" to insert the current candidate.
+Moreover, if you do C-u and then separator, it leaves the word as it is, without completion, and inserts a space.
+
 * Key bindings
 
 Corfu uses a transient keymap ~corfu-map~ which is active while the popup is
