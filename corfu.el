@@ -973,7 +973,8 @@ A scroll bar is displayed from LO to LO+BAR."
                              lines "\n"))
           (goto-char (point-min)))
         (setq corfu--frame (corfu--make-frame corfu--frame x y
-                                              width height (current-buffer)))))))
+                                              width height (current-buffer))))))
+  (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
 
 (cl-defgeneric corfu--popup-hide ()
   "Hide Corfu popup."
@@ -1061,16 +1062,14 @@ AUTO is non-nil when initializing auto completion."
         (corfu--done str 'finished)))
      ;; 2) There exist candidates => Show candidates popup.
      (corfu--candidates
-      (corfu--candidates-popup beg)
       (corfu--preview-current beg end)
-      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
+      (corfu--candidates-popup beg))
      ;; 3) No candidates & corfu-quit-no-match & initialized => Confirmation popup.
      ((pcase-exhaustive corfu-quit-no-match
         ('t nil)
         ('nil corfu--input)
         ('separator (seq-contains-p (car corfu--input) corfu-separator)))
-      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic))))
-      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
+      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic)))))
      ;; 4) No candidates & auto completing or initialized => Quit.
      ((or auto corfu--input) (corfu-quit)))))
 
