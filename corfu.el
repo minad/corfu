@@ -715,7 +715,7 @@ FRAME is the existing frame."
       (setq lo (max 1 lo)))
     (when (/= last corfu--total)
       (setq lo (min (- corfu-count bar 2) lo)))
-    (corfu--popup-show (+ pos (length corfu--base)) pw width fcands (- corfu--index corfu--scroll)
+    (corfu--popup-show pos pw width fcands (- corfu--index corfu--scroll)
                        (and (> corfu--total corfu-count) lo) bar)))
 
 (defun corfu--preview-current (beg end)
@@ -945,7 +945,7 @@ A scroll bar is displayed from LO to LO+BAR."
                      (concat (propertize " " 'display `(space :align-to (- right (,mr))))
                              (propertize " " 'display `(space :width (,(- mr bw))))
                              (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
-             (pos (posn-x-y (posn-at-point pos)))
+             (pos (posn-x-y pos))
              (width (+ (* width cw) ml mr))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
              ;; parent frame (#261).
@@ -1062,16 +1062,15 @@ AUTO is non-nil when initializing auto completion."
         (corfu--done str 'finished)))
      ;; 2) There exist candidates => Show candidates popup.
      (corfu--candidates
-      (corfu--candidates-popup beg)
-      (corfu--preview-current beg end)
-      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
+      (let ((pos (posn-at-point (+ beg (length corfu--base)))))
+        (corfu--preview-current beg end)
+        (corfu--candidates-popup pos)))
      ;; 3) No candidates & corfu-quit-no-match & initialized => Confirmation popup.
      ((pcase-exhaustive corfu-quit-no-match
         ('t nil)
         ('nil corfu--input)
         ('separator (seq-contains-p (car corfu--input) corfu-separator)))
-      (corfu--popup-show beg 0 8 '(#("No match" 0 8 (face italic))))
-      (redisplay 'force)) ;; XXX HACK Ensure that popup is redisplayed
+      (corfu--popup-show (posn-at-point beg) 0 8 '(#("No match" 0 8 (face italic)))))
      ;; 4) No candidates & auto completing or initialized => Quit.
      ((or auto corfu--input) (corfu-quit)))))
 
