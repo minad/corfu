@@ -354,8 +354,8 @@ form (X Y WIDTH HEIGHT DIR)."
                 (goto-char (point-min)))
               (dolist (var corfu-popupinfo--buffer-parameters)
                 (set (make-local-variable (car var)) (cdr var)))
-              (setf face-remapping-alist (copy-tree face-remapping-alist)
-                    (alist-get 'default face-remapping-alist) 'corfu-popupinfo))
+              (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
+                (setcar m 'corfu-popupinfo)))
           (unless (eq corfu-popupinfo--toggle 'init)
             (message "No %s available for `%s'"
                      (car (last (split-string (symbol-name corfu-popupinfo--function) "-+")))
