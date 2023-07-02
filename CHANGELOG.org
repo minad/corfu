@@ -4,6 +4,8 @@
 
 * Development
 
+- Bugfixes.
+- Improve child frame display code, =corfu--popup-show= takes a =posn= argument.
 - Ensure that the popup font matches the font of the parent frame.
 - Close popup when window selection changes.
 - Remove =corfu-history-length=. Instead set the =history-length= property of
