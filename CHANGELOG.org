@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 0.37 (2023-07-02)
 
 - Bugfixes.
 - Improve child frame display code, =corfu--popup-show= takes a =posn= argument.
