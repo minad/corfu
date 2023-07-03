@@ -2,6 +2,10 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- =corfu-quick=: Bugfix.
+
 * Version 0.37 (2023-07-02)
 
 - Bugfixes.
