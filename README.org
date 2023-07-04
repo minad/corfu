@@ -496,6 +496,10 @@ enhance your setup.
 - [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]]: The corfu-terminal package provides an overlay-based display
   for Corfu, such that you can use Corfu in terminal Emacs.
 
+- [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]: Shows as-you-type auto-suggestion candidate overlay
+  with a visual indication of whether there are many or exactly one candidate
+  available (works only with =corfu-auto= disabled).
+
 - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced =orderless=
   completion style, where the filtering expressions are separated by spaces or
   another character (see ~corfu-separator~).
@@ -519,10 +523,6 @@ enhance your setup.
 
 - [[https://github.com/minad/vertico][Vertico]]: You may also want to look into my Vertico package. Vertico is the
   minibuffer completion counterpart of Corfu.
-
-- [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]: Shows as-you-type auto-suggestion candidate overlay
-  with a visual indication of whether there are many or exactly one candidate
-  available (works only with corfu-auto popup disabled).
 
 * Alternatives
 
