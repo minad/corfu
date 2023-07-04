@@ -117,7 +117,8 @@ TWO is non-nil if two keys should be displayed."
                 (cons t cands)))
              ;; Increase minimum width to avoid odd jumping
              (corfu-min-width (+ 3 corfu-min-width)))
-    (corfu--candidates-popup (posn-at-point (car completion-in-region--data)))
+    (corfu--candidates-popup
+     (posn-at-point (+ (car completion-in-region--data) (length corfu--base))))
     (alist-get (read-key) list)))
 
 ;;;###autoload
