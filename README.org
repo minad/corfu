@@ -520,6 +520,10 @@ enhance your setup.
 - [[https://github.com/minad/vertico][Vertico]]: You may also want to look into my Vertico package. Vertico is the
   minibuffer completion counterpart of Corfu.
 
+- [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]: Shows as-you-type auto-suggestion candidate overlay
+  with a visual indication of whether there are many or exactly one candidate
+  available (works only with corfu-auto popup disabled).
+
 * Alternatives
 
 - [[https://github.com/company-mode/company-mode][Company]]: Company is a widely used and mature completion package, which
