@@ -80,44 +80,44 @@ set ~corfu-auto~ to t before turning on ~global-corfu-mode~.
 Here is an example configuration:
 
 #+begin_src emacs-lisp
-  (use-package corfu
-    ;; Optional customizations
-    ;; :custom
-    ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    ;; (corfu-auto t)                 ;; Enable auto completion
-    ;; (corfu-separator ?\s)          ;; Orderless field separator
-    ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-    ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-    ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-    ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+(use-package corfu
+  ;; Optional customizations
+  ;; :custom
+  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  ;; (corfu-auto t)                 ;; Enable auto completion
+  ;; (corfu-separator ?\s)          ;; Orderless field separator
+  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
-    ;; Enable Corfu only for certain modes.
-    ;; :hook ((prog-mode . corfu-mode)
-    ;;        (shell-mode . corfu-mode)
-    ;;        (eshell-mode . corfu-mode))
+  ;; Enable Corfu only for certain modes.
+  ;; :hook ((prog-mode . corfu-mode)
+  ;;        (shell-mode . corfu-mode)
+  ;;        (eshell-mode . corfu-mode))
 
-    ;; Recommended: Enable Corfu globally.
-    ;; This is recommended since Dabbrev can be used globally (M-/).
-    ;; See also `corfu-exclude-modes'.
-    :init
-    (global-corfu-mode))
+  ;; Recommended: Enable Corfu globally.
+  ;; This is recommended since Dabbrev can be used globally (M-/).
+  ;; See also `corfu-exclude-modes'.
+  :init
+  (global-corfu-mode))
 
-  ;; A few more useful configurations...
-  (use-package emacs
-    :init
-    ;; TAB cycle if there are only few candidates
-    (setq completion-cycle-threshold 3)
+;; A few more useful configurations...
+(use-package emacs
+  :init
+  ;; TAB cycle if there are only few candidates
+  (setq completion-cycle-threshold 3)
 
-    ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
-    ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
-    ;; (setq read-extended-command-predicate
-    ;;       #'command-completion-default-include-p)
+  ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+  ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+  ;; (setq read-extended-command-predicate
+  ;;       #'command-completion-default-include-p)
 
-    ;; Enable indentation+completion using the TAB key.
-    ;; `completion-at-point' is often bound to M-TAB.
-    (setq tab-always-indent 'complete))
+  ;; Enable indentation+completion using the TAB key.
+  ;; `completion-at-point' is often bound to M-TAB.
+  (setq tab-always-indent 'complete))
 #+end_src
 
 Dabbrev completion is based on =completion-in-region= and can be used with Corfu.
@@ -126,14 +126,14 @@ easier access, if you prefer completion. Also take a look at the =cape-dabbrev=
 completion at point function provided by my [[https://github.com/minad/cape][Cape]] package.
 
 #+begin_src emacs-lisp
-  ;; Use Dabbrev with Corfu!
-  (use-package dabbrev
-    ;; Swap M-/ and C-M-/
-    :bind (("M-/" . dabbrev-completion)
-           ("C-M-/" . dabbrev-expand))
-    ;; Other useful Dabbrev configurations.
-    :custom
-    (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+;; Use Dabbrev with Corfu!
+(use-package dabbrev
+  ;; Swap M-/ and C-M-/
+  :bind (("M-/" . dabbrev-completion)
+         ("C-M-/" . dabbrev-expand))
+  ;; Other useful Dabbrev configurations.
+  :custom
+  (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 #+end_src
 
 If you start to configure the package more deeply, I recommend to give the
@@ -142,15 +142,15 @@ different from the familiar prefix TAB completion. Corfu can be used with the
 default completion styles. The use of Orderless is not a necessity.
 
 #+begin_src emacs-lisp
-  ;; Optionally use the `orderless' completion style.
-  (use-package orderless
-    :init
-    ;; Configure a custom style dispatcher (see the Consult wiki)
-    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-    (setq completion-styles '(orderless basic)
-          completion-category-defaults nil
-          completion-category-overrides '((file (styles . (partial-completion))))))
+;; Optionally use the `orderless' completion style.
+(use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles . (partial-completion))))))
 #+end_src
 
 The =basic= completion style is specified as fallback in addition to =orderless= in
@@ -176,9 +176,9 @@ such that the completion popup stays out of your way when it appeared
 unexpectedly.
 
 #+begin_src emacs-lisp
-  ;; Enable auto completion and configure quitting
-  (setq corfu-auto t
-        corfu-quit-no-match 'separator) ;; or t
+;; Enable auto completion and configure quitting
+(setq corfu-auto t
+      corfu-quit-no-match 'separator) ;; or t
 #+end_src
 
 I recommend to experiment a bit with the various settings and key bindings to
@@ -193,33 +193,33 @@ very fast in buffers with efficient completion backends. You can try the
 following settings in an Elisp buffer or the Emacs scratch buffer.
 
 #+begin_src emacs-lisp
-  ;; Aggressive completion, cheap prefix filtering.
-  (setq-local corfu-auto t
-              corfu-auto-delay 0
-              corfu-auto-prefix 0
-              completion-styles '(basic))
+;; Aggressive completion, cheap prefix filtering.
+(setq-local corfu-auto t
+            corfu-auto-delay 0
+            corfu-auto-prefix 0
+            completion-styles '(basic))
 #+end_src
 
 If you want to combine fast prefix filtering and Orderless filtering you can
 still do that by defining a custom Orderless completion style via
 =orderless-define-completion-style=. We use a custom style dispatcher, which
-enables prefix filtering for input shorter than 4 characters. Note that such a
-setup is quite advanced. Please refer to the Orderless documentation and source
-code for further details.
+enables efficient prefix filtering for input shorter than 4 characters. Note
+that such a setup is advanced. Please refer to the Orderless documentation and
+source code for further details.
 
 #+begin_src emacs-lisp
-  (defun orderless-fast-dispatch (word index total)
-    (and (= index 0) (= total 1) (length< word 4)
-         `(orderless-regexp . ,(concat "^" (regexp-quote word)))))
+(defun orderless-fast-dispatch (word index total)
+  (and (= index 0) (= total 1) (length< word 4)
+       `(orderless-regexp . ,(concat "^" (regexp-quote word)))))
 
-  (orderless-define-completion-style orderless-fast
-    (orderless-style-dispatchers '(orderless-fast-dispatch))
-    (orderless-matching-styles '(orderless-literal orderless-regexp)))
+(orderless-define-completion-style orderless-fast
+  (orderless-style-dispatchers '(orderless-fast-dispatch))
+  (orderless-matching-styles '(orderless-literal orderless-regexp)))
 
-  (setq-local corfu-auto t
-              corfu-auto-delay 0
-              corfu-auto-prefix 0
-              completion-styles '(orderless-fast))
+(setq-local corfu-auto t
+            corfu-auto-delay 0
+            corfu-auto-prefix 1
+            completion-styles '(orderless-fast basic))
 #+end_src
 
 ** Completing in the minibuffer
@@ -234,14 +234,14 @@ enable Corfu completion for commands like ~M-:~ (~eval-expression~) or ~M-!~
 effect.
 
 #+begin_src emacs-lisp
-    (defun corfu-enable-in-minibuffer ()
-      "Enable Corfu in the minibuffer if `completion-at-point' is bound."
-      (when (where-is-internal #'completion-at-point (list (current-local-map)))
-        ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
-        (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
-                    corfu-popupinfo-delay nil)
-        (corfu-mode 1)))
-    (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
+(defun corfu-enable-in-minibuffer ()
+  "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+  (when (where-is-internal #'completion-at-point (list (current-local-map)))
+    ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
+    (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+                corfu-popupinfo-delay nil)
+    (corfu-mode 1)))
+(add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
 #+end_src
 
 You can also enable Corfu more generally for every minibuffer, as long as no
@@ -250,16 +250,16 @@ Furthermore we ensure that Corfu is not enabled if a password is read from the
 minibuffer.
 
 #+begin_src emacs-lisp
-  (defun corfu-enable-always-in-minibuffer ()
-    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-    (unless (or (bound-and-true-p mct--active)
-                (bound-and-true-p vertico--input)
-                (eq (current-local-map) read-passwd-map))
-      ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
-      (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
-                  corfu-popupinfo-delay nil)
-      (corfu-mode 1)))
-  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
+(defun corfu-enable-always-in-minibuffer ()
+  "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+  (unless (or (bound-and-true-p mct--active)
+              (bound-and-true-p vertico--input)
+              (eq (current-local-map) read-passwd-map))
+    ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
+    (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+                corfu-popupinfo-delay nil)
+    (corfu-mode 1)))
+(add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
 #+end_src
 
 ** Completing in the Eshell or Shell
@@ -269,10 +269,10 @@ auto completion, such that the completion behavior is similar to widely used
 shells like Bash, Zsh or Fish.
 
 #+begin_src emacs-lisp
-  (add-hook 'eshell-mode-hook
-            (lambda ()
-              (setq-local corfu-auto nil)
-              (corfu-mode)))
+(add-hook 'eshell-mode-hook
+          (lambda ()
+            (setq-local corfu-auto nil)
+            (corfu-mode)))
 #+end_src
 
 When pressing =RET= while the Corfu popup is visible, the ~corfu-insert~ command
@@ -283,15 +283,15 @@ confirmation. Fortunately it is easy to improve this! In my configuration I
 define the advice ~corfu-send-shell~ which sends the candidate after insertion.
 
 #+begin_src emacs-lisp
-  (defun corfu-send-shell (&rest _)
-    "Send completion candidate when inside comint/eshell."
-    (cond
-     ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
-      (eshell-send-input))
-     ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
-      (comint-send-input))))
+(defun corfu-send-shell (&rest _)
+  "Send completion candidate when inside comint/eshell."
+  (cond
+   ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
+    (eshell-send-input))
+   ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
+    (comint-send-input))))
 
-  (advice-add #'corfu-insert :after #'corfu-send-shell)
+(advice-add #'corfu-insert :after #'corfu-send-shell)
 #+end_src
 
 Shell completion uses the flexible Pcomplete mechanism internally, which allows
@@ -317,14 +317,14 @@ advices on Emacs 29 and eventually report any remaining Pcomplete issues
 upstream, such that they can be fixed at the root.
 
 #+begin_src emacs-lisp
-  ;; The advices are only needed on Emacs 28 and older.
-  (when (< emacs-major-version 29)
-    ;; Silence the pcomplete capf, no errors or messages!
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+;; The advices are only needed on Emacs 28 and older.
+(when (< emacs-major-version 29)
+  ;; Silence the pcomplete capf, no errors or messages!
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
 
-    ;; Ensure that pcomplete does not write to the buffer
-    ;; and behaves as a pure `completion-at-point-function'.
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
+  ;; Ensure that pcomplete does not write to the buffer
+  ;; and behaves as a pure `completion-at-point-function'.
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
 #+end_src
 
 ** Orderless completion
@@ -365,26 +365,63 @@ completion and one which may work better with manual completion if you prefer to
 always use =SPC= to separate the Orderless components.
 
  #+begin_src emacs-lisp
-   ;; Auto completion example
-   (use-package corfu
-     :custom
-     (corfu-auto t)          ;; Enable auto completion
-     ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
-     :bind
-     ;; Another key binding can be used, such as S-SPC.
-     ;; (:map corfu-map ("M-SPC" . corfu-insert-separator))
-     :init
-     (global-corfu-mode))
+ ;; Auto completion example
+ (use-package corfu
+   :custom
+   (corfu-auto t)          ;; Enable auto completion
+   ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
+   :bind
+   ;; Another key binding can be used, such as S-SPC.
+   ;; (:map corfu-map ("M-SPC" . corfu-insert-separator))
+   :init
+   (global-corfu-mode))
 
-   ;; Manual completion example
-   (use-package corfu
-     :custom
-     ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
-     :bind
-     ;; Configure SPC for separator insertion
-     (:map corfu-map ("SPC" . corfu-insert-separator))
-     :init
-     (global-corfu-mode))
+ ;; Manual completion example
+ (use-package corfu
+   :custom
+   ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
+   :bind
+   ;; Configure SPC for separator insertion
+   (:map corfu-map ("SPC" . corfu-insert-separator))
+   :init
+   (global-corfu-mode))
+#+end_src
+
+** TAB-only completion
+
+By default, Corfu steals both the ~RET~ and ~TAB~ keys, when the Corfu popup is
+open. This can feel intrusive, in particular in combination with auto
+completion. ~RET~ may accidentally commit an automatically selected candidate,
+while you actually wanted to start a new line. As an alternative we can unbind
+the ~RET~ key completely from ~corfu-map~ or reserve the ~RET~ key only in shell
+modes.
+
+#+begin_src emacs-lisp
+;; TAB-only configuration
+(use-package corfu
+  :custom
+  (corfu-auto t)               ;; Enable auto completion
+  (corfu-preselect 'directory) ;; Select the first candidate, except for directories
+
+  ;; Free the RET key for less intrusive behavior.
+  :bind
+  (:map corfu-map
+        ;; Option 1: Unbind RET completely
+        ;;; ("RET" . nil)
+        ;; Option 2: Use RET only in shell modes
+        ("RET" . (menu-item "" nil :filter corfu-insert-shell-filter)))
+
+  :init
+  (global-corfu-mode))
+
+(defun corfu-insert-shell-filter (&optional _)
+  "Insert completion candidate and send when inside comint/eshell."
+  (when (derived-mode-p 'eshell-mode 'comint-mode)
+    (lambda ()
+      (interactive)
+      (corfu-insert)
+      ;; `corfu-send-shell' was defined above
+      (corfu-send-shell))))
 #+end_src
 
 ** TAB-and-Go completion
@@ -396,22 +433,22 @@ desired but which leads overall to a more predictable behavior. In order to
 force snippet expansion, confirm a candidate explicitly with ~RET~.
 
 #+begin_src emacs-lisp
-  (use-package corfu
-    ;; TAB-and-Go customizations
-    :custom
-    (corfu-cycle t)           ;; Enable cycling for `corfu-next/previous'
-    (corfu-preselect 'prompt) ;; Always preselect the prompt
+(use-package corfu
+  ;; TAB-and-Go customizations
+  :custom
+  (corfu-cycle t)           ;; Enable cycling for `corfu-next/previous'
+  (corfu-preselect 'prompt) ;; Always preselect the prompt
 
-    ;; Use TAB for cycling, default is `corfu-complete'.
-    :bind
-    (:map corfu-map
-          ("TAB" . corfu-next)
-          ([tab] . corfu-next)
-          ("S-TAB" . corfu-previous)
-          ([backtab] . corfu-previous))
+  ;; Use TAB for cycling, default is `corfu-complete'.
+  :bind
+  (:map corfu-map
+        ("TAB" . corfu-next)
+        ([tab] . corfu-next)
+        ("S-TAB" . corfu-previous)
+        ([backtab] . corfu-previous))
 
-    :init
-    (global-corfu-mode))
+  :init
+  (global-corfu-mode))
 #+end_src
 
 ** Transfer completion to the minibuffer
