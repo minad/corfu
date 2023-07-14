@@ -222,8 +222,11 @@ completion backend in use is expensive."
   '((t :inherit shadow :strike-through t))
   "Face used for deprecated candidates.")
 
+(defvar-keymap corfu-mode-map
+  :doc "Keymap used when `corfu-mode' is active.")
+
 (defvar-keymap corfu-map
-  :doc "Corfu keymap used when popup is shown."
+  :doc "Keymap used when popup is shown."
   "<remap> <move-beginning-of-line>" #'corfu-prompt-beginning
   "<remap> <move-end-of-line>" #'corfu-prompt-end
   "<remap> <beginning-of-buffer>" #'corfu-first
@@ -1232,7 +1235,7 @@ Quit if no candidate is selected."
 ;;;###autoload
 (define-minor-mode corfu-mode
   "COmpletion in Region FUnction."
-  :global nil :group 'corfu
+  :group 'corfu :keymap corfu-mode-map
   (cond
    (corfu-mode
     ;; FIXME: Install advice which fixes `completion--capf-wrapper', such that

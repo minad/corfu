@@ -5,6 +5,7 @@
 * Development
 
 - =corfu-quick=: Bugfix.
+- =corfu-mode-map=: Add mode map.
 
 * Version 0.37 (2023-07-02)
 
