@@ -150,7 +150,7 @@ default completion styles. The use of Orderless is not a necessity.
   ;;       orderless-component-separator #'orderless-escapable-split-on-space)
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
-        completion-category-overrides '((file (styles . (partial-completion))))))
+        completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 
 The =basic= completion style is specified as fallback in addition to =orderless= in
@@ -365,26 +365,26 @@ completion and one which may work better with manual completion if you prefer to
 always use =SPC= to separate the Orderless components.
 
  #+begin_src emacs-lisp
- ;; Auto completion example
- (use-package corfu
-   :custom
-   (corfu-auto t)          ;; Enable auto completion
-   ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
-   :bind
-   ;; Another key binding can be used, such as S-SPC.
-   ;; (:map corfu-map ("M-SPC" . corfu-insert-separator))
-   :init
-   (global-corfu-mode))
+;; Auto completion example
+(use-package corfu
+  :custom
+  (corfu-auto t)          ;; Enable auto completion
+  ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
+  :bind
+  ;; Another key binding can be used, such as S-SPC.
+  ;; (:map corfu-map ("M-SPC" . corfu-insert-separator))
+  :init
+  (global-corfu-mode))
 
- ;; Manual completion example
- (use-package corfu
-   :custom
-   ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
-   :bind
-   ;; Configure SPC for separator insertion
-   (:map corfu-map ("SPC" . corfu-insert-separator))
-   :init
-   (global-corfu-mode))
+;; Manual completion example
+(use-package corfu
+  :custom
+  ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
+  :bind
+  ;; Configure SPC for separator insertion
+  (:map corfu-map ("SPC" . corfu-insert-separator))
+  :init
+  (global-corfu-mode))
 #+end_src
 
 ** TAB-only completion
@@ -594,14 +594,14 @@ Emacs would become unusable, given that the hooks are executed after every
 command.
 
 #+begin_src emacs-lisp
-  (setq debug-on-error t)
+(setq debug-on-error t)
 
-  (defun force-debug (func &rest args)
-    (condition-case e
-        (apply func args)
-      ((debug error) (signal (car e) (cdr e)))))
+(defun force-debug (func &rest args)
+  (condition-case e
+      (apply func args)
+    ((debug error) (signal (car e) (cdr e)))))
 
-  (advice-add #'corfu--post-command :around #'force-debug)
+(advice-add #'corfu--post-command :around #'force-debug)
 #+end_src
 
 * Contributions
