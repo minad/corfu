@@ -363,6 +363,33 @@ completion backend in use is expensive."
     map)
   "Ignore all mouse clicks.")
 
+(defun corfu--capf-wrapper (fun &optional prefix)
+  "Wrapper for `completion-at-point' FUN.
+The wrapper determines if the Capf is applicable at the current position
+and performs sanity checking on the returned result.  PREFIX is a prefix
+length override, set to t for manual completion."
+  (pcase (funcall fun)
+    ((and res `(,beg ,end ,table . ,plist))
+     (and (integer-or-marker-p beg) ;; Valid Capf result
+          (<= beg (point) end)      ;; Sanity checking
+          ;; When auto completing, check the prefix length!
+          (let ((len (or prefix
+                         (plist-get plist :company-prefix-length)
+                         (- (point) beg))))
+            (or (eq len t) (>= len corfu-auto-prefix)))
+          ;; For non-exclusive Capfs, check for valid completion.
+          (or (not (eq 'no (plist-get plist :exclusive)))
+              (let* ((str (buffer-substring-no-properties beg end))
+                     (pt (- (point) beg))
+                     (pred (plist-get plist :predicate))
+                     (md (completion-metadata (substring str 0 pt) table pred)))
+                ;; We use `completion-try-completion' to check if there are
+                ;; completions. The upstream `completion--capf-wrapper' uses
+                ;; `try-completion' which is incorrect since it only checks for
+                ;; prefix completions.
+                (completion-try-completion str table pred pt md)))
+          (cons fun res)))))
+
 (defun corfu--make-buffer (name)
   "Create buffer with NAME."
   (let ((fr face-remapping-alist)
@@ -1238,49 +1265,11 @@ Quit if no candidate is selected."
   :group 'corfu :keymap corfu-mode-map
   (cond
    (corfu-mode
-    ;; FIXME: Install advice which fixes `completion--capf-wrapper', such that
-    ;; it respects the completion styles for non-exclusive Capfs. See FIXME in
-    ;; the `completion--capf-wrapper' function in minibuffer.el, where the
-    ;; issue has been mentioned. We never uninstall this advice since the
-    ;; advice is active *globally*.
-    (advice-add #'completion--capf-wrapper :around #'corfu--capf-wrapper-advice)
     (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
     (setq-local completion-in-region-function #'corfu--in-region))
    (t
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function))))
-
-(defun corfu--capf-wrapper (fun &optional prefix)
-  "Wrapper for `completion-at-point' FUN.
-The wrapper determines if the Capf is applicable at the current position
-and performs sanity checking on the returned result.  PREFIX is a prefix
-length override, set to t for manual completion."
-  (pcase (funcall fun)
-    ((and res `(,beg ,end ,table . ,plist))
-     (and (integer-or-marker-p beg) ;; Valid Capf result
-          (<= beg (point) end)      ;; Sanity checking
-          ;; When auto completing, check the prefix length!
-          (let ((len (or prefix
-                         (plist-get plist :company-prefix-length)
-                         (- (point) beg))))
-            (or (eq len t) (>= len corfu-auto-prefix)))
-          ;; For non-exclusive Capfs, check for valid completion.
-          (or (not (eq 'no (plist-get plist :exclusive)))
-              (let* ((str (buffer-substring-no-properties beg end))
-                     (pt (- (point) beg))
-                     (pred (plist-get plist :predicate))
-                     (md (completion-metadata (substring str 0 pt) table pred)))
-                ;; We use `completion-try-completion' to check if there are
-                ;; completions. The upstream `completion--capf-wrapper' uses
-                ;; `try-completion' which is incorrect since it only checks for
-                ;; prefix completions.
-                (completion-try-completion str table pred pt md)))
-          (cons fun res)))))
-
-(defun corfu--capf-wrapper-advice (orig fun which)
-  "Around advice for `completion--capf-wrapper'.
-The ORIG function takes the FUN and WHICH arguments."
-  (if corfu-mode (corfu--capf-wrapper fun t) (funcall orig fun which)))
 
 ;;;###autoload
 (define-globalized-minor-mode global-corfu-mode corfu-mode corfu--on :group 'corfu)
@@ -1299,11 +1288,24 @@ The ORIG function takes the FUN and WHICH arguments."
                corfu-insert-separator corfu-prompt-beginning corfu-prompt-end))
   (put sym 'completion-predicate #'ignore))
 
+(defun corfu--capf-wrapper-advice (orig fun which)
+  "Around advice for `completion--capf-wrapper'.
+The ORIG function takes the FUN and WHICH arguments."
+  (if corfu-mode (corfu--capf-wrapper fun t) (funcall orig fun which)))
+
 (defun corfu--eldoc-advice ()
   "Return non-nil if Corfu is currently not active."
   (not (and corfu-mode completion-in-region-mode)))
 
-(advice-add #'eldoc-display-message-no-interference-p :before-while #'corfu--eldoc-advice)
+;; Install advice which fixes `completion--capf-wrapper', such that it respects
+;; the completion styles for non-exclusive Capfs. See the fixme comment in the
+;; `completion--capf-wrapper' function in minibuffer.el, where the issue has
+;; been mentioned.
+(advice-add #'completion--capf-wrapper :around #'corfu--capf-wrapper-advice)
+
+;; Register Corfu with ElDoc
+(advice-add #'eldoc-display-message-no-interference-p
+            :before-while #'corfu--eldoc-advice)
 (eldoc-add-command #'corfu-complete #'corfu-insert)
 
 (provide 'corfu)
