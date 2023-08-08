@@ -6,6 +6,8 @@
 
 - =corfu-quick=: Bugfix.
 - =corfu-mode-map=: Add mode map.
+- =global-corfu-mode=: Add =global-corfu-modes= mode predicate variable. Replaces
+  =corfu-exclude-modes=.
 
 * Version 0.37 (2023-07-02)
 
