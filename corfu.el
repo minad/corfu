@@ -1277,7 +1277,6 @@ Quit if no candidate is selected."
 (defun corfu--on ()
   "Turn `corfu-mode' on."
   (unless (or noninteractive
-              buffer-read-only
               (eq (aref (buffer-name) 0) ?\s)
               (apply #'derived-mode-p corfu-exclude-modes))
     (corfu-mode 1)))
