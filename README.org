@@ -20,13 +20,11 @@ concentrates on providing a polished completion UI. In-buffer completion UIs in
 Emacs can hook into ~completion-in-region~, which implements the interaction with
 the user. Completions at point are either provided by commands like
 ~dabbrev-completion~ or by pluggable backends (~completion-at-point-functions~,
-Capfs) and are then passed to ~completion-in-region~. Most programming, text and
-shell major modes implement a Capf. The Emacs language server clients use Capfs,
-which retrieve completions from the server via the language server protocol
-(LSP). Corfu does not include its own completion backends. The Emacs built-in
-Capfs and the Capfs provided by other programming language packages are usually
-sufficient. A few additional Capfs and completion utilities are provided by the
-[[https://github.com/minad/cape][Cape]] package.
+Capfs) and are then passed to ~completion-in-region~. Many programming, text and
+shell major modes implement a Capf. Corfu does not include its own completion
+backends. The Emacs built-in Capfs and the Capfs provided by third-party
+programming language packages are often sufficient. Additional Capfs and
+completion utilities are provided by the [[https://github.com/minad/cape][Cape]] package.
 
 *NOTE*: Corfu uses child frames to show the popup and falls back to the default
 setting of the ~completion-in-region-function~ on non-graphical displays. If you
@@ -163,10 +161,10 @@ files can be opened at once with =find-file= if you enter a wildcard. You may al
 give the =initials= completion style a try.
 
 See also the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] and the [[https://github.com/minad/cape][Cape manual]] for additional Capf configuration
-tips. The Eglot and Lsp-mode configurations are documented in the wiki. For more
-general documentation read the chapter about completion in the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Completion.html][Emacs manual]]. If
-you want to create your own Capfs, you can find documentation about completion
-in the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
+tips. The language server protocol (LSP) configurations are documented in the
+wiki. For more general documentation read the chapter about completion in the
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Completion.html][Emacs manual]]. If you want to create your own Capfs, you can find documentation
+about completion in the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
 
 ** Auto completion
 
@@ -277,7 +275,7 @@ shells like Bash, Zsh or Fish.
 
 When pressing =RET= while the Corfu popup is visible, the ~corfu-insert~ command
 will be invoked. This command does inserts the currently selected candidate, but
-it does not send the prompt input to Eshell or the comint process. Therefore you
+it does not send the prompt input to Eshell or the Comint process. Therefore you
 often have to press =RET= twice which feels like an unnecessary double
 confirmation. Fortunately it is easy to improve this! In my configuration I
 define the advice ~corfu-send-shell~ which sends the candidate after insertion.
@@ -307,14 +305,14 @@ the ~--help~ output of a command and produces completions. This Emacs 29
 functionality is not completely equivalent. For example it does not display
 annotations in Eshell, but this may get fixed in Emacs 30.
 
-Unfortunately Pcomplete had a few technical issues on Emacs 28 and older. We can
-work around the issues with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions).
-Cape provides wrappers which sanitize the Pcomplete function. If you use Emacs
-28 or older installing these advices is strongly recommend such that Pcomplete
-works properly. On Emacs 29 the advices are not necessary anymore, since almost
-all of the related bugs have been fixed. I therefore recommend to remove the
-advices on Emacs 29 and eventually report any remaining Pcomplete issues
-upstream, such that they can be fixed at the root.
+Pcomplete has a few bugs on Emacs 28 and older. We can work around the issues
+with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers
+which sanitize the Pcomplete function. If you use Emacs 28 or older installing
+these advices is recommended such that Pcomplete works properly. On Emacs 29 the
+advices should not be necessary anymore, since most of the relevant bugs have
+been fixed. I therefore recommend to remove the advices on Emacs 29 and
+eventually report any remaining Pcomplete issues upstream, such that they can be
+fixed.
 
 #+begin_src emacs-lisp
 ;; The advices are only needed on Emacs 28 and older.
@@ -541,19 +539,18 @@ enhance your setup.
   completion style, where the filtering expressions are separated by spaces or
   another character (see ~corfu-separator~).
 
-- [[https://github.com/minad/cape][Cape]]: Additional Capf backends and =completion-in-region= commands are provided
-  by the Cape package. Among others, the package supplies the file completion
-  backend =cape-file= and the Dabbrev backend =cape-dabbrev=. Cape provides the
-  ~cape-company-to-capf~ adapter to reuse Company backends in Corfu.
+- [[https://github.com/minad/cape][Cape]]: Provides additional Capf backends and =completion-in-region= commands.
+  Among others, the package supplies the file completion backend =cape-file= and
+  the Dabbrev backend =cape-dabbrev=. Cape provides the ~cape-company-to-capf~
+  adapter to reuse Company backends in Corfu.
 
-- [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via an external package. The kind-icon
-  package provides beautifully styled SVG icons based on monochromatic icon sets
-  like material design.
+- [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via external packages. The kind-icon
+  package provides beautifully styled SVG icons based on monochromatic icon
+  sets.
 
 - [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]]: Extend the Eshell/Shell Pcomplete mechanism with support for many
-  more commands. Similar to the Fish shell, Pcomplete uses man page parsing to
-  dynamically retrieve the completions and helpful annotations. This package
-  brings Eshell completions to another level!
+  commands. Similar to the Fish shell, pcmpl-args uses man page parsing to
+  dynamically retrieve the completions and helpful annotations.
 
 - [[https://github.com/minad/tempel][Tempel]]: Tiny template/snippet package with templates in Lisp syntax, which
   can be used in conjunction with Corfu.
