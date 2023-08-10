@@ -1280,16 +1280,15 @@ symbols or elements of the form (not modes)."
 
 (defun corfu--on ()
   "Turn `corfu-mode' on."
-  (unless (or noninteractive
-              (eq (aref (buffer-name) 0) ?\s)
-              ;; TODO backport `easy-mmode--globalized-predicate-p'
-              (eq t global-corfu-modes)
-              (eq t (cl-loop for p in global-corfu-modes thereis
-                             (pcase-exhaustive p
-                               ('t t)
-                               ('nil 0)
-                               ((pred symbolp) (and (derived-mode-p p) t))
-                               (`(not . ,m) (and (apply #'derived-mode-p m) 0))))))
+  (when (and (not (or noninteractive (eq (aref (buffer-name) 0) ?\s)))
+             ;; TODO backport `easy-mmode--globalized-predicate-p'
+             (or (eq t global-corfu-modes)
+                 (eq t (cl-loop for p in global-corfu-modes thereis
+                                (pcase-exhaustive p
+                                  ('t t)
+                                  ('nil 0)
+                                  ((pred symbolp) (and (derived-mode-p p) t))
+                                  (`(not . ,m) (and (apply #'derived-mode-p m) 0)))))))
     (corfu-mode 1)))
 
 ;; Emacs 28: Do not show Corfu commands with M-X
