@@ -123,10 +123,6 @@ separator: Only stay alive if there is no match and
 `corfu-separator' has been inserted."
   :type '(choice boolean (const separator)))
 
-(defcustom corfu-exclude-modes nil
-  "List of modes excluded by `global-corfu-mode'."
-  :type '(repeat symbol))
-
 (defcustom corfu-left-margin-width 0.5
   "Width of the left margin in units of the character width."
   :type 'float)
@@ -1271,14 +1267,29 @@ Quit if no candidate is selected."
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function))))
 
+(defcustom global-corfu-modes t
+  "List of modes where Corfu should be enabled.
+The variable can either be t, nil or a list of t, nil, mode
+symbols or elements of the form (not modes)."
+  :type '(repeat sexp))
+
 ;;;###autoload
-(define-globalized-minor-mode global-corfu-mode corfu-mode corfu--on :group 'corfu)
+(define-globalized-minor-mode global-corfu-mode
+  corfu-mode corfu--on
+  :group 'corfu)
 
 (defun corfu--on ()
   "Turn `corfu-mode' on."
   (unless (or noninteractive
               (eq (aref (buffer-name) 0) ?\s)
-              (apply #'derived-mode-p corfu-exclude-modes))
+              ;; TODO backport `easy-mmode--globalized-predicate-p'
+              (eq t global-corfu-modes)
+              (eq t (cl-loop for p in global-corfu-modes thereis
+                             (pcase-exhaustive p
+                               ('t t)
+                               ('nil 0)
+                               ((pred symbolp) (and (derived-mode-p p) t))
+                               (`(not . ,m) (and (apply #'derived-mode-p m) 0))))))
     (corfu-mode 1)))
 
 ;; Emacs 28: Do not show Corfu commands with M-X
