@@ -5,8 +5,8 @@
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
-;; Version: 0.37
-;; Package-Requires: ((emacs "27.1") (compat "29.1.4.0"))
+;; Version: 0.38
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.2"))
 ;; Homepage: https://github.com/minad/corfu
 ;; Keywords: abbrev, convenience, matching, completion, wp
 
