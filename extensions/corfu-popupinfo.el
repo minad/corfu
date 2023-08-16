@@ -194,8 +194,7 @@ all values are in pixels relative to the origin.  See
                             (find-file-noselect (car loc) t))))))
             (with-current-buffer buffer
               (save-excursion
-                (save-restriction
-                  (widen)
+                (without-restriction
                   (goto-char (point-min))
                   (when-let (pos (cdr loc))
                     (if (bufferp (car loc))

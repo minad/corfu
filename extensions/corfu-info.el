@@ -99,8 +99,7 @@ If called with a prefix ARG, the buffer is persistent."
              (or (and (bufferp (car loc)) (car loc))
                  (find-file-noselect (car loc) t))
              (and arg (format "*corfu loc: %s*" cand)))
-          (save-restriction
-            (widen)
+          (without-restriction
             (goto-char (point-min))
             (when-let (pos (cdr loc))
               (if (bufferp (car loc))
