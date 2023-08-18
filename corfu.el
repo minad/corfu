@@ -78,7 +78,7 @@ The value should lie between 0 and corfu-count/2."
 (defcustom corfu-continue-commands
   ;; nil is undefined command
   '(nil ignore universal-argument universal-argument-more digit-argument
-        "\\`corfu-" "\\`scroll-other-window")
+    "\\`corfu-" "\\`scroll-other-window")
   "Continue Corfu completion after executing these commands."
   :type '(repeat (choice regexp symbol)))
 
@@ -361,8 +361,10 @@ completion backend in use is expensive."
 
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
-The wrapper determines if the Capf is applicable at the current position
-and performs sanity checking on the returned result.  PREFIX is a prefix
+The wrapper determines if the Capf is applicable at the current
+position and performs sanity checking on the returned result.
+For non-exclusive Capfs wrapper additionally checks if the
+current input can be completed successfully.  PREFIX is a prefix
 length override, set to t for manual completion."
   (pcase (funcall fun)
     ((and res `(,beg ,end ,table . ,plist))
@@ -756,7 +758,12 @@ FRAME is the existing frame."
     (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display) cand)))
 
 (defun corfu--continue-p ()
-  "Continue completion?"
+  "Check if completion should be continued after a command.
+Corfu bails out if the currently selected buffer changed
+unexpectedly, if point moved to an unexpected position, if the
+input doesn't satisfy the `completion-in-region-mode--predicate'
+or if the last invoked command is not listed in
+`corfu-continue-commands'."
   (pcase-let ((pt (point))
               (buf (current-buffer))
               (`(,beg ,end . ,_) completion-in-region--data))
@@ -1064,6 +1071,10 @@ A scroll bar is displayed from LO to LO+BAR."
   ;; Ensure that state is initialized before next Corfu command
   (when (and (symbolp this-command) (string-prefix-p "corfu-" (symbol-name this-command)))
     (corfu--update))
+  ;; If the next command is not listed in `corfu-continue-commands', insert the
+  ;; currently selected candidate and bail out of completion. This way you can
+  ;; continue typing after selecting a candidate. The candidate will be inserted
+  ;; and your new input will be appended.
   (when (and (eq corfu-preview-current 'insert)
              (/= corfu--index corfu--preselect)
              ;; See the comment about `overriding-local-map' in `corfu--post-command'.
