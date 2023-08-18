@@ -601,6 +601,14 @@ command.
 (advice-add #'corfu--post-command :around #'force-debug)
 #+end_src
 
+When Capfs do not yield the expected result you can use ~cape-capf-debug~ to add
+debug messages to a Capf. The Capf will then produce a completion log in the
+messages buffer.
+
+#+begin_src emacs-lisp
+(setq completion-at-point-functions (list (cape-capf-debug #'cape-dict)))
+#+end_src
+
 * Contributions
 
 Since this package is part of [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]] contributions require a copyright
