@@ -164,9 +164,9 @@ Emacs.  See also `corfu-auto-delay'."
 
 (defcustom corfu-auto-delay 0.2
   "Delay for auto completion.
-It is *not recommended* to use a very small delay or even 0,
-since this will create high load for Emacs in particular if the
-completion backend in use is expensive."
+It is *not recommended* to use a short delay or even 0, since
+this will create high load for Emacs, in particular if executing
+the completion backend is costly."
   :type 'float)
 
 (defcustom corfu-auto-commands

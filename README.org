@@ -179,22 +179,22 @@ unexpectedly.
       corfu-quit-no-match 'separator) ;; or t
 #+end_src
 
-I recommend to experiment a bit with the various settings and key bindings to
-find a configuration which works for you. There is no one size fits all
-solution. Some people like auto completion, some like manual completion, some
+I suggest to experiment with the various settings and key bindings to find a
+configuration which works for you. There is no one perfect configuration which
+fits all. Some people like auto completion, some like manual completion, some
 want to cycle with TAB and some with the arrow keys.
 
-In case you like aggressive auto completion settings, where the completion popup
-appears immediately, I recommend to use a cheap completion style like =basic=,
-which performs prefix filtering. In this case Corfu completion should still be
-very fast in buffers with efficient completion backends. You can try the
-following settings in an Elisp buffer or the Emacs scratch buffer.
+In case you like auto completion settings, where the completion popup appears
+immediately, better use a cheap completion style like =basic=, which performs
+prefix filtering. In this case Corfu completion should still be fast in buffers
+with efficient completion backends. You can try the following settings in an
+Elisp buffer or the Emacs scratch buffer. Note that such settings can slow down
+Emacs due to the high load on the Lisp runtime and garbage collector.
 
 #+begin_src emacs-lisp
-;; Aggressive completion, cheap prefix filtering.
-(setq-local corfu-auto t
-            corfu-auto-delay 0
-            corfu-auto-prefix 0
+(setq-local corfu-auto        t
+            corfu-auto-delay  0 ;; TOO SMALL - NOT RECOMMENDED
+            corfu-auto-prefix 1 ;; TOO SMALL - NOT RECOMMENDED
             completion-styles '(basic))
 #+end_src
 
@@ -214,9 +214,9 @@ source code for further details.
   (orderless-style-dispatchers '(orderless-fast-dispatch))
   (orderless-matching-styles '(orderless-literal orderless-regexp)))
 
-(setq-local corfu-auto t
-            corfu-auto-delay 0
-            corfu-auto-prefix 1
+(setq-local corfu-auto        t
+            corfu-auto-delay  0 ;; TOO SMALL - NOT RECOMMENDED
+            corfu-auto-prefix 1 ;; TOO SMALL - NOT RECOMMENDED
             completion-styles '(orderless-fast basic))
 #+end_src
 

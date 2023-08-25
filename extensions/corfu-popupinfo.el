@@ -60,9 +60,9 @@ preselected candidate.  Otherwise the popup can be requested
 manually via `corfu-popupinfo-toggle',
 `corfu-popupinfo-documentation' and `corfu-popupinfo-location'.
 
-It is *not recommended* to use a very small delay, since this
-will create high load for Emacs since retrieving the
-documentation is usually expensive."
+It is *not recommended* to use a short delay or even 0, since
+this will create high load for Emacs.  Retrieving the
+documentation from the backend is usually expensive."
   :type '(choice (const :tag "Never" nil)
                  (number :tag "Delay in seconds")
                  (cons :tag "Two Delays"
