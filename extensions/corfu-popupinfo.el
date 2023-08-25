@@ -185,6 +185,7 @@ all values are in pixels relative to the origin.  See
                       (or (and (bufferp (car loc)) (car loc))
                           (get-file-buffer (car loc))
                           (let ((inhibit-message t)
+                                (message-log-max nil)
                                 (inhibit-redisplay t)
                                 (enable-dir-local-variables nil)
                                 (enable-local-variables :safe)
@@ -215,8 +216,8 @@ all values are in pixels relative to the origin.  See
   (when-let ((fun (plist-get corfu--extra :company-doc-buffer))
              (res (save-excursion
                     (let ((inhibit-message t)
-                          (inhibit-redisplay t)
                           (message-log-max nil)
+                          (inhibit-redisplay t)
                           ;; Reduce print length for elisp backend (#249)
                           (print-level 3)
                           (print-length (* corfu-popupinfo-max-width
@@ -355,10 +356,6 @@ form (X Y WIDTH HEIGHT DIR)."
                 (set (make-local-variable (car var)) (cdr var)))
               (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
                 (setcar m 'corfu-popupinfo)))
-          (unless (eq corfu-popupinfo--toggle 'init)
-            (message "No %s available for `%s'"
-                     (car (last (split-string (symbol-name corfu-popupinfo--function) "-+")))
-                     candidate))
           (corfu-popupinfo--hide)
           (setq cand-changed nil coords-changed nil)))
       (when (or cand-changed coords-changed)
@@ -444,7 +441,12 @@ See `corfu-popupinfo-scroll-up' for more details."
       (corfu-popupinfo--hide)
     (setq corfu-popupinfo--function fun
           corfu-popupinfo--candidate nil)
-    (corfu-popupinfo--show (nth corfu--index corfu--candidates))))
+    (let ((cand (nth corfu--index corfu--candidates)))
+      (corfu-popupinfo--show cand)
+      (unless (corfu-popupinfo--visible-p)
+        (user-error "No %s available for `%s'"
+                    (car (last (split-string (symbol-name fun) "-+")))
+                    cand)))))
 
 (defun corfu-popupinfo-documentation ()
   "Show or hide documentation in popup.
