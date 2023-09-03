@@ -9,6 +9,8 @@
 #+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://github.com/minad/corfu/blob/screenshots/emacs.svg?raw=true"/></a>
 #+html: <a href="https://elpa.gnu.org/packages/corfu.html"><img alt="GNU ELPA" src="https://elpa.gnu.org/packages/corfu.svg"/></a>
 #+html: <a href="https://elpa.gnu.org/devel/corfu.html"><img alt="GNU-devel ELPA" src="https://elpa.gnu.org/devel/corfu.svg"/></a>
+#+html: <a href="https://melpa.org/#/corfu"><img alt="MELPA" src="https://melpa.org/packages/corfu-badge.svg"/></a>
+#+html: <a href="https://stable.melpa.org/#/corfu"><img alt="MELPA Stable" src="https://stable.melpa.org/packages/corfu-badge.svg"/></a>
 
 Corfu enhances in-buffer completion with a small completion popup. The current
 candidates are shown in a popup below or above the point. The candidates can be
