@@ -349,7 +349,7 @@ thereafter.
 To treat the entire input as Orderless input, you can set the customization
 option ~corfu-quit-at-boundary~ to t. This disables the predicate which checks if
 the current completion boundary has been left. In contrast, if you always want
-to quit at the boundary, set ~corfu-quit-at-boundary~ to ~nil~. By default
+to quit at the boundary, set ~corfu-quit-at-boundary~ to ~t~. By default
 ~corfu-quit-at-boundary~ is set to ~separator~ which quits at completion boundaries
 as long as no separator has been inserted with ~corfu-insert-separator~.
 
