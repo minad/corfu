@@ -547,8 +547,8 @@ enhance your setup.
   adapter to reuse Company backends in Corfu.
 
 - [[https://github.com/LuigiPiucco/nerd-icons-corfu][nerd-icons-corfu]], [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via external
-  packages. The nerd-icons-corfu package uses the nerd-icons icon font which is
-  even supported on terminal. The kind-icon uses beautifully styled SVG from
+  packages. The nerd-icons-corfu package uses the Nerd icon font which is even
+  supported on terminal. The kind-icon uses beautifully styled SVG from
   monochromatic icon sets.
 
 - [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]]: Extend the Eshell/Shell Pcomplete mechanism with support for many
