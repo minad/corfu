@@ -2,6 +2,10 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- =corfu-quick=: Use a slightly different scheme to support more candidates.
+
 * Version 0.38 (2023-08-14)
 
 - =corfu-quick=: Bugfix.
