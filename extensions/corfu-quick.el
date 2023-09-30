@@ -45,7 +45,7 @@
   :type 'string
   :group 'corfu)
 
-(defcustom corfu-quick2 "jkl"
+(defcustom corfu-quick2 "jkluionm"
   "Second level quick keys."
   :type 'string
   :group 'corfu)
@@ -72,12 +72,11 @@
   "Format quick keys prefix.
 IDX is the current candidate index.
 TWO is non-nil if two keys should be displayed."
-  (let* ((fst (length corfu-quick1))
-         (snd (length corfu-quick2))
-         (len (+ fst snd)))
+  (let ((fst (length corfu-quick1))
+        (snd (length corfu-quick2)))
     (if (>= idx fst)
-        (let ((first (elt corfu-quick2 (mod (/ (- idx fst) len) snd)))
-              (second (elt (concat corfu-quick1 corfu-quick2) (mod (- idx fst) len))))
+        (let ((first (elt corfu-quick2 (mod (/ (- idx fst) fst) snd)))
+              (second (elt corfu-quick1 (mod (- idx fst) fst))))
           (cond
            ((eq first two)
             (list
