@@ -1146,9 +1146,8 @@ there hasn't been any input, then quit."
                  (str (buffer-substring-no-properties beg end)))
       (cancel-change-group corfu--change-group)
       (activate-change-group (setq corfu--change-group (prepare-change-group)))
-      ;; Quit when resetting again or if input did not change.
-      (when (or (eq last-command #'corfu-reset)
-                (equal str (buffer-substring-no-properties beg end)))
+      ;; Quit when resetting, when input did not change.
+      (when (equal str (buffer-substring-no-properties beg end))
         (corfu-quit)))))
 
 (defun corfu-insert-separator ()
