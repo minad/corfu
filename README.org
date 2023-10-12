@@ -49,19 +49,19 @@ provides an alternative overlay-based display.
 - Popup display with scrollbar indicator and arrow key navigation.
 - The popup can be summoned explicitly by pressing =TAB= at any time.
 - The current candidate is inserted with =TAB= and selected with =RET=.
-- Candidates sorting by prefix, string length and alphabetically.
+- Candidate sorting by prefix, string length and alphabetically.
 - The selected candidate is previewed (configurable via ~corfu-preview-current~).
-- The selected candidate automatically committed on further input by default.
+- The selected candidate is automatically committed on further input by default.
   (configurable via ~corfu-preview-current~).
-- The [[https://github.com/oantolin/orderless][Orderless]] completion style is supported. The filter string can contain
+- Supports the [[https://github.com/oantolin/orderless][Orderless]] completion style. The filter string can contain
   arbitrary characters, after inserting a space via =M-SPC= (configurable via
   ~corfu-quit-at-boundary~ and ~corfu-separator~).
 - Deferred completion style highlighting for performance.
 - Support for candidate annotations (=annotation-function=, =affixation-function=).
-- Deprecated candidates are crossed out in the display.
+- Deprecated candidates are displayed as crossed out.
 - Icons can be provided by an external package via margin formatter functions.
 - Rich set of extensions: Quick keys, Index keys, Sorting by history, Candidate
-  documentation in echo area, popup or separate buffer
+  documentation in echo area, popup or separate buffer.
 
 * Installation and Configuration
 
@@ -98,9 +98,9 @@ Here is an example configuration:
   ;;        (shell-mode . corfu-mode)
   ;;        (eshell-mode . corfu-mode))
 
-  ;; Recommended: Enable Corfu globally.
-  ;; This is recommended since Dabbrev can be used globally (M-/).
-  ;; See also `global-corfu-modes'.
+  ;; Recommended: Enable Corfu globally.  This is recommended since Dabbrev can
+  ;; be used globally (M-/).  See also the customization variable
+  ;; `global-corfu-modes' to exclude certain modes.
   :init
   (global-corfu-mode))
 
@@ -163,8 +163,7 @@ files can be opened at once with =find-file= if you enter a wildcard. You may al
 give the =initials= completion style a try.
 
 See also the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] and the [[https://github.com/minad/cape][Cape manual]] for additional Capf configuration
-tips. The language server protocol (LSP) configurations are documented in the
-wiki. For more general documentation read the chapter about completion in the
+tips. For more general documentation read the chapter about completion in the
 [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Completion.html][Emacs manual]]. If you want to create your own Capfs, you can find documentation
 about completion in the [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion.html][Elisp manual]].
 
