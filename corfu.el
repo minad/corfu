@@ -792,6 +792,13 @@ or if the last invoked command is not listed in
                             (seq-contains-p (car corfu--input) corfu-separator)))
                    (funcall completion-in-region-mode--predicate)))))))
 
+(defun corfu--window-change (_)
+  "Window and buffer change hook which quits Corfu."
+  (let ((buf (current-buffer))
+        (beg (car completion-in-region--data)))
+    (unless (and beg (eq buf (marker-buffer beg)) (eq buf (window-buffer)))
+      (corfu-quit))))
+
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
   (if (corfu--continue-p)
@@ -820,8 +827,8 @@ or if the last invoked command is not listed in
   (activate-change-group (setq corfu--change-group (prepare-change-group)))
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
   (add-hook 'pre-command-hook #'corfu--prepare nil 'local)
-  (add-hook 'window-selection-change-functions #'corfu-quit nil 'local)
-  (add-hook 'window-buffer-change-functions #'corfu-quit nil 'local)
+  (add-hook 'window-selection-change-functions #'corfu--window-change nil 'local)
+  (add-hook 'window-buffer-change-functions #'corfu--window-change nil 'local)
   (add-hook 'post-command-hook #'corfu--post-command)
   ;; Disable default post-command handling, since we have our own
   ;; checks in `corfu--post-command'.
@@ -1114,8 +1121,8 @@ AUTO is non-nil when initializing auto completion."
 (cl-defgeneric corfu--teardown ()
   "Tear-down Corfu."
   (corfu--popup-hide)
-  (remove-hook 'window-selection-change-functions #'corfu-quit 'local)
-  (remove-hook 'window-buffer-change-functions #'corfu-quit 'local)
+  (remove-hook 'window-selection-change-functions #'corfu--window-change 'local)
+  (remove-hook 'window-buffer-change-functions #'corfu--window-change 'local)
   (remove-hook 'pre-command-hook #'corfu--prepare 'local)
   (remove-hook 'post-command-hook #'corfu--post-command)
   (when corfu--preview-ov (delete-overlay corfu--preview-ov))
@@ -1126,7 +1133,7 @@ AUTO is non-nil when initializing auto completion."
   "Sort LIST by length and alphabetically."
   (sort list #'corfu--length-string<))
 
-(defun corfu-quit (&rest _)
+(defun corfu-quit ()
   "Quit Corfu completion."
   (interactive)
   (completion-in-region-mode -1))
