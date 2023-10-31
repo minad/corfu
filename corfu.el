@@ -1293,7 +1293,7 @@ Quit if no candidate is selected."
   "List of modes where Corfu should be enabled.
 The variable can either be t, nil or a list of t, nil, mode
 symbols or elements of the form (not modes)."
-  :type '(repeat sexp))
+  :type '(choice (const t) (repeat sexp)))
 
 ;;;###autoload
 (define-globalized-minor-mode global-corfu-mode
