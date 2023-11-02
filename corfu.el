@@ -1292,7 +1292,10 @@ Quit if no candidate is selected."
 (defcustom global-corfu-modes t
   "List of modes where Corfu should be enabled.
 The variable can either be t, nil or a list of t, nil, mode
-symbols or elements of the form (not modes)."
+symbols or elements of the form (not modes).  Examples:
+  - Enable everywhere, except in Org: ((not org-mode) t).
+  - Enable in programming modes except Python: ((not python-mode) prog-mode).
+  - Enable only in text modes: (text-mode)."
   :type '(choice (const t) (repeat sexp)))
 
 ;;;###autoload
