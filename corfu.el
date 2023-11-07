@@ -266,7 +266,7 @@ the completion backend is costly."
   "Length of the candidate list `corfu--candidates'.")
 
 (defvar-local corfu--highlight #'identity
-  "Deferred candidate highlighting function.")
+  "Lazy candidate highlighting function.")
 
 (defvar-local corfu--index -1
   "Index of current candidate or negative for prompt selection.")
@@ -521,7 +521,7 @@ FRAME is the existing frame."
     list))
 
 (defun corfu--filter-completions (&rest args)
-  "Compute all completions for ARGS with deferred highlighting."
+  "Compute all completions for ARGS with lazy highlighting."
   (defvar completion-lazy-hilit)
   (defvar completion-lazy-hilit-fn)
   (cl-letf* ((completion-lazy-hilit t)
@@ -537,7 +537,7 @@ FRAME is the existing frame."
                  (orig-flex (symbol-function #'completion-flex-all-completions))
                  ((symbol-function #'completion-flex-all-completions)
                   (lambda (&rest args)
-                    ;; Unfortunately for flex we have to undo the deferred highlighting, since flex uses
+                    ;; Unfortunately for flex we have to undo the lazy highlighting, since flex uses
                     ;; the completion-score for sorting, which is applied during highlighting.
                     (cl-letf (((symbol-function #'completion-pcm--hilit-commonality) orig-pcm))
                       (apply orig-flex args))))
