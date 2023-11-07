@@ -56,7 +56,7 @@ provides an alternative overlay-based display.
 - Supports the [[https://github.com/oantolin/orderless][Orderless]] completion style. The filter string can contain
   arbitrary characters, after inserting a space via =M-SPC= (configurable via
   ~corfu-quit-at-boundary~ and ~corfu-separator~).
-- Deferred completion style highlighting for performance.
+- Lazy completion candidate highlighting for performance.
 - Support for candidate annotations (=annotation-function=, =affixation-function=).
 - Deprecated candidates are displayed as crossed out.
 - Icons can be provided by an external package via margin formatter functions.
