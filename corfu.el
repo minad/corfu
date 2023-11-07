@@ -520,10 +520,7 @@ FRAME is the existing frame."
       (nconc (list (car found)) (delq (setcar found nil) list))
     list))
 
-;; bug#47711: Deferred highlighting for `completion-all-completions'
-;; XXX There is one complication: `completion--twq-all' already adds
-;; `completions-common-part'.
-(defun corfu--all-completions (&rest args)
+(defun corfu--filter-completions (&rest args)
   "Compute all completions for ARGS with deferred highlighting."
   (cl-letf* ((orig-pcm (symbol-function #'completion-pcm--hilit-commonality))
              (orig-flex (symbol-function #'completion-flex-all-completions))
@@ -538,7 +535,7 @@ FRAME is the existing frame."
              (hl #'identity)
              ((symbol-function #'completion-hilit-commonality)
               (lambda (cands prefix &optional base)
-                (setq hl (lambda (x) (nconc (completion-hilit-commonality x prefix base) nil)))
+                (setq hl (lambda (x) (car (completion-hilit-commonality (list x) prefix base))))
                 (and cands (nconc cands base))))
              ((symbol-function #'completion-pcm--hilit-commonality)
               (lambda (pattern cands)
@@ -547,7 +544,7 @@ FRAME is the existing frame."
                            ;; throws an internal error for example when entering
                            ;; "/sudo:://u".
                            (condition-case nil
-                               (completion-pcm--hilit-commonality pattern x)
+                               (car (completion-pcm--hilit-commonality pattern (list x)))
                              (t x))))
                 cands)))
     ;; Only advise orderless after it has been loaded to avoid load order issues
@@ -555,8 +552,8 @@ FRAME is the existing frame."
              (fboundp 'orderless-pattern-compiler))
         (cl-letf (((symbol-function 'orderless-highlight-matches)
                    (lambda (pattern cands)
-                     (let ((regexps (orderless-pattern-compiler pattern)))
-                       (setq hl (lambda (x) (orderless-highlight-matches regexps x))))
+                     (let ((rxs (orderless-pattern-compiler pattern)))
+                       (setq hl (lambda (x) (car (orderless-highlight-matches rxs (list x))))))
                      cands)))
           (cons (apply #'completion-all-completions args) hl))
       (cons (apply #'completion-all-completions args) hl))))
@@ -614,7 +611,7 @@ FRAME is the existing frame."
                              (t (cons 0 (length after))))))
                (field (substring str (car bounds) (+ pt (cdr bounds))))
                (completing-file (eq (corfu--metadata-get 'category) 'file))
-               (`(,all . ,hl) (corfu--all-completions str table pred pt corfu--metadata))
+               (`(,all . ,hl) (corfu--filter-completions str table pred pt corfu--metadata))
                (base (or (when-let (z (last all)) (prog1 (cdr z) (setcdr z nil))) 0))
                (corfu--base (substring str 0 base)))
     ;; Filter the ignored file extensions. We cannot use modified predicate for
@@ -733,7 +730,7 @@ FRAME is the existing frame."
   (pcase-let* ((last (min (+ corfu--scroll corfu-count) corfu--total))
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
                (lo (min (- corfu-count bar 1) (floor (* corfu-count corfu--scroll) corfu--total)))
-               (`(,mf . ,acands) (corfu--affixate (funcall corfu--highlight
+               (`(,mf . ,acands) (corfu--affixate (mapcar corfu--highlight
                                    (seq-subseq corfu--candidates corfu--scroll last))))
                (`(,pw ,width ,fcands) (corfu--format-candidates acands))
                ;; Disable the left margin if a margin formatter is active.
