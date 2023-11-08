@@ -265,7 +265,7 @@ the completion backend is costly."
 (defvar-local corfu--total 0
   "Length of the candidate list `corfu--candidates'.")
 
-(defvar-local corfu--highlight #'identity
+(defvar-local corfu--hilit #'identity
   "Lazy candidate highlighting function.")
 
 (defvar-local corfu--index -1
@@ -295,7 +295,7 @@ the completion backend is costly."
 (defconst corfu--state-vars
   '(corfu--base
     corfu--candidates
-    corfu--highlight
+    corfu--hilit
     corfu--index
     corfu--preselect
     corfu--scroll
@@ -622,7 +622,7 @@ FRAME is the existing frame."
       (corfu--metadata . ,corfu--metadata)
       (corfu--candidates . ,all)
       (corfu--total . ,(length all))
-      (corfu--highlight . ,(or hl #'identity))
+      (corfu--hilit . ,(or hl #'identity))
       (corfu--preselect . ,(if (or (eq corfu-preselect 'prompt) (not all)
                                    (and completing-file (eq corfu-preselect 'directory)
                                         (= (length corfu--base) (length str))
@@ -728,7 +728,7 @@ FRAME is the existing frame."
                (`(,mf . ,acands) (corfu--affixate
                                   (cl-loop for i from 0 below corfu-count
                                            for c in (nthcdr corfu--scroll corfu--candidates)
-                                           collect (funcall corfu--highlight (substring c)))))
+                                           collect (funcall corfu--hilit (substring c)))))
                (`(,pw ,width ,fcands) (corfu--format-candidates acands))
                ;; Disable the left margin if a margin formatter is active.
                (corfu-left-margin-width (if mf 0 corfu-left-margin-width)))
