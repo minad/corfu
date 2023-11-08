@@ -726,7 +726,7 @@ FRAME is the existing frame."
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
                (lo (min (- corfu-count bar 1) (floor (* corfu-count corfu--scroll) corfu--total)))
                (`(,mf . ,acands) (corfu--affixate
-                                  (cl-loop for i from 0 below corfu-count
+                                  (cl-loop repeat corfu-count
                                            for c in (nthcdr corfu--scroll corfu--candidates)
                                            collect (funcall corfu--hilit (substring c)))))
                (`(,pw ,width ,fcands) (corfu--format-candidates acands))
