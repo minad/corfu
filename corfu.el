@@ -447,7 +447,7 @@ FRAME is the existing frame."
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
     ;; on Mac. We have to apply the face background before adjusting the frame
-    ;; parameter, otherwise the border is not updated (BUG?).
+    ;; parameter, otherwise the border is not updated.
     (let* ((face (if (facep 'child-frame-border) 'child-frame-border 'internal-border))
            (new (face-attribute 'corfu-border :background nil 'default)))
       (unless (equal (face-attribute face :background frame 'default) new)
@@ -950,8 +950,8 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
              (corfu--popup-support-p))
     (if (<= corfu-auto-delay 0)
         (corfu--auto-complete-deferred)
-      ;; NOTE: Do not use idle timer since this leads to unacceptable slowdowns,
-      ;; in particular if flyspell-mode is enabled.
+      ;; Do not use idle timer since this leads to unpredictable pauses, in
+      ;; particular with `flyspell-mode'.
       (setq corfu--auto-timer
             (run-at-time corfu-auto-delay nil
                          #'corfu--auto-complete-deferred (corfu--auto-tick))))))
