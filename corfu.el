@@ -422,8 +422,8 @@ length override, set to t for manual completion."
 (defun corfu--make-frame (frame x y width height buffer)
   "Show BUFFER in child frame at X/Y with WIDTH/HEIGHT.
 FRAME is the existing frame."
-  (when-let (timer (and (frame-live-p frame)
-                        (frame-parameter frame 'corfu--hide-timer)))
+  (when-let (((frame-live-p frame))
+             (timer (frame-parameter frame 'corfu--hide-timer)))
     (cancel-timer timer)
     (set-frame-parameter frame 'corfu--hide-timer nil))
   (let* ((window-min-height 1)
@@ -516,7 +516,7 @@ FRAME is the existing frame."
 
 (defun corfu--move-to-front (elem list)
   "Move ELEM to front of LIST."
-  (if-let (found (member elem list))
+  (if-let ((found (member elem list)))
       (nconc (list (car found)) (delq (setcar found nil) list))
     list))
 
@@ -607,7 +607,7 @@ FRAME is the existing frame."
                (field (substring str (car bounds) (+ pt (cdr bounds))))
                (completing-file (eq (corfu--metadata-get 'category) 'file))
                (`(,all . ,hl) (corfu--filter-completions str table pred pt corfu--metadata))
-               (base (or (when-let (z (last all)) (prog1 (cdr z) (setcdr z nil))) 0))
+               (base (or (when-let ((z (last all))) (prog1 (cdr z) (setcdr z nil))) 0))
                (corfu--base (substring str 0 base)))
     ;; Filter the ignored file extensions. We cannot use modified predicate for
     ;; this filtering, since this breaks the special casing in the
@@ -742,9 +742,9 @@ FRAME is the existing frame."
 
 (defun corfu--preview-current (beg end)
   "Show current candidate as overlay given BEG and END."
-  (when-let (cand (and corfu-preview-current (>= corfu--index 0)
-                       (/= corfu--index corfu--preselect)
-                       (nth corfu--index corfu--candidates)))
+  (when-let ((cand (and corfu-preview-current (>= corfu--index 0)
+                        (/= corfu--index corfu--preselect)
+                        (nth corfu--index corfu--candidates))))
     (setq beg (+ beg (length corfu--base))
           corfu--preview-ov (make-overlay beg end nil))
     (overlay-put corfu--preview-ov 'priority 1000)
@@ -927,7 +927,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
       (`(,fun ,beg ,end ,table . ,plist)
        (let ((completion-in-region-mode-predicate
               (lambda ()
-                (when-let (newbeg (car-safe (funcall fun)))
+                (when-let ((newbeg (car-safe (funcall fun))))
                   (= newbeg beg))))
              (completion-extra-properties plist))
          (setq completion-in-region--data
@@ -1038,11 +1038,11 @@ A scroll bar is displayed from LO to LO+BAR."
 (cl-defgeneric corfu--affixate (cands)
   "Annotate CANDS with annotation function."
   (setq cands
-        (if-let (aff (or (corfu--metadata-get 'affixation-function)
-                         (plist-get corfu--extra :affixation-function)))
+        (if-let ((aff (or (corfu--metadata-get 'affixation-function)
+                          (plist-get corfu--extra :affixation-function))))
             (funcall aff cands)
-          (if-let (ann (or (corfu--metadata-get 'annotation-function)
-                           (plist-get corfu--extra :annotation-function)))
+          (if-let ((ann (or (corfu--metadata-get 'annotation-function)
+                            (plist-get corfu--extra :annotation-function))))
               (cl-loop for cand in cands collect
                        (let ((suffix (or (funcall ann cand) "")))
                          ;; The default completion UI adds the

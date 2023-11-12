@@ -101,7 +101,7 @@ If called with a prefix ARG, the buffer is persistent."
              (and arg (format "*corfu loc: %s*" cand)))
           (without-restriction
             (goto-char (point-min))
-            (when-let (pos (cdr loc))
+            (when-let ((pos (cdr loc)))
               (if (bufferp (car loc))
                   (goto-char pos)
                 (forward-line (1- pos))))

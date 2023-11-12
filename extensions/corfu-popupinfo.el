@@ -197,7 +197,7 @@ all values are in pixels relative to the origin.  See
               (save-excursion
                 (without-restriction
                   (goto-char (point-min))
-                  (when-let (pos (cdr loc))
+                  (when-let ((pos (cdr loc)))
                     (if (bufferp (car loc))
                         (goto-char pos)
                       (forward-line (1- pos))))
@@ -346,7 +346,7 @@ form (X Y WIDTH HEIGHT DIR)."
            (new-coords (frame-edges corfu--frame 'inner-edges))
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
       (when cand-changed
-        (if-let (content (funcall corfu-popupinfo--function candidate))
+        (if-let ((content (funcall corfu-popupinfo--function candidate)))
             (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*")
               (with-silent-modifications
                 (erase-buffer)
