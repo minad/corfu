@@ -1307,7 +1307,7 @@ symbols or elements of the form (not modes).  Examples:
                                   ('t t)
                                   ('nil 0)
                                   ((pred symbolp) (and (derived-mode-p p) t))
-                                  (`(not . ,m) (and (apply #'derived-mode-p m) 0)))))))
+                                  (`(not . ,m) (and (seq-some #'derived-mode-p m) 0)))))))
     (corfu-mode 1)))
 
 ;; Emacs 28: Do not show Corfu commands with M-X

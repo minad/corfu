@@ -415,7 +415,7 @@ modes.
 
 (defun corfu-insert-shell-filter (&optional _)
   "Insert completion candidate and send when inside comint/eshell."
-  (when (derived-mode-p 'eshell-mode 'comint-mode)
+  (when (or (derived-mode-p 'eshell-mode) (derived-mode-p 'comint-mode))
     (lambda ()
       (interactive)
       (corfu-insert)
