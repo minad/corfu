@@ -476,27 +476,10 @@ FRAME is the existing frame."
       ;; Mark window as dedicated to prevent frame reuse (#60)
       (set-window-dedicated-p win t))
     (redirect-frame-focus frame parent)
-    ;; XXX HACK: Child frame popup behavior improved on Emacs 29.
-    ;; It seems we may not need the Emacs 27/28 hacks anymore.
-    (if (eval-when-compile (< emacs-major-version 29))
-        (let (inhibit-redisplay)
-          (set-frame-size frame width height t)
-          (if (frame-visible-p frame)
-              ;; XXX HACK Avoid flicker when frame is already visible.
-              ;; Redisplay, wait for resize and then move the frame.
-              (unless (equal (frame-position frame) (cons x y))
-                (redisplay 'force)
-                (sleep-for 0.01)
-                (set-frame-position frame x y))
-            ;; XXX HACK: Force redisplay, otherwise the popup sometimes does not
-            ;; display content.
-            (set-frame-position frame x y)
-            (redisplay 'force)))
-      (set-frame-size frame width height t)
-      (unless (equal (frame-position frame) (cons x y))
-        (set-frame-position frame x y))))
-  (make-frame-visible frame)
-  frame)
+    (set-frame-size frame width height t)
+    (unless (equal (frame-position frame) (cons x y))
+      (set-frame-position frame x y)))
+  (make-frame-visible frame))
 
 (defun corfu--hide-frame-deferred (frame)
   "Deferred hiding of child FRAME."
