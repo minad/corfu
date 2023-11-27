@@ -297,14 +297,13 @@ Shell completion uses the flexible Pcomplete mechanism internally, which allows
 you to program the completions per shell command. If you want to know more, look
 into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure Pcomplete for git commands.
 
-I recommend the [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]] package which extends Pcomplete with completion
+You can try the [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]] package which extends Pcomplete with completion
 support and helpful annotation support for more commands. Similar to the Fish
 shell, =pcmpl-args= uses man page parsing and ~--help~ output parsing to dynamically
-generate completions. This package brings Eshell completion to another level!
-Since Emacs 29, Pcomplete offers the =pcomplete-from-help= function which parses
-the ~--help~ output of a command and produces completions. This Emacs 29
-functionality is not completely equivalent. For example it does not display
-annotations in Eshell, but this may get fixed in Emacs 30.
+generate completions. Since Emacs 29, Pcomplete offers the =pcomplete-from-help=
+function which parses the ~--help~ output of a command and produces completions.
+This Emacs 29 functionality is not completely equivalent. For example it does
+not display annotations in Eshell, but this may get fixed in Emacs 30.
 
 Pcomplete has a few bugs on Emacs 28 and older. We can work around the issues
 with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers
@@ -537,7 +536,7 @@ enhance your setup.
   available (works only with =corfu-auto= disabled).
 
 - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced =orderless=
-  completion style, where the filtering expressions are separated by spaces or
+  completion style, where the filter expressions are separated by spaces or
   another character (see ~corfu-separator~).
 
 - [[https://github.com/minad/cape][Cape]]: Provides additional Capf backends and =completion-in-region= commands.
@@ -547,8 +546,8 @@ enhance your setup.
 
 - [[https://github.com/LuigiPiucco/nerd-icons-corfu][nerd-icons-corfu]], [[https://github.com/jdtsmith/kind-icon][kind-icon]]: Icons are supported by Corfu via external
   packages. The nerd-icons-corfu package relies on the Nerd icon font, which is
-  even supported on terminal, while kind-icon uses beautifully styled SVG from
-  monochromatic icon sets.
+  even supported on terminal, while kind-icon uses SVGs from monochromatic icon
+  sets.
 
 - [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]]: Extend the Eshell/Shell Pcomplete mechanism with support for many
   commands. Similar to the Fish shell, pcmpl-args uses man page parsing to
