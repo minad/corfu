@@ -67,6 +67,13 @@ The value should lie between 0 and corfu-count/2."
   "Popup maximum width in characters."
   :type 'natnum)
 
+(defcustom corfu-popup-location 'below
+  "Location of the Corfu popup.
+The value can be either 'above or 'below.  The default value is 'below."
+  :type '(choice (const :tag "Above the point" above)
+                 (const :tag "Below the point" below))
+  :group 'corfu)
+
 (defcustom corfu-cycle nil
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
@@ -972,9 +979,11 @@ A scroll bar is displayed from LO to LO+BAR."
              (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
                             (- (frame-pixel-width) width))))
              (yb (+ (cadr edge) (window-tab-line-height) (or (cdr pos) 0) lh))
-             (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
+             (y (if (eq corfu-popup-location 'above)
                     (- yb height lh border border)
-                  yb))
+                  (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
+                      (- yb height lh border border)
+                    yb)))
              (row 0))
         (with-silent-modifications
           (erase-buffer)
