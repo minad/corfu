@@ -69,7 +69,9 @@ The value should lie between 0 and corfu-count/2."
 
 (defcustom corfu-popup-location 'below
   "Location of the Corfu popup.
-The value can be either 'above or 'below.  The default value is 'below."
+Sets the preferred location of the popup when there is space available:
+- above: Prefer to place the popup above the current line.
+- below: Prefer to place the popup below the current line (default)."
   :type '(choice (const :tag "Above the point" above)
                  (const :tag "Below the point" below))
   :group 'corfu)
