@@ -1016,7 +1016,8 @@ A scroll bar is displayed from LO to LO+BAR."
     ;; bug#55205: completion--replace removes properties!
     (completion--replace beg end (concat str))
     (corfu--goto -1) ;; Reset selection, but continue completion.
-    (when status (corfu--done str status)))) ;; Exit with status
+    (when status (corfu--done str status)) ;; Exit with status
+    str))
 
 (cl-defgeneric corfu--affixate (cands)
   "Annotate CANDS with annotation function."
@@ -1209,22 +1210,19 @@ If a candidate is selected, insert it."
   (interactive)
   (pcase-let ((`(,beg ,end ,table ,pred) completion-in-region--data))
     (if (>= corfu--index 0)
-        ;; Continue completion with selected candidate
-        (progn
-          (corfu--insert nil)
-          ;; Exit with status 'finished if input is a valid match and no further
-          ;; completion is possible. Furthermore treat the completion as
-          ;; finished if we are at the end of a boundary, even if other longer
-          ;; candidates would still match, since the user invoked `corfu-complete'
-          ;; with an explicitly selected candidate!
-          (let ((newstr (buffer-substring-no-properties beg end)))
-            (when (and (test-completion newstr table pred)
-                       (or
-                        (not (consp (completion-try-completion
-                                     newstr table pred (length newstr)
-                                     (completion-metadata newstr table pred))))
-                        (equal (completion-boundaries newstr table pred "") '(0 . 0))))
-              (corfu--done newstr 'finished))))
+        ;; Continue completion with selected candidate.  Exit with status
+        ;; 'finished if input is a valid match and no further completion is
+        ;; possible. Furthermore treat the completion as finished if we are at
+        ;; the end of a boundary, even if other longer candidates would still
+        ;; match, since the user invoked `corfu-complete' with an explicitly
+        ;; selected candidate!
+        (let ((newstr (corfu--insert nil)))
+          (when (and (test-completion newstr table pred)
+                     (or (not (consp (completion-try-completion
+                                      newstr table pred (length newstr)
+                                      (completion-metadata newstr table pred))))
+                         (equal (completion-boundaries newstr table pred "") '(0 . 0))))
+            (corfu--done newstr 'finished)))
       ;; Try to complete the current input string
       (let* ((pt (max 0 (- (point) beg)))
              (str (buffer-substring-no-properties beg end))
