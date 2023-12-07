@@ -477,10 +477,10 @@ FRAME is the existing frame."
     (let ((win (frame-root-window frame)))
       (unless (eq (window-buffer win) buffer)
         (set-window-buffer win buffer))
-      ;; Disallow selection of root window (#63)
+      ;; Disallow selection of root window (gh:minad/corfu#63)
       (set-window-parameter win 'no-delete-other-windows t)
       (set-window-parameter win 'no-other-window t)
-      ;; Mark window as dedicated to prevent frame reuse (#60)
+      ;; Mark window as dedicated to prevent frame reuse (gh:minad/corfu#60)
       (set-window-dedicated-p win t))
     (redirect-frame-focus frame parent)
     (set-frame-size frame width height t)
@@ -603,8 +603,8 @@ FRAME is the existing frame."
     ;; this filtering, since this breaks the special casing in the
     ;; `completion-file-name-table' for `file-exists-p' and `file-directory-p'.
     (when completing-file (setq all (completion-pcm--filename-try-filter all)))
-    (setq all (delete-consecutive-dups (funcall (or (corfu--sort-function) #'identity) all)))
-    (setq all (corfu--move-prefix-candidates-to-front field all))
+    (setq all (delete-consecutive-dups (funcall (or (corfu--sort-function) #'identity) all))
+          all (corfu--move-prefix-candidates-to-front field all))
     (when (and completing-file (not (string-suffix-p "/" field)))
       (setq all (corfu--move-to-front (concat field "/") all)))
     (setq all (corfu--move-to-front field all))
@@ -630,9 +630,9 @@ FRAME is the existing frame."
                (str (buffer-substring-no-properties beg end))
                (input (cons str pt)))
     (unless (equal corfu--input input)
-      ;; Redisplay such that the input becomes immediately visible before the
-      ;; expensive candidate recomputation is performed (Issue #48). See also
-      ;; corresponding vertico#89.
+      ;; Redisplay such that the input is immediately shown before the expensive
+      ;; candidate recomputation (gh:minad/corfu#48). See also corresponding
+      ;; issue gh:minad/vertico#89.
       (when interruptible (redisplay))
       ;; Bind non-essential=t to prevent Tramp from opening new connections,
       ;; without the user explicitly requesting it via M-TAB.
@@ -972,7 +972,7 @@ A scroll bar is displayed from LO to LO+BAR."
              (pos (posn-x-y pos))
              (width (+ (* width cw) ml mr))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
-             ;; parent frame (#261).
+             ;; parent frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
              (border (alist-get 'child-frame-border-width corfu--frame-parameters))
@@ -1020,8 +1020,8 @@ A scroll bar is displayed from LO to LO+BAR."
                (str (concat corfu--base (substring-no-properties
                                          (nth corfu--index corfu--candidates)))))
     (corfu--replace beg end str)
-    (corfu--goto -1) ;; Reset selection, but continue completion.
-    (when status (corfu--done str status)) ;; Exit with status
+    (corfu--goto -1) ;; Reset selection, completion may continue.
+    (when status (corfu--done str status))
     str))
 
 (cl-defgeneric corfu--affixate (cands)
