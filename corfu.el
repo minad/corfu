@@ -578,18 +578,14 @@ FRAME is the existing frame."
                                  completion-ignore-case))))))
 
 (defun corfu--delete-dups (list)
-  "Delete `equal-including-properties' consecutive duplicates from LIST."
-  (let ((link list))
-    (while (cdr link)
-      ;; bug#6581: `equal-including-properties' uses `eq' to compare properties
-      ;; until 29.1.  Approximate by comparing `text-properties-at' position 0.
-      (pcase-let ((`(,a ,b . ,tail) link))
-        (if (if (eval-when-compile (< emacs-major-version 29))
-                (and (equal a b) (not (equal a ""))
-                     (equal (text-properties-at 0 a) (text-properties-at 0 b)))
-              (equal-including-properties a b))
-            (setcdr link tail)
-          (pop link)))))
+  "Delete equally looking consecutive duplicates from LIST."
+  (let ((tail list))
+    (while (cdr tail)
+      (if (and (equal (car tail) (cadr tail))
+               (equal (cadr (corfu--affixate (list (car tail))))
+                      (cadr (corfu--affixate (list (cadr tail))))))
+          (setcdr tail (cddr tail))
+        (pop tail))))
   list)
 
 (defun corfu--sort-function ()
@@ -619,14 +615,13 @@ FRAME is the existing frame."
     ;; `completion-file-name-table' for `file-exists-p' and `file-directory-p'.
     (when completing-file (setq all (completion-pcm--filename-try-filter all)))
     ;; Sort using the `display-sort-function' or the Corfu sort functions, and
-    ;; delete duplicates with respect to `equal-including-properties'.  This is
-    ;; a deviation from the Vertico completion UI with more aggressive
-    ;; deduplication, where candidates are compared with `equal'.  Corfu
-    ;; preserves candidates which differ in their text properties.  Corfu tries
-    ;; to preserve text properties as much as possible, when calling the
-    ;; `:exit-function' to help Capfs with candidate disambiguation.  This
-    ;; matters in particular for Lsp backends, which produce duplicates for
-    ;; overloaded methods.
+    ;; delete duplicates, which look equal.  This is a deviation from the
+    ;; Vertico completion UI with more aggressive deduplication, where
+    ;; candidates are compared with `equal'.  Corfu preserves candidates which
+    ;; differ in their annotation.  Corfu tries to preserve text properties as
+    ;; much as possible, when calling the `:exit-function' to help Capfs with
+    ;; candidate disambiguation.  This matters in particular for Lsp backends,
+    ;; which produce duplicates for overloaded methods.
     (setq all (corfu--delete-dups (funcall (or (corfu--sort-function) #'identity) all))
           all (corfu--move-prefix-candidates-to-front field all))
     (when (and completing-file (not (string-suffix-p "/" field)))
