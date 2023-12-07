@@ -359,11 +359,12 @@ the completion backend is costly."
     map)
   "Ignore all mouse clicks.")
 
-;; bug#55205: completion--replace removed properties as an unwanted side-effect.
-(defalias 'corfu--replace
-  (if (eval-when-compile (< emacs-major-version 29))
-      (lambda (beg end str) (completion--replace beg end (concat str)))
-    #'completion--replace))
+(defun corfu--replace (beg end str)
+  "Replace range between BEG and END with STR."
+  (unless (equal str (buffer-substring-no-properties beg end))
+    ;; bug#55205: completion--replace removed properties as an unwanted
+    ;; side-effect.  We also don't want to leave text properties.
+    (completion--replace beg end (substring-no-properties str))))
 
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
@@ -857,8 +858,7 @@ the last command must be listed in `corfu-continue-commands'."
        (unless (markerp beg) (setq beg (copy-marker beg)))
        (setq end (copy-marker end t)
              completion-in-region--data (list beg end table pred))
-       (unless (equal str newstr)
-         (corfu--replace beg end newstr))
+       (corfu--replace beg end newstr)
        (goto-char (+ beg newpt))
        (let* ((state (corfu--recompute newstr newpt table pred))
               (base (alist-get 'corfu--base state))
@@ -1234,8 +1234,7 @@ If a candidate is selected, insert it."
            (goto-char end)
            (corfu--done str 'finished))
           (`(,newstr . ,newpt)
-           (unless (equal str newstr)
-             (corfu--replace beg end newstr))
+           (corfu--replace beg end newstr)
            (goto-char (+ beg newpt))
            ;; Exit with status 'finished if input is a valid match
            ;; and no further completion is possible.
