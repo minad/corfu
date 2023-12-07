@@ -828,19 +828,21 @@ the last command must be listed in `corfu-continue-commands'."
   "Go to candidate with INDEX."
   (setq corfu--index (max corfu--preselect (min index (1- corfu--total)))))
 
-(defun corfu--call-exit (str status)
-  "Call the `:exit-function' with STR and STATUS."
+(defun corfu--call-exit (str status cands)
+  "Call the `:exit-function' with STR and STATUS.
+Lookup STR in CANDS to restore text properties."
   (when-let ((exit (plist-get completion-extra-properties :exit-function)))
-    (funcall exit str status)))
+    (funcall exit (or (car (member str cands)) str) status)))
 
-(defun corfu--done (str status)
-  "Exit completion and call the `:exit-function' with STR and STATUS."
+(defun corfu--done (str status cands)
+  "Exit completion and call the exit function with STR and STATUS.
+Lookup STR in CANDS to restore text properties."
   (let ((completion-extra-properties corfu--extra))
     ;; For successful completions, amalgamate undo operations,
     ;; such that completion can be undone in a single step.
     (undo-amalgamate-change-group corfu--change-group)
     (corfu-quit)
-    (corfu--call-exit str status)))
+    (corfu--call-exit str status cands)))
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
@@ -889,7 +891,9 @@ the last command must be listed in `corfu-continue-commands'."
       ('nil (corfu--message "No match") nil)
       ('t (goto-char end)
           (corfu--message "Sole match")
-          (corfu--call-exit str 'finished)
+          (corfu--call-exit str 'finished
+                            (alist-get 'corfu--candidates
+                                       (corfu--recompute str pt table pred)))
           t)
       (`(,newstr . ,newpt)
        (unless (markerp beg) (setq beg (copy-marker beg)))
@@ -908,7 +912,7 @@ the last command must be listed in `corfu-continue-commands'."
                          newstr table pred newpt
                          (completion-metadata newstr table pred)))
                  (corfu--setup)
-               (corfu--call-exit newstr 'finished))
+               (corfu--call-exit newstr 'finished candidates))
            (if (or (= total 0) (not threshold)
                    (and (not (eq threshold t)) (< threshold total)))
                (corfu--setup)
@@ -1050,11 +1054,10 @@ A scroll bar is displayed from LO to LO+BAR."
   ;; completion has the same problem when selecting in the
   ;; *Completions* buffer. See bug#48356.
   (pcase-let* ((`(,beg ,end . ,_) completion-in-region--data)
-               (str (concat corfu--base (substring-no-properties
-                                         (nth corfu--index corfu--candidates)))))
+               (str (concat corfu--base (nth corfu--index corfu--candidates))))
     (corfu--replace beg end str)
     (corfu--goto -1) ;; Reset selection, completion may continue.
-    (when status (corfu--done str status))
+    (when status (corfu--done str status nil))
     str))
 
 (cl-defgeneric corfu--affixate (cands)
@@ -1119,7 +1122,7 @@ AUTO is non-nil when initializing auto completion."
       ;; Quit directly when initializing auto completion.
       (if (or auto (eq corfu-on-exact-match 'quit))
           (corfu-quit)
-        (corfu--done str 'finished)))
+        (corfu--done (car corfu--candidates) 'finished nil)))
      ;; 2) There exist candidates => Show candidates popup.
      (corfu--candidates
       (let ((pos (posn-at-point (+ beg (length corfu--base)))))
@@ -1260,7 +1263,7 @@ If a candidate is selected, insert it."
                                       newstr table pred (length newstr)
                                       (completion-metadata newstr table pred))))
                          (equal (completion-boundaries newstr table pred "") '(0 . 0))))
-            (corfu--done newstr 'finished)))
+            (corfu--done newstr 'finished nil)))
       ;; Try to complete the current input string
       (let* ((pt (max 0 (- (point) beg)))
              (str (buffer-substring-no-properties beg end))
@@ -1268,7 +1271,7 @@ If a candidate is selected, insert it."
         (pcase (completion-try-completion str table pred pt metadata)
           ('t
            (goto-char end)
-           (corfu--done str 'finished))
+           (corfu--done str 'finished corfu--candidates))
           (`(,newstr . ,newpt)
            (corfu--replace beg end newstr)
            (goto-char (+ beg newpt))
@@ -1278,7 +1281,7 @@ If a candidate is selected, insert it."
                       (not (consp (completion-try-completion
                                    newstr table pred newpt
                                    (completion-metadata (substring newstr 0 newpt) table pred)))))
-             (corfu--done newstr 'finished))))))))
+             (corfu--done newstr 'finished corfu--candidates))))))))
 
 (defun corfu-insert ()
   "Insert current candidate.
