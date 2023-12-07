@@ -1003,16 +1003,15 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (cl-defgeneric corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
+  ;; XXX There is a small bug here, depending on interpretation.
+  ;; When completing "~/emacs/master/li|/calc" where "|" is the
+  ;; cursor, then the candidate only includes the prefix
+  ;; "~/emacs/master/lisp/", but not the suffix "/calc". Default
+  ;; completion has the same problem when selecting in the
+  ;; *Completions* buffer. See bug#48356.
   (pcase-let* ((`(,beg ,end . ,_) completion-in-region--data)
-               (str (buffer-substring-no-properties beg end)))
-    ;; XXX There is a small bug here, depending on interpretation.
-    ;; When completing "~/emacs/master/li|/calc" where "|" is the
-    ;; cursor, then the candidate only includes the prefix
-    ;; "~/emacs/master/lisp/", but not the suffix "/calc". Default
-    ;; completion has the same problem when selecting in the
-    ;; *Completions* buffer. See bug#48356.
-    (setq str (concat corfu--base (substring-no-properties
-                                   (nth corfu--index corfu--candidates))))
+               (str (concat corfu--base (substring-no-properties
+                                         (nth corfu--index corfu--candidates)))))
     ;; bug#55205: completion--replace removes properties!
     (completion--replace beg end (concat str))
     (corfu--goto -1) ;; Reset selection, but continue completion.
