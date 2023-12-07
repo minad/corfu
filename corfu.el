@@ -740,47 +740,47 @@ FRAME is the existing frame."
     (overlay-put corfu--preview-ov 'window (selected-window))
     (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display) cand)))
 
-(defun corfu--continue-p ()
-  "Check if completion should be continued after a command.
-Corfu bails out if the currently selected buffer changed
-unexpectedly, if point moved to an unexpected position, if the
-input doesn't satisfy the `completion-in-region-mode--predicate'
-or if the last invoked command is not listed in
-`corfu-continue-commands'."
-  (pcase-let ((pt (point))
-              (buf (current-buffer))
+(defun corfu--range-valid-p ()
+  "Check the completion range, return non-nil if valid."
+  (pcase-let ((buf (current-buffer))
+              (pt (point))
               (`(,beg ,end . ,_) completion-in-region--data))
     (and beg end
          (eq buf (marker-buffer beg))
          (eq buf (window-buffer))
-         ;; Check ranges
          (<= beg pt end)
          (save-excursion
            (goto-char beg)
-           (<= (pos-bol) pt (pos-eol)))
-         (or
-          ;; We keep Corfu alive if a `overriding-terminal-local-map' is
-          ;; installed, e.g., the `universal-argument-map'. It would be good to
-          ;; think about a better criterion instead. Unfortunately relying on
-          ;; `this-command' alone is insufficient, since the value of
-          ;; `this-command' gets clobbered in the case of transient keymaps.
-          overriding-terminal-local-map
-          ;; Check if it is an explicitly listed continue command
-          (corfu--match-symbol-p corfu-continue-commands this-command)
-          (and (or (not corfu--input) (< beg end)) ;; Check for empty input
-               (or (not corfu-quit-at-boundary) ;; Check separator or predicate
-                   (and (eq corfu-quit-at-boundary 'separator)
-                        (or (eq this-command #'corfu-insert-separator)
-                            ;; with separator, any further chars allowed
-                            (seq-contains-p (car corfu--input) corfu-separator)))
-                   (funcall completion-in-region-mode--predicate)))))))
+           (<= (pos-bol) pt (pos-eol))))))
+
+(defun corfu--continue-p ()
+  "Check if completion should continue after a command.
+Corfu bails out if the current buffer changed unexpectedly or if
+point moved out of range, see `corfu--range-valid-p'.  Also the
+input must satisfy the `completion-in-region-mode--predicate' and
+the last command must be listed in `corfu-continue-commands'."
+  (and (corfu--range-valid-p)
+       ;; We keep Corfu alive if a `overriding-terminal-local-map' is
+       ;; installed, e.g., the `universal-argument-map'. It would be good to
+       ;; think about a better criterion instead. Unfortunately relying on
+       ;; `this-command' alone is insufficient, since the value of
+       ;; `this-command' gets clobbered in the case of transient keymaps.
+       (or overriding-terminal-local-map
+           ;; Check if it is an explicitly listed continue command
+           (corfu--match-symbol-p corfu-continue-commands this-command)
+           (pcase-let ((`(,beg ,end . ,_) completion-in-region--data))
+             (and (or (not corfu--input) (< beg end)) ;; Check for empty input
+                  (or (not corfu-quit-at-boundary) ;; Check separator or predicate
+                      (and (eq corfu-quit-at-boundary 'separator)
+                           (or (eq this-command #'corfu-insert-separator)
+                               ;; with separator, any further chars allowed
+                               (seq-contains-p (car corfu--input) corfu-separator)))
+                      (funcall completion-in-region-mode--predicate)))))))
 
 (defun corfu--window-change (_)
   "Window and buffer change hook which quits Corfu."
-  (let ((buf (current-buffer))
-        (beg (car completion-in-region--data)))
-    (unless (and beg (eq buf (marker-buffer beg)) (eq buf (window-buffer)))
-      (corfu-quit))))
+  (unless (corfu--range-valid-p)
+    (corfu-quit)))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
