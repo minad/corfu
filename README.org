@@ -224,18 +224,21 @@ source code for further details.
 ** Completing in the minibuffer
 
 Corfu can be used for completion in the minibuffer, since it relies on child
-frames to display the candidates. By default, ~global-corfu-mode~ does not
-activate ~corfu-mode~ in the minibuffer, to avoid interference with specialised
-minibuffer completion UIs like Vertico or Mct. However you may still want to
-enable Corfu completion for commands like ~M-:~ (~eval-expression~) or ~M-!~
-(~shell-command~), which read from the minibuffer. Activate ~corfu-mode~ only if
-~completion-at-point~ is bound in the minibuffer-local keymap to achieve this
-effect.
+frames to display the candidates. The Corfu popup can be displayed even if it
+doesn't fully fit inside the minibuffer. There is a caveat however if you use
+EXWM, since then an EXWM buffer will overlap the child frame.
+
+By default, ~global-corfu-mode~ does not activate ~corfu-mode~ in the minibuffer, to
+avoid interference with specialised minibuffer completion UIs like Vertico or
+Mct. However you may still want to enable Corfu completion for commands like ~M-:~
+(~eval-expression~) or ~M-!~ (~shell-command~), which read from the minibuffer. In
+order to detect such minibuffers we can check if the variable
+~completion-at-point-functions~ is set locally.
 
 #+begin_src emacs-lisp
 (defun corfu-enable-in-minibuffer ()
-  "Enable Corfu in the minibuffer if `completion-at-point' is bound."
-  (when (where-is-internal #'completion-at-point (list (current-local-map)))
+  "Enable Corfu in the minibuffer."
+  (when (local-variable-p 'completion-at-point-functions)
     ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
     (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
                 corfu-popupinfo-delay nil)
