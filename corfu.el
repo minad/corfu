@@ -795,14 +795,19 @@ the last command must be listed in `corfu-continue-commands'."
   "Go to candidate with INDEX."
   (setq corfu--index (max corfu--preselect (min index (1- corfu--total)))))
 
+(defun corfu--call-exit (str status)
+  "Call the `:exit-function' with STR and STATUS."
+  (when-let ((exit (plist-get completion-extra-properties :exit-function)))
+    (funcall exit str status)))
+
 (defun corfu--done (str status)
-  "Call the `:exit-function' with STR and STATUS and exit completion."
-  (let ((exit (plist-get corfu--extra :exit-function)))
+  "Exit completion and call the `:exit-function' with STR and STATUS."
+  (let ((completion-extra-properties corfu--extra))
     ;; For successful completions, amalgamate undo operations,
     ;; such that completion can be undone in a single step.
     (undo-amalgamate-change-group corfu--change-group)
     (corfu-quit)
-    (when exit (funcall exit str status))))
+    (corfu--call-exit str status)))
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
@@ -844,7 +849,6 @@ the last command must be listed in `corfu-continue-commands'."
   (let* ((pt (max 0 (- (point) beg)))
          (str (buffer-substring-no-properties beg end))
          (metadata (completion-metadata (substring str 0 pt) table pred))
-         (exit (plist-get completion-extra-properties :exit-function))
          (threshold (completion--cycle-threshold metadata))
          (completion-in-region-mode-predicate
           (or completion-in-region-mode-predicate #'always)))
@@ -852,7 +856,7 @@ the last command must be listed in `corfu-continue-commands'."
       ('nil (corfu--message "No match") nil)
       ('t (goto-char end)
           (corfu--message "Sole match")
-          (when exit (funcall exit str 'finished))
+          (corfu--call-exit str 'finished)
           t)
       (`(,newstr . ,newpt)
        (unless (markerp beg) (setq beg (copy-marker beg)))
@@ -867,12 +871,11 @@ the last command must be listed in `corfu-continue-commands'."
          (if (= total 1)
              ;; If completion is finished and cannot be further completed,
              ;; return 'finished. Otherwise setup the Corfu popup.
-             (cond
-              ((consp (completion-try-completion
-                       newstr table pred newpt
-                       (completion-metadata newstr table pred)))
-               (corfu--setup))
-              (exit (funcall exit newstr 'finished)))
+             (if (consp (completion-try-completion
+                         newstr table pred newpt
+                         (completion-metadata newstr table pred)))
+                 (corfu--setup)
+               (corfu--call-exit newstr 'finished))
            (if (or (= total 0) (not threshold)
                    (and (not (eq threshold t)) (< threshold total)))
                (corfu--setup)
