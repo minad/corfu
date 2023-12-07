@@ -577,6 +577,30 @@ FRAME is the existing frame."
           (eq t (compare-strings word 0 len it 0 len
                                  completion-ignore-case))))))
 
+(defun corfu--delete-dups (list)
+  "Delete `equal-including-properties' consecutive duplicates from LIST."
+  (let ((beg list))
+    (while (cdr beg)
+      (let ((end (cdr beg)))
+        (while (equal (car beg) (car end)) (pop end))
+        ;; The deduplication is quadratic in the number of duplicates.  We can
+        ;; avoid the quadratic complexity with a hash table which takes
+        ;; properties into account (available since Emacs 28).
+        (while (not (eq beg end))
+          (let ((dup beg))
+            (while (not (eq (cdr dup) end))
+              ;; bug#6581: `equal-including-properties' uses `eq' to compare
+              ;; properties until 29.1.  Approximate by comparing
+              ;; `text-properties-at' position 0.
+              (if (if (eval-when-compile (< emacs-major-version 29))
+                      (equal (text-properties-at 0 (car beg))
+                             (text-properties-at 0 (cadr dup)))
+                    (equal-including-properties (car beg) (cadr dup)))
+                  (setcdr dup (cddr dup))
+                (pop dup))))
+          (pop beg)))))
+  list)
+
 (defun corfu--sort-function ()
   "Return the sorting function."
   (or corfu-sort-override-function
@@ -603,7 +627,16 @@ FRAME is the existing frame."
     ;; this filtering, since this breaks the special casing in the
     ;; `completion-file-name-table' for `file-exists-p' and `file-directory-p'.
     (when completing-file (setq all (completion-pcm--filename-try-filter all)))
-    (setq all (delete-consecutive-dups (funcall (or (corfu--sort-function) #'identity) all))
+    ;; Sort using the `display-sort-function' or the Corfu sort functions, and
+    ;; delete duplicates with respect to `equal-including-properties'.  This is
+    ;; a deviation from the Vertico completion UI with more aggressive
+    ;; deduplication, where candidates are compared with `equal'.  Corfu
+    ;; preserves candidates which differ in their text properties.  Corfu tries
+    ;; to preserve text properties as much as possible, when calling the
+    ;; `:exit-function' to help Capfs with candidate disambiguation.  This
+    ;; matters in particular for Lsp backends, which produce duplicates for
+    ;; overloaded methods.
+    (setq all (corfu--delete-dups (funcall (or (corfu--sort-function) #'identity) all))
           all (corfu--move-prefix-candidates-to-front field all))
     (when (and completing-file (not (string-suffix-p "/" field)))
       (setq all (corfu--move-to-front (concat field "/") all)))
