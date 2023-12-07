@@ -579,17 +579,26 @@ FRAME is the existing frame."
 
 (defun corfu--delete-dups (list)
   "Delete `equal-including-properties' consecutive duplicates from LIST."
-  (let ((link list))
-    (while (cdr link)
-      ;; bug#6581: `equal-including-properties' uses `eq' to compare properties
-      ;; until 29.1.  Approximate by comparing `text-properties-at' position 0.
-      (pcase-let ((`(,a ,b . ,tail) link))
-        (if (if (eval-when-compile (< emacs-major-version 29))
-                (and (equal a b) (not (equal a ""))
-                     (equal (text-properties-at 0 a) (text-properties-at 0 b)))
-              (equal-including-properties a b))
-            (setcdr link tail)
-          (pop link)))))
+  (let ((beg list))
+    (while (cdr beg)
+      (let ((end (cdr beg)))
+        (while (equal (car beg) (car end)) (pop end))
+        ;; The deduplication is quadratic in the number of duplicates.  We can
+        ;; avoid the quadratic complexity with a hash table which takes
+        ;; properties into account (available since Emacs 28).
+        (while (not (eq beg end))
+          (let ((dup beg))
+            (while (not (eq (cdr dup) end))
+              ;; bug#6581: `equal-including-properties' uses `eq' to compare
+              ;; properties until 29.1.  Approximate by comparing
+              ;; `text-properties-at' position 0.
+              (if (if (eval-when-compile (< emacs-major-version 29))
+                      (equal (text-properties-at 0 (car beg))
+                             (text-properties-at 0 (cadr dup)))
+                    (equal-including-properties (car beg) (cadr dup)))
+                  (setcdr dup (cddr dup))
+                (pop dup))))
+          (pop beg)))))
   list)
 
 (defun corfu--sort-function ()
