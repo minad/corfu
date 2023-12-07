@@ -566,13 +566,13 @@ FRAME is the existing frame."
        (setcdr ,tail2 nil)
        (setq ,list (cdr ,head1)))))
 
-(defun corfu--move-prefix-candidates-to-front (field candidates)
-  "Move CANDIDATES which match prefix of FIELD to the beginning."
+(defun corfu--move-prefix-candidates-to-front (field cands)
+  "Move CANDS which match prefix of FIELD to the beginning."
   (let* ((word (substring field 0
                           (seq-position field corfu-separator)))
          (len (length word)))
     (corfu--partition!
-     candidates
+     cands
      (and (>= (length it) len)
           (eq t (compare-strings word 0 len it 0 len
                                  completion-ignore-case))))))
