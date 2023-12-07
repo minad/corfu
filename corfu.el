@@ -359,6 +359,12 @@ the completion backend is costly."
     map)
   "Ignore all mouse clicks.")
 
+;; bug#55205: completion--replace removed properties as an unwanted side-effect.
+(defalias 'corfu--replace
+  (if (eval-when-compile (< emacs-major-version 29))
+      (lambda (beg end str) (completion--replace beg end (concat str)))
+    #'completion--replace))
+
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
 The wrapper determines if the Capf is applicable at the current
@@ -856,8 +862,7 @@ or if the last invoked command is not listed in
          (setq end (copy-marker end t)
                completion-in-region--data (list beg end table pred))
          (unless (equal str newstr)
-           ;; bug#55205: completion--replace removes properties!
-           (completion--replace beg end (concat newstr)))
+           (corfu--replace beg end newstr))
          (goto-char (+ beg newpt))
          (if (= total 1)
              ;; If completion is finished and cannot be further completed,
@@ -890,8 +895,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
          (map (make-sparse-keymap))
          (replace (lambda ()
                     (interactive)
-                    ;; bug#55205: completion--replace removes properties!
-                    (completion--replace beg end (concat (nth idx cands)))
+                    (corfu--replace beg end (nth idx cands))
                     (corfu--message "Cycling %d/%d..." (1+ idx) total)
                     (setq idx (mod (1+ idx) total))
                     (set-transient-map map))))
@@ -1012,8 +1016,7 @@ A scroll bar is displayed from LO to LO+BAR."
   (pcase-let* ((`(,beg ,end . ,_) completion-in-region--data)
                (str (concat corfu--base (substring-no-properties
                                          (nth corfu--index corfu--candidates)))))
-    ;; bug#55205: completion--replace removes properties!
-    (completion--replace beg end (concat str))
+    (corfu--replace beg end str)
     (corfu--goto -1) ;; Reset selection, but continue completion.
     (when status (corfu--done str status)) ;; Exit with status
     str))
@@ -1232,8 +1235,7 @@ If a candidate is selected, insert it."
            (corfu--done str 'finished))
           (`(,newstr . ,newpt)
            (unless (equal str newstr)
-             ;; bug#55205: completion--replace removes properties!
-             (completion--replace beg end (concat newstr)))
+             (corfu--replace beg end newstr))
            (goto-char (+ beg newpt))
            ;; Exit with status 'finished if input is a valid match
            ;; and no further completion is possible.
