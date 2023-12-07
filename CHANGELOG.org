@@ -2,6 +2,16 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- Deduplicate candidates with respect to ~equal-including-properties~, such that
+  backends can provide equal candidate strings, which only differ in their text
+  properties and annotations.
+- Ensure that the string passed to the ~:exit-function~ retains the candidate
+  properties, when possible. The properties are guaranteed to exist when a
+  candidate is selected explicitly, but may be missing when candidates are
+  completed in a stepwise manner.
+
 * Version 1.0 (2023-12-01)
 
 - Bug fixes.
