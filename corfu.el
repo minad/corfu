@@ -828,7 +828,7 @@ the last command must be listed in `corfu-continue-commands'."
   "Go to candidate with INDEX."
   (setq corfu--index (max corfu--preselect (min index (1- corfu--total)))))
 
-(defun corfu--call-exit (str status cands)
+(defun corfu--exit-function (str status cands)
   "Call the `:exit-function' with STR and STATUS.
 Lookup STR in CANDS to restore text properties."
   (when-let ((exit (plist-get completion-extra-properties :exit-function)))
@@ -842,7 +842,7 @@ Lookup STR in CANDS to restore text properties."
     ;; such that completion can be undone in a single step.
     (undo-amalgamate-change-group corfu--change-group)
     (corfu-quit)
-    (corfu--call-exit str status cands)))
+    (corfu--exit-function str status cands)))
 
 (defun corfu--setup ()
   "Setup Corfu completion state."
@@ -891,9 +891,9 @@ Lookup STR in CANDS to restore text properties."
       ('nil (corfu--message "No match") nil)
       ('t (goto-char end)
           (corfu--message "Sole match")
-          (corfu--call-exit str 'finished
-                            (alist-get 'corfu--candidates
-                                       (corfu--recompute str pt table pred)))
+          (corfu--exit-function
+           str 'finished
+           (alist-get 'corfu--candidates (corfu--recompute str pt table pred)))
           t)
       (`(,newstr . ,newpt)
        (unless (markerp beg) (setq beg (copy-marker beg)))
@@ -912,7 +912,7 @@ Lookup STR in CANDS to restore text properties."
                          newstr table pred newpt
                          (completion-metadata newstr table pred)))
                  (corfu--setup)
-               (corfu--call-exit newstr 'finished candidates))
+               (corfu--exit-function newstr 'finished candidates))
            (if (or (= total 0) (not threshold)
                    (and (not (eq threshold t)) (< threshold total)))
                (corfu--setup)
