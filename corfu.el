@@ -238,7 +238,7 @@ the completion backend is costly."
   ;; XXX C-a is bound because of Eshell.
   ;; Ideally Eshell would remap move-beginning-of-line.
   "C-a" #'corfu-prompt-beginning
-  ;; XXX [tab] is bound because of org-mode
+  ;; XXX [tab] is bound because of org-mode and orgtbl-mode.
   ;; The binding should be removed from org-mode-map.
   "<tab>" #'corfu-complete
   "M-n" #'corfu-next
