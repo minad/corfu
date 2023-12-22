@@ -79,7 +79,8 @@ The value should lie between 0 and corfu-count/2."
   ;; nil is undefined command
   '(nil ignore universal-argument universal-argument-more digit-argument
     "\\`corfu-" "\\`scroll-other-window")
-  "Continue Corfu completion after executing these commands."
+  "Continue Corfu completion after executing these commands.
+The list can container either command symbols or regular expressions."
   :type '(repeat (choice regexp symbol)))
 
 (defcustom corfu-preview-current 'insert
@@ -144,14 +145,18 @@ return a string, possibly an icon."
   :type 'hook)
 
 (defcustom corfu-sort-function #'corfu-sort-length-alpha
-  "Default sorting function, used if no `display-sort-function' is specified."
+  "Default sorting function.
+This function is used if the completion table does not specify a
+`display-sort-function'."
   :type `(choice
           (const :tag "No sorting" nil)
           (const :tag "By length and alpha" ,#'corfu-sort-length-alpha)
           (function :tag "Custom function")))
 
 (defcustom corfu-sort-override-function nil
-  "Override sort function which overrides the `display-sort-function'."
+  "Override sort function which overrides the `display-sort-function'.
+This function is used even if a completion table specifies its
+own sort function."
   :type '(choice (const nil) function))
 
 (defcustom corfu-auto-prefix 3
@@ -172,11 +177,14 @@ the completion backend is costly."
 (defcustom corfu-auto-commands
   '("self-insert-command\\'"
     c-electric-colon c-electric-lt-gt c-electric-slash c-scope-operator)
-  "Commands which initiate auto completion."
+  "Commands which initiate auto completion.
+The list can container either command symbols or regular expressions."
   :type '(repeat (choice regexp symbol)))
 
 (defcustom corfu-auto nil
-  "Enable auto completion."
+  "Enable auto completion.
+See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
+`corfu-auto-commands'."
   :type 'boolean)
 
 (defgroup corfu-faces nil
