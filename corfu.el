@@ -73,7 +73,7 @@ The value should lie between 0 and corfu-count/2."
 
 (defcustom corfu-on-exact-match 'insert
   "Configure how a single exact match should be handled."
-  :type '(choice (const insert) (const quit) (const nil)))
+  :type '(choice (const insert) (const show) (const quit) (const nil)))
 
 (defcustom corfu-continue-commands
   ;; nil is undefined command
@@ -899,9 +899,14 @@ Lookup STR in CANDS to restore text properties."
       ('nil (corfu--message "No match") nil)
       ('t (goto-char end)
           (corfu--message "Sole match")
-          (corfu--exit-function
-           str 'finished
-           (alist-get 'corfu--candidates (corfu--recompute str pt table pred)))
+          (if (not (eq corfu-on-exact-match 'show))
+              (corfu--exit-function
+               str 'finished
+               (alist-get 'corfu--candidates (corfu--recompute str pt table pred)))
+            (unless (markerp beg) (setq beg (copy-marker beg)))
+            (setq end (copy-marker end t)
+                  completion-in-region--data (list beg end table pred))
+            (corfu--setup))
           t)
       (`(,newstr . ,newpt)
        (unless (markerp beg) (setq beg (copy-marker beg)))
@@ -915,10 +920,12 @@ Lookup STR in CANDS to restore text properties."
               (candidates (alist-get 'corfu--candidates state)))
          (if (= total 1)
              ;; If completion is finished and cannot be further completed,
+             ;; and the value of corfu-on-exact-match is not 'show,
              ;; return 'finished. Otherwise setup the Corfu popup.
-             (if (consp (completion-try-completion
-                         newstr table pred newpt
-                         (completion-metadata newstr table pred)))
+             (if (or (eq corfu-on-exact-match 'show)
+                     (consp (completion-try-completion
+                             newstr table pred newpt
+                             (completion-metadata newstr table pred))))
                  (corfu--setup)
                (corfu--exit-function newstr 'finished candidates))
            (if (or (= total 0) (not threshold)
@@ -1124,6 +1131,7 @@ AUTO is non-nil when initializing auto completion."
     (cond
      ;; 1) Single exactly matching candidate and no further completion is possible.
      ((and (not (equal str ""))
+           (not (eq corfu-on-exact-match 'show))
            (equal (car corfu--candidates) str) (not (cdr corfu--candidates))
            (not (consp (completion-try-completion str table pred pt corfu--metadata)))
            (or auto corfu-on-exact-match))
