@@ -11,6 +11,9 @@
   properties, when possible. The properties are guaranteed to exist when a
   candidate is selected explicitly, but may be missing when candidates are
   completed in a stepwise manner.
+- ~corfu-on-exact-match~: Add value ~show~ to the customization option. With this
+  setting the Corfu popup will be shown even if there is only a single matching
+  candidate.
 
 * Version 1.0 (2023-12-01)
 
