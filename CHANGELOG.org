@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 1.1 (2023-12-27)
 
 - Deduplicate candidates with respect to ~equal-including-properties~, such that
   backends can provide equal candidate strings, which only differ in their text
