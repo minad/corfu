@@ -983,9 +983,6 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
-  (when corfu--auto-timer
-    (cancel-timer corfu--auto-timer)
-    (setq corfu--auto-timer nil))
   (when (and (not completion-in-region-mode)
              (not defining-kbd-macro)
              (not buffer-read-only)
@@ -995,9 +992,11 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
         (corfu--auto-complete-deferred)
       ;; Do not use idle timer since this leads to unpredictable pauses, in
       ;; particular with `flyspell-mode'.
-      (setq corfu--auto-timer
-            (run-at-time corfu-auto-delay nil
-                         #'corfu--auto-complete-deferred (corfu--auto-tick))))))
+      (if corfu--auto-timer
+          (timer-set-time corfu--auto-timer corfu-auto-delay)
+        (setq corfu--auto-timer
+              (run-at-time corfu-auto-delay nil
+                           #'corfu--auto-complete-deferred (corfu--auto-tick)))))))
 
 (defun corfu--auto-tick ()
   "Return the current tick/status of the buffer.
