@@ -325,7 +325,8 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
     (min-width . t)
     (min-height . t)
     (border-width . 0)
-    (child-frame-border-width . 1)
+    (outer-border-width . 0)
+    (internal-border-width . 1)
     (left-fringe . 0)
     (right-fringe . 0)
     (vertical-scroll-bars . nil)
@@ -467,10 +468,9 @@ FRAME is the existing frame."
     ;; Check before applying the setting. Without the check, the frame flickers
     ;; on Mac. We have to apply the face background before adjusting the frame
     ;; parameter, otherwise the border is not updated.
-    (let* ((face (if (facep 'child-frame-border) 'child-frame-border 'internal-border))
-           (new (face-attribute 'corfu-border :background nil 'default)))
-      (unless (equal (face-attribute face :background frame 'default) new)
-        (set-face-background face new frame)))
+    (let ((new (face-attribute 'corfu-border :background nil 'default)))
+      (unless (equal (face-attribute 'internal-border :background frame 'default) new)
+        (set-face-background 'internal-border new frame)))
     ;; Reset frame parameters if they changed.  For example `tool-bar-mode'
     ;; overrides the parameter `tool-bar-lines' for every frame, including child
     ;; frames.  The child frame API is a pleasure to work with.  It is full of
@@ -480,9 +480,6 @@ FRAME is the existing frame."
                        (lambda (p) (equal (alist-get (car p) params) (cdr p)))
                        `((background-color
                           . ,(face-attribute 'corfu-default :background nil 'default))
-                         ;; Set `internal-border-width' for Emacs 27
-                         (internal-border-width
-                          . ,(alist-get 'child-frame-border-width corfu--frame-parameters))
                          (font . ,(frame-parameter parent 'font))
                          ,@corfu--frame-parameters))))
       (modify-frame-parameters frame reset))
@@ -1027,7 +1024,7 @@ A scroll bar is displayed from LO to LO+BAR."
              ;; parent frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
-             (border (alist-get 'child-frame-border-width corfu--frame-parameters))
+             (border (alist-get 'internal-border-width corfu--frame-parameters))
              (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
                             (- (frame-pixel-width) width))))
              (yb (+ (cadr edge) (window-tab-line-height) (or (cdr pos) 0) lh))

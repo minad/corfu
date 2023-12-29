@@ -288,7 +288,7 @@ form (X Y WIDTH HEIGHT DIR)."
   (pcase-let*
       ((cw (default-font-width))
        (lh (default-line-height))
-       (border (alist-get 'child-frame-border-width corfu--frame-parameters))
+       (border (alist-get 'internal-border-width corfu--frame-parameters))
        (`(,_pfx ,_pfy ,pfw ,pfh)
         (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
        (`(,cfx ,cfy ,cfw ,cfh) (corfu-popupinfo--frame-geometry corfu--frame))
@@ -358,7 +358,7 @@ form (X Y WIDTH HEIGHT DIR)."
           (corfu-popupinfo--hide)
           (setq cand-changed nil coords-changed nil)))
       (when (or cand-changed coords-changed)
-        (pcase-let* ((border (alist-get 'child-frame-border-width corfu--frame-parameters))
+        (pcase-let* ((border (alist-get 'internal-border-width corfu--frame-parameters))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
                       (corfu-popupinfo--area
                        (if cand-changed
