@@ -224,15 +224,14 @@ source code for further details.
 ** Completing in the minibuffer
 
 Corfu can be used for completion in the minibuffer, since it relies on child
-frames to display the candidates. The Corfu popup can be displayed even if it
-doesn't fully fit inside the minibuffer. There is a caveat however if you use
-EXWM, since then an EXWM buffer will overlap the child frame.
+frames to display the candidates. The Corfu popup can be shown even if it
+doesn't fully fit inside the minibuffer.
 
 By default, ~global-corfu-mode~ does not activate ~corfu-mode~ in the minibuffer, to
 avoid interference with specialised minibuffer completion UIs like Vertico or
 Mct. However you may still want to enable Corfu completion for commands like ~M-:~
 (~eval-expression~) or ~M-!~ (~shell-command~), which read from the minibuffer. In
-order to detect such minibuffers we can check if the variable
+order to detect minibuffers with completion we check if the variable
 ~completion-at-point-functions~ is set locally.
 
 #+begin_src emacs-lisp
@@ -246,10 +245,10 @@ order to detect such minibuffers we can check if the variable
 (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
 #+end_src
 
-You can also enable Corfu more generally for every minibuffer, as long as no
-completion UI is active. In the following example we check for Mct and Vertico.
-Furthermore we ensure that Corfu is not enabled if a password is read from the
-minibuffer.
+This is not recommended, but one can also enable Corfu more generally for every
+minibuffer, as long as no completion UI is active. In the following example we
+check for Mct and Vertico. Furthermore we ensure that Corfu is not enabled if a
+password is read from the minibuffer.
 
 #+begin_src emacs-lisp
 (defun corfu-enable-always-in-minibuffer ()
