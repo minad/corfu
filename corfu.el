@@ -262,7 +262,7 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
   "M-h" 'corfu-info-documentation
   "M-SPC" #'corfu-insert-separator)
 
-(defvar corfu--auto-timer nil
+(defvar corfu--auto-timer (timer-create)
   "Auto completion timer.")
 
 (defvar-local corfu--candidates nil
@@ -967,7 +967,6 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 
 (defun corfu--auto-complete-deferred (&optional tick)
   "Initiate auto completion if TICK did not change."
-  (setq corfu--auto-timer nil)
   (when (and (not completion-in-region-mode)
              (or (not tick) (equal tick (corfu--auto-tick))))
     (pcase (while-no-input ;; Interruptible Capf query
@@ -983,8 +982,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
-  (when corfu--auto-timer
-    (cancel-timer corfu--auto-timer))
+  (cancel-timer corfu--auto-timer)
   (if (and (not completion-in-region-mode)
            (not defining-kbd-macro)
            (not buffer-read-only)
@@ -994,8 +992,6 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
           (corfu--auto-complete-deferred)
         ;; Do not use `timer-set-idle-time' since this leads to
         ;; unpredictable pauses, in particular with `flyspell-mode'.
-        (unless corfu--auto-timer
-          (setq corfu--auto-timer (timer-create)))
         (timer-set-time corfu--auto-timer
                         (timer-relative-time nil corfu-auto-delay))
         (timer-set-function corfu--auto-timer #'corfu--auto-complete-deferred
