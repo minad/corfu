@@ -2,6 +2,12 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- Support the EXWM window manager.
+- Optimization: Reduce auto completion timer overhead.
+- Use ~internal-border-width~ instead of ~child-frame-border-width~.
+
 * Version 1.1 (2023-12-27)
 
 - Deduplicate candidates with respect to ~equal-including-properties~, such that
