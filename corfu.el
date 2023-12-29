@@ -996,8 +996,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                         (timer-relative-time nil corfu-auto-delay))
         (timer-set-function corfu--auto-timer #'corfu--auto-complete-deferred
                             (list (corfu--auto-tick)))
-        (unless (memq corfu--auto-timer timer-list)
-          (timer-activate corfu--auto-timer)))))
+        (timer-activate corfu--auto-timer))))
 
 (defun corfu--auto-tick ()
   "Return the current tick/status of the buffer.
