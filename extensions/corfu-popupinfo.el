@@ -111,7 +111,6 @@ documentation from the backend is usually expensive."
            (const vertical)
            (const force-left)
            (const force-right)
-           (const force-horizontal)
            (const force-vertical)))
   :group 'corfu)
 
