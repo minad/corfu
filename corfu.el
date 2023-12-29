@@ -984,20 +984,24 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
   (when corfu--auto-timer
-    (cancel-timer corfu--auto-timer)
-    (setq corfu--auto-timer nil))
-  (when (and (not completion-in-region-mode)
-             (not defining-kbd-macro)
-             (not buffer-read-only)
-             (corfu--match-symbol-p corfu-auto-commands this-command)
-             (corfu--popup-support-p))
-    (if (<= corfu-auto-delay 0)
-        (corfu--auto-complete-deferred)
-      ;; Do not use idle timer since this leads to unpredictable pauses, in
-      ;; particular with `flyspell-mode'.
-      (setq corfu--auto-timer
-            (run-at-time corfu-auto-delay nil
-                         #'corfu--auto-complete-deferred (corfu--auto-tick))))))
+    (cancel-timer corfu--auto-timer))
+  (if (and (not completion-in-region-mode)
+           (not defining-kbd-macro)
+           (not buffer-read-only)
+           (corfu--match-symbol-p corfu-auto-commands this-command)
+           (corfu--popup-support-p))
+      (if (<= corfu-auto-delay 0)
+          (corfu--auto-complete-deferred)
+        ;; Do not use `timer-set-idle-time' since this leads to
+        ;; unpredictable pauses, in particular with `flyspell-mode'.
+        (unless corfu--auto-timer
+          (setq corfu--auto-timer (timer-create)))
+        (timer-set-time corfu--auto-timer
+                        (timer-relative-time nil corfu-auto-delay))
+        (timer-set-function corfu--auto-timer #'corfu--auto-complete-deferred
+                            (list (corfu--auto-tick)))
+        (unless (memq corfu--auto-timer timer-list)
+          (timer-activate corfu--auto-timer)))))
 
 (defun corfu--auto-tick ()
   "Return the current tick/status of the buffer.
