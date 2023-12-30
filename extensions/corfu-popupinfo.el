@@ -133,38 +133,40 @@ documentation from the backend is usually expensive."
     (fringe-indicator-alist (continuation)))
   "Buffer parameters.")
 
-(defvar-local corfu-popupinfo--toggle 'init
-  "Local toggle state.")
-
-(defvar-local corfu-popupinfo--function
-  #'corfu-popupinfo--get-documentation
-  "Function called to obtain documentation string.")
-
 (defvar corfu-popupinfo--frame nil
   "Info popup child frame.")
 
 (defvar corfu-popupinfo--timer nil
   "Corfu info popup auto display timer.")
 
-(defvar-local corfu-popupinfo--candidate nil
+(defvar corfu-popupinfo--toggle 'init
+  "Toggle state.")
+
+(defvar corfu-popupinfo--function
+  #'corfu-popupinfo--get-documentation
+  "Function called to obtain documentation string.")
+
+(defvar corfu-popupinfo--candidate nil
   "Completion candidate for the info popup.")
 
-(defvar-local corfu-popupinfo--coordinates nil
+(defvar corfu-popupinfo--coordinates nil
   "Coordinates of the candidate popup.
 The coordinates list has the form (LEFT TOP RIGHT BOTTOM) where
 all values are in pixels relative to the origin.  See
 `frame-edges' for details.")
 
-(defvar-local corfu-popupinfo--lock-dir nil
+(defvar corfu-popupinfo--lock-dir nil
   "Locked position direction of the info popup.")
 
-(defconst corfu-popupinfo--state-vars
-  '(corfu-popupinfo--candidate
-    corfu-popupinfo--coordinates
-    corfu-popupinfo--lock-dir
-    corfu-popupinfo--toggle
-    corfu-popupinfo--function)
-  "Buffer-local state variables used by corfu-popupinfo.")
+(defconst corfu-popupinfo--initial-state
+  (mapcar
+   (lambda (k) (cons k (symbol-value k)))
+   '(corfu-popupinfo--candidate
+     corfu-popupinfo--coordinates
+     corfu-popupinfo--lock-dir
+     corfu-popupinfo--toggle
+     corfu-popupinfo--function))
+  "Initial state of `corfu-popupinfo-mode'.")
 
 (defun corfu-popupinfo--visible-p (&optional frame)
   "Return non-nil if FRAME is visible."
@@ -505,10 +507,8 @@ not be displayed until this command is called again, even if
 
 (cl-defmethod corfu--teardown :before (&context (corfu-popupinfo-mode (eql t)))
   (corfu-popupinfo--hide)
-  (mapc #'kill-local-variable corfu-popupinfo--state-vars)
-  (setq minor-mode-overriding-map-alist
-        (assq-delete-all #'corfu-popupinfo-mode
-                         minor-mode-overriding-map-alist)))
+  (cl-loop for (k . v) in corfu-popupinfo--initial-state do (set k v))
+  (cl-callf2 assq-delete-all #'corfu-popupinfo-mode minor-mode-overriding-map-alist))
 
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-popupinfo-scroll-down corfu-popupinfo-scroll-up

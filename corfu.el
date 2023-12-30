@@ -265,59 +265,61 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
 (defvar corfu--auto-timer (timer-create)
   "Auto completion timer.")
 
-(defvar-local corfu--candidates nil
+(defvar corfu--candidates nil
   "List of candidates.")
 
-(defvar-local corfu--metadata nil
+(defvar corfu--metadata nil
   "Completion metadata.")
 
-(defvar-local corfu--base ""
+(defvar corfu--base ""
   "Base string, which is concatenated with the candidate.")
 
-(defvar-local corfu--total 0
+(defvar corfu--total 0
   "Length of the candidate list `corfu--candidates'.")
 
-(defvar-local corfu--hilit #'identity
+(defvar corfu--hilit #'identity
   "Lazy candidate highlighting function.")
 
-(defvar-local corfu--index -1
+(defvar corfu--index -1
   "Index of current candidate or negative for prompt selection.")
 
-(defvar-local corfu--preselect -1
+(defvar corfu--preselect -1
   "Index of preselected candidate, negative for prompt selection.")
 
-(defvar-local corfu--scroll 0
+(defvar corfu--scroll 0
   "Scroll position.")
 
-(defvar-local corfu--input nil
+(defvar corfu--input nil
   "Cons of last prompt contents and point.")
 
-(defvar-local corfu--preview-ov nil
+(defvar corfu--preview-ov nil
   "Current candidate overlay.")
 
-(defvar-local corfu--extra nil
+(defvar corfu--extra nil
   "Extra completion properties.")
 
-(defvar-local corfu--change-group nil
+(defvar corfu--change-group nil
   "Undo change group.")
 
 (defvar corfu--frame nil
   "Popup frame.")
 
-(defconst corfu--state-vars
-  '(corfu--base
-    corfu--candidates
-    corfu--hilit
-    corfu--index
-    corfu--preselect
-    corfu--scroll
-    corfu--input
-    corfu--total
-    corfu--preview-ov
-    corfu--extra
-    corfu--change-group
-    corfu--metadata)
-  "Buffer-local state variables used by Corfu.")
+(defconst corfu--initial-state
+  (mapcar
+   (lambda (k) (cons k (symbol-value k)))
+   '(corfu--base
+     corfu--candidates
+     corfu--hilit
+     corfu--index
+     corfu--preselect
+     corfu--scroll
+     corfu--input
+     corfu--total
+     corfu--preview-ov
+     corfu--extra
+     corfu--change-group
+     corfu--metadata))
+  "Initial Corfu state.")
 
 (defvar corfu--frame-parameters
   '((no-accept-focus . t)
@@ -1171,7 +1173,7 @@ AUTO is non-nil when initializing auto completion."
   (remove-hook 'post-command-hook #'corfu--post-command)
   (when corfu--preview-ov (delete-overlay corfu--preview-ov))
   (accept-change-group corfu--change-group)
-  (mapc #'kill-local-variable corfu--state-vars))
+  (cl-loop for (k . v) in corfu--initial-state do (set k v)))
 
 (defun corfu-sort-length-alpha (list)
   "Sort LIST by length and alphabetically."

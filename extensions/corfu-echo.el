@@ -50,10 +50,10 @@ subsequent delay."
                        (choice :tag "Subsequent" number)))
   :group 'corfu)
 
-(defvar-local corfu-echo--timer nil
+(defvar corfu-echo--timer nil
   "Echo area message timer.")
 
-(defvar-local corfu-echo--message nil
+(defvar corfu-echo--message nil
   "Last echo message.")
 
 (defun corfu-echo--cancel (&optional msg)
@@ -63,8 +63,8 @@ subsequent delay."
     (setq corfu-echo--timer nil))
   (corfu-echo--show msg)
   (unless corfu-echo--message
-    (kill-local-variable 'corfu-echo--timer)
-    (kill-local-variable 'corfu-echo--message)))
+    (setq corfu-echo--timer nil
+          corfu-echo--message nil)))
 
 (defun corfu-echo--show (msg)
   "Show MSG in echo area."
