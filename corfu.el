@@ -464,6 +464,11 @@ FRAME is the existing frame."
                    `((parent-frame . ,parent)
                      (minibuffer . ,(minibuffer-window parent))
                      (width . 0) (height . 0) (visibility . nil)
+                     ;; XXX HACK The Emacs Mac Port does not support
+                     ;; `internal-border-width', we also have to set
+                     ;; `child-frame-border-width'.
+                     (child-frame-border-width
+                      . ,(alist-get 'internal-border-width corfu--frame-parameters))
                      ,@corfu--frame-parameters))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
@@ -471,7 +476,10 @@ FRAME is the existing frame."
     ;; parameter, otherwise the border is not updated.
     (let ((new (face-attribute 'corfu-border :background nil 'default)))
       (unless (equal (face-attribute 'internal-border :background frame 'default) new)
-        (set-face-background 'internal-border new frame)))
+        (set-face-background 'internal-border new frame))
+      (unless (or (not (facep 'child-frame-border))
+                  (equal (face-attribute 'child-frame-border :background frame 'default) new))
+        (set-face-background 'child-frame-border new frame)))
     ;; Reset frame parameters if they changed.  For example `tool-bar-mode'
     ;; overrides the parameter `tool-bar-lines' for every frame, including child
     ;; frames.  The child frame API is a pleasure to work with.  It is full of
