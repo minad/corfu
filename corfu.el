@@ -327,6 +327,7 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
     (border-width . 0)
     (outer-border-width . 0)
     (internal-border-width . 1)
+    (child-frame-border-width . 1)
     (left-fringe . 0)
     (right-fringe . 0)
     (vertical-scroll-bars . nil)
@@ -464,11 +465,6 @@ FRAME is the existing frame."
                    `((parent-frame . ,parent)
                      (minibuffer . ,(minibuffer-window parent))
                      (width . 0) (height . 0) (visibility . nil)
-                     ;; XXX HACK The Emacs Mac Port does not support
-                     ;; `internal-border-width', we also have to set
-                     ;; `child-frame-border-width'.
-                     (child-frame-border-width
-                      . ,(alist-get 'internal-border-width corfu--frame-parameters))
                      ,@corfu--frame-parameters))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
@@ -477,6 +473,8 @@ FRAME is the existing frame."
     (let ((new (face-attribute 'corfu-border :background nil 'default)))
       (unless (equal (face-attribute 'internal-border :background frame 'default) new)
         (set-face-background 'internal-border new frame))
+      ;; XXX The Emacs Mac Port does not support `internal-border', we also have
+      ;; to set `child-frame-border'.
       (unless (or (not (facep 'child-frame-border))
                   (equal (face-attribute 'child-frame-border :background frame 'default) new))
         (set-face-background 'child-frame-border new frame)))
