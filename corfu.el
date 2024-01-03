@@ -893,8 +893,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                 ;; Ensure that the tear-down runs in the correct buffer, if still alive.
                 (unless completion-in-region-mode
                   (remove-hook 'completion-in-region-mode-hook sym)
-                  (with-current-buffer (if (buffer-live-p buf) buf (current-buffer))
-                    (corfu--teardown)))))
+                  (corfu--teardown buf))))
     (add-hook 'completion-in-region-mode-hook sym)))
 
 (defun corfu--in-region (&rest args)
@@ -1165,15 +1164,17 @@ AUTO is non-nil when initializing auto completion."
      ;; 4) No candidates & auto completing or initialized => Quit.
      ((or auto corfu--input) (corfu-quit)))))
 
-(cl-defgeneric corfu--teardown ()
-  "Tear-down Corfu."
+(cl-defgeneric corfu--teardown (buffer)
+  "Tear-down Corfu in BUFFER, which might be dead at this point."
   (corfu--popup-hide)
-  (remove-hook 'window-selection-change-functions #'corfu--window-change 'local)
-  (remove-hook 'window-buffer-change-functions #'corfu--window-change 'local)
-  (remove-hook 'pre-command-hook #'corfu--prepare 'local)
-  (remove-hook 'post-command-hook #'corfu--post-command)
   (when corfu--preview-ov (delete-overlay corfu--preview-ov))
-  (accept-change-group corfu--change-group)
+  (remove-hook 'post-command-hook #'corfu--post-command)
+  (when (buffer-live-p buffer)
+    (with-current-buffer buffer
+      (remove-hook 'window-selection-change-functions #'corfu--window-change 'local)
+      (remove-hook 'window-buffer-change-functions #'corfu--window-change 'local)
+      (remove-hook 'pre-command-hook #'corfu--prepare 'local)
+      (accept-change-group corfu--change-group)))
   (cl-loop for (k . v) in corfu--initial-state do (set k v)))
 
 (defun corfu-sort-length-alpha (list)

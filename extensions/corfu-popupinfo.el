@@ -505,7 +505,7 @@ not be displayed until this command is called again, even if
               (corfu-popupinfo--hide))))
       (corfu-popupinfo--hide))))
 
-(cl-defmethod corfu--teardown :before (&context (corfu-popupinfo-mode (eql t)))
+(cl-defmethod corfu--teardown :before (_buf &context (corfu-popupinfo-mode (eql t)))
   (corfu-popupinfo--hide)
   (cl-loop for (k . v) in corfu-popupinfo--initial-state do (set k v))
   (cl-callf2 assq-delete-all #'corfu-popupinfo-mode minor-mode-overriding-map-alist))

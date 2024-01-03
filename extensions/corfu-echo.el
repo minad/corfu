@@ -97,7 +97,7 @@ subsequent delay."
                              (corfu-echo--show (funcall fun cand))))))
     (corfu-echo--cancel)))
 
-(cl-defmethod corfu--teardown :before (&context (corfu-echo-mode (eql t)))
+(cl-defmethod corfu--teardown :before (_buf &context (corfu-echo-mode (eql t)))
   (corfu-echo--cancel))
 
 (cl-defmethod corfu--prepare :before (&context (corfu-echo-mode (eql t)))
