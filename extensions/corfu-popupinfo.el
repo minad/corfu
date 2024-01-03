@@ -179,7 +179,8 @@ all values are in pixels relative to the origin.  See
     (let ((old-buffers (buffer-list)) (buffer nil))
       (unwind-protect
           (when-let
-              ((fun (plist-get corfu--extra :company-location))
+              ((extra (nth 4 completion-in-region--data))
+               (fun (plist-get extra :company-location))
                ;; BUG: company-location may throw errors if location is not found
                (loc (ignore-errors (funcall fun candidate)))
                ((setq buffer
@@ -214,7 +215,8 @@ all values are in pixels relative to the origin.  See
 
 (defun corfu-popupinfo--get-documentation (candidate)
   "Get the documentation for CANDIDATE."
-  (when-let ((fun (plist-get corfu--extra :company-doc-buffer))
+  (when-let ((extra (nth 4 completion-in-region--data))
+             (fun (plist-get extra :company-doc-buffer))
              (res (save-excursion
                     (let ((inhibit-message t)
                           (message-log-max nil)

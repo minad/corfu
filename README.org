@@ -470,7 +470,7 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
 (defun corfu-move-to-minibuffer ()
   (interactive)
   (when completion-in-region--data
-    (let ((completion-extra-properties corfu--extra)
+    (let ((completion-extra-properties (nth 4 completion-in-region--data))
           completion-cycle-threshold completion-cycling)
       (apply #'consult-completion-in-region completion-in-region--data))))
 (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
