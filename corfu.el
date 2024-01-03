@@ -484,14 +484,14 @@ FRAME is the existing frame."
     ;; overrides the parameter `tool-bar-lines' for every frame, including child
     ;; frames.  The child frame API is a pleasure to work with.  It is full of
     ;; lovely surprises.
-    (when-let ((params (frame-parameters frame))
-               (reset (seq-remove
-                       (lambda (p) (equal (alist-get (car p) params) (cdr p)))
-                       `((background-color
-                          . ,(face-attribute 'corfu-default :background nil 'default))
-                         (font . ,(frame-parameter parent 'font))
-                         ,@corfu--frame-parameters))))
-      (modify-frame-parameters frame reset))
+    (let* ((is (frame-parameters frame))
+           (should `((background-color
+                      . ,(face-attribute 'corfu-default :background nil 'default))
+                     (font . ,(frame-parameter parent 'font))
+                     ,@corfu--frame-parameters))
+           (diff (cl-loop for p in should for (k . v) = p
+                          unless (equal (alist-get k is) v) collect p)))
+      (when diff (modify-frame-parameters frame diff)))
     (let ((win (frame-root-window frame)))
       (unless (eq (window-buffer win) buffer)
         (set-window-buffer win buffer))
@@ -502,8 +502,9 @@ FRAME is the existing frame."
       (set-window-dedicated-p win t))
     (redirect-frame-focus frame parent)
     (set-frame-size frame width height t)
-    (unless (equal (frame-position frame) (cons x y))
-      (set-frame-position frame x y)))
+    (pcase-let ((`(,px . ,py) (frame-position frame)))
+      (unless (and (= x px) (= y py))
+        (set-frame-position frame x y))))
   (make-frame-visible frame)
   ;; Unparent child frame if EXWM is used, otherwise EXWM buffers are drawn on
   ;; top of the Corfu child frame.
