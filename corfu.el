@@ -718,10 +718,15 @@ FRAME is the existing frame."
                           (string-match-p x (symbol-name sym))))))
 
 (defun corfu--metadata-get (prop)
-  "Return PROP from completion metadata."
-  ;; Note: Do not use `completion-metadata-get' in order to avoid Marginalia.
-  ;; The Marginalia annotators are too heavy for the Corfu popup!
-  (cdr (assq prop corfu--metadata)))
+  "Get PROP from completion metadata, respect `completion-category-overrides'."
+  ;; Use `alist-get' instead of `completion-metadata-get' in order to avoid
+  ;; Marginalia.  The Marginalia annotators are too heavy for the Corfu popup!
+  (if-let (((not (eq prop 'category)))
+           (cat (alist-get 'category corfu--metadata))
+           (over (completion--category-override cat prop))
+           ((functionp (cdr over))))
+      (cdr over)
+    (alist-get prop corfu--metadata)))
 
 (defun corfu--format-candidates (cands)
   "Format annotated CANDS."
