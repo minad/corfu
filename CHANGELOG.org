@@ -7,6 +7,9 @@
 - Support the EXWM window manager.
 - Optimization: Reduce auto completion timer overhead.
 - Use ~internal-border-width~ instead of ~child-frame-border-width~.
+- Internal refactoring: Do not use buffer-local variables.
+- Internal refactoring: Store ~completion-extra-properties~ as part of
+  ~completion-in-region--data~.
 
 * Version 1.1 (2023-12-27)
 
