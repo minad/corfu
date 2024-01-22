@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 1.2 (2024-01-23)
 
 - Support the EXWM window manager.
 - Optimization: Reduce auto completion timer overhead.
