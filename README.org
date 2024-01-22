@@ -459,10 +459,9 @@ Sometimes it is useful to transfer the Corfu completion session to the
 minibuffer, since the minibuffer offers richer interaction features. In
 particular, [[https://github.com/oantolin/embark][Embark]] is available in the minibuffer, such that you can act on the
 candidates or export/collect the candidates to a separate buffer. We could add
-Corfu support to Embark in the future, such that export/collect is possible
-directly from Corfu. But in my opinion having the ability to transfer the Corfu
-completion to the minibuffer is an even better feature, since further completion
-can be performed there.
+Corfu support to Embark in the future, such that export or collect is possible
+directly from Corfu. Nevertheless, the ability to transfer the Corfu completion
+to the minibuffer is even more powerful, since further completion is possible.
 
 The command ~corfu-move-to-minibuffer~ is defined here in terms of
 ~consult-completion-in-region~, which uses the minibuffer completion UI via
@@ -472,7 +471,7 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
 (defun corfu-move-to-minibuffer ()
   (interactive)
   (pcase completion-in-region--data
-    (`(,beg ,end ,table ,pred . ,extras)
+    (`(,beg ,end ,table ,pred ,extras)
      (let ((completion-extra-properties extras)
            completion-cycle-threshold completion-cycling)
        (consult-completion-in-region beg end table pred)))))
