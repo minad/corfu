@@ -453,8 +453,9 @@ FRAME is the existing frame."
          (after-make-frame-functions)
          (parent (window-frame)))
     (unless (and (frame-live-p frame)
-                 (eq (frame-parent frame)
-                     (and (not (bound-and-true-p exwm--connection)) parent))
+                 (eq parent (if (bound-and-true-p exwm--connection)
+                                (frame-parameter frame 'corfu--exwm-parent)
+                              (frame-parent frame)))
                  ;; If there is more than one window, `frame-root-window' may
                  ;; return nil.  Recreate the frame in this case.
                  (window-live-p (frame-root-window frame)))
@@ -504,7 +505,9 @@ FRAME is the existing frame."
   (make-frame-visible frame)
   ;; Unparent child frame if EXWM is used, otherwise EXWM buffers are drawn on
   ;; top of the Corfu child frame.
-  (when (and (bound-and-true-p exwm--connection) (frame-parent frame))
+  (when-let (((bound-and-true-p exwm--connection))
+             (parent (frame-parent frame)))
+    (set-frame-parameter frame 'corfu--exwm-parent parent)
     (set-frame-parameter frame 'parent-frame nil))
   frame)
 
