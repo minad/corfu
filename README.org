@@ -63,6 +63,14 @@ provides an alternative overlay-based display.
 - Rich set of extensions: Quick keys, Index keys, Sorting by history, Candidate
   documentation in echo area, popup or separate buffer.
 
+* Installation
+
+Corfu is available from [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]]. You can install it directly via =M-x
+package-install RET corfu RET=. After installation, activate the global minor
+mode with =M-x global-corfu-mode RET=. Set the variable ~corfu-auto~ to t in order
+to enable auto completion. For manual completion press =M-TAB= (or =TAB=) within a
+buffer.
+
 * Key bindings
 
 Corfu uses a transient keymap ~corfu-map~ which is active while the popup is
@@ -87,17 +95,13 @@ bindings:
 | =C-g=                      | ~corfu-quit~               |
 | ~keyboard-escape-quit~     | ~corfu-reset~              |
 
-* Installation and Configuration
+* Configuration
 
-Corfu is available from [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]], such that it can be installed directly via
-~package-install~. After installation, the global minor mode can be enabled with
-=M-x global-corfu-mode=. In order to configure Corfu and other packages in your
-init.el, you may want to use ~use-package~.
-
-Corfu is highly flexible and customizable via ~corfu-*~ customization variables,
-such that you can adapt it precisely to your requirements. However in order to
-quickly try out the Corfu completion package, it should be sufficient to
-activate ~global-corfu-mode~. You can experiment with manual completion for
+In order to configure Corfu and other packages in your init.el, you may want to
+use ~use-package~. Corfu is flexibly customizable via ~corfu-*~ customization
+variables, such that you can adapt it precisely to your requirements. However in
+order to quickly try out the Corfu completion package, it should be sufficient
+to activate ~global-corfu-mode~. You can experiment with manual completion for
 example in an Elisp buffer or in an Eshell or Shell buffer. For auto completion,
 set ~corfu-auto~ to t before turning on ~global-corfu-mode~.
 
