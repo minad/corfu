@@ -485,7 +485,7 @@ Corfu uses a transient keymap ~corfu-map~ which is active while the popup is
 shown. The keymap defines the following remappings of fundamental commands and
 bindings:
 
-| Binding/Remapping        | Corfu                    |
+| Binding/Remapping        | Corfu command            |
 |--------------------------+--------------------------|
 | ~move-beginning-of-line~   | ~corfu-prompt-beginning~   |
 | ~move-end-of-line~         | ~corfu-prompt-end~         |
