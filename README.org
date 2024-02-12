@@ -66,9 +66,9 @@ provides an alternative overlay-based display.
 * Installation
 
 Corfu is available from [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]]. You can install it directly via =M-x package-install RET corfu RET=.
-After installation, activate the global minor mode with =M-x global-corfu-mode
-RET=. Set the variable ~corfu-auto~ to t in order to enable auto completion. For
-manual completion press =M-TAB= (or =TAB=) within a buffer.
+After installation, activate the global minor mode with =M-x global-corfu-mode RET=.
+Set the variable ~corfu-auto~ to t in order to enable auto completion. For manual
+completion press =M-TAB= (or =TAB=) within a buffer.
 
 * Key bindings
 
