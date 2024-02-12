@@ -63,6 +63,30 @@ provides an alternative overlay-based display.
 - Rich set of extensions: Quick keys, Index keys, Sorting by history, Candidate
   documentation in echo area, popup or separate buffer.
 
+* Key bindings
+
+Corfu uses a transient keymap ~corfu-map~ which is active while the popup is
+shown. The keymap defines the following remappings of fundamental commands and
+bindings:
+
+| Binding/Remapping        | Corfu command            |
+|--------------------------+--------------------------|
+| ~move-beginning-of-line~   | ~corfu-prompt-beginning~   |
+| ~move-end-of-line~         | ~corfu-prompt-end~         |
+| ~beginning-of-buffer~      | ~corfu-first~              |
+| ~end-of-buffer~            | ~corfu-last~               |
+| ~scroll-down-command~      | ~corfu-scroll-down~        |
+| ~scroll-up-command~        | ~corfu-scroll-up~          |
+| ~next-line~, =down=, =M-n=     | ~corfu-next~               |
+| ~previous-line~, =up=, =M-p=   | ~corfu-previous~           |
+| ~completion-at-point~, =TAB= | ~corfu-complete~           |
+| =RET=                      | ~corfu-insert~             |
+| =M-g=                      | ~corfu-info-location~      |
+| =M-h=                      | ~corfu-info-documentation~ |
+| =M-SPC=                    | ~corfu-insert-separator~   |
+| =C-g=                      | ~corfu-quit~               |
+| ~keyboard-escape-quit~     | ~corfu-reset~              |
+
 * Installation and Configuration
 
 Corfu is available from [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]], such that it can be installed directly via
@@ -478,30 +502,6 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
 (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
 (add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer)
 #+end_src
-
-* Key bindings
-
-Corfu uses a transient keymap ~corfu-map~ which is active while the popup is
-shown. The keymap defines the following remappings of fundamental commands and
-bindings:
-
-| Binding/Remapping        | Corfu command            |
-|--------------------------+--------------------------|
-| ~move-beginning-of-line~   | ~corfu-prompt-beginning~   |
-| ~move-end-of-line~         | ~corfu-prompt-end~         |
-| ~beginning-of-buffer~      | ~corfu-first~              |
-| ~end-of-buffer~            | ~corfu-last~               |
-| ~scroll-down-command~      | ~corfu-scroll-down~        |
-| ~scroll-up-command~        | ~corfu-scroll-up~          |
-| ~next-line~, =down=, =M-n=     | ~corfu-next~               |
-| ~previous-line~, =up=, =M-p=   | ~corfu-previous~           |
-| ~completion-at-point~, =TAB= | ~corfu-complete~           |
-| =RET=                      | ~corfu-insert~             |
-| =M-g=                      | ~corfu-info-location~      |
-| =M-h=                      | ~corfu-info-documentation~ |
-| =M-SPC=                    | ~corfu-insert-separator~   |
-| =C-g=                      | ~corfu-quit~               |
-| ~keyboard-escape-quit~     | ~corfu-reset~              |
 
 * Extensions
 :properties:
