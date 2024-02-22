@@ -62,16 +62,18 @@
   :global t :group 'corfu)
 
 (cl-defmethod corfu--prepare :before (&context (corfu-indexed-mode (eql t)))
-  (when (and prefix-arg (memq this-command corfu-indexed--commands))
-    (let ((index (+ corfu--scroll
-                    (- (prefix-numeric-value prefix-arg)
-                       corfu-indexed-start))))
-      (if (and (>= index 0)
-               (< index corfu--total)
-               (< index (+ corfu--scroll corfu-count)))
-          (setq corfu--index index)
-        (message "Out of range")
-        (setq this-command #'ignore)))))
+  (when-let (((memq this-command corfu-indexed--commands))
+             (arg (if prefix-arg
+                      (prefix-numeric-value prefix-arg)
+                    (when-let (((event-modifiers last-input-event))
+                               (ev (event-basic-type last-input-event))
+                               ((and (characterp ev) (<= ?0 ev ?9))))
+                      (- ev ?0))))
+             (index (+ corfu--scroll (- arg corfu-indexed-start))))
+    (if (and (>= index corfu--scroll) (< index (+ corfu--scroll corfu-count)))
+        (setq corfu--index index prefix-arg nil)
+      (message "Out of range")
+      (setq this-command #'ignore))))
 
 (cl-defmethod corfu--affixate :around (cands &context (corfu-indexed-mode (eql t)))
   (setq cands (cdr (cl-call-next-method cands)))
