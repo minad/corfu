@@ -29,6 +29,7 @@
 - Bug fixes.
 - =corfu-quick=: Use a slightly different scheme to support more candidates.
 - =corfu-reset=: Quit immediately if input did not change.
+- Support =completion-lazy-hilit=.
 
 * Version 0.38 (2023-08-14)
 
