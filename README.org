@@ -327,32 +327,26 @@ define the advice ~corfu-send-shell~ which sends the candidate after insertion.
 Shell completion uses the flexible Pcomplete mechanism internally, which allows
 you to program the completions per shell command. If you want to know more, look
 into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure Pcomplete for git commands.
-
-You can try the [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]] package which extends Pcomplete with completion
-support and helpful annotation support for more commands. Similar to the Fish
-shell, =pcmpl-args= uses man page parsing and ~--help~ output parsing to dynamically
-generate completions. Since Emacs 29, Pcomplete offers the =pcomplete-from-help=
-function which parses the ~--help~ output of a command and produces completions.
-This Emacs 29 functionality is not completely equivalent. For example it does
-not display annotations in Eshell, but this may get fixed in Emacs 30.
+Since Emacs 29, Pcomplete offers the =pcomplete-from-help= function which parses
+the ~--help~ output of a command and produces completions for command line
+options.
 
 Pcomplete has a few bugs on Emacs 28 and older. We can work around the issues
 with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers
 which sanitize the Pcomplete function. If you use Emacs 28 or older installing
 these advices is recommended such that Pcomplete works properly. On Emacs 29 the
-advices should not be necessary anymore, since most of the relevant bugs have
-been fixed. I therefore recommend to remove the advices on Emacs 29 and
-eventually report any remaining Pcomplete issues upstream, such that they can be
-fixed.
+advices should not be necessary anymore, since most relevant bugs have been
+fixed. I therefore recommend to avoid the advices on Emacs 29 and eventually
+report any remaining Pcomplete issues upstream.
 
 #+begin_src emacs-lisp
 ;; The advices are only needed on Emacs 28 and older.
 (when (< emacs-major-version 29)
-  ;; Silence the pcomplete capf, no errors or messages!
+  ;; Silence the pcomplete capf. Hide errors or messages.
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
 
-  ;; Ensure that pcomplete does not write to the buffer
-  ;; and behaves as a pure `completion-at-point-function'.
+  ;; Ensure that pcomplete does not write to the buffer and behaves as a
+  ;; `completion-at-point-function' without side-effects.
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
 #+end_src
 
@@ -558,10 +552,6 @@ enhance your setup.
   packages. The nerd-icons-corfu package relies on the Nerd icon font, which is
   even supported on terminal, while kind-icon uses SVGs from monochromatic icon
   sets.
-
-- [[https://github.com/JonWaltman/pcmpl-args.el][pcmpl-args]]: Extend the Eshell/Shell Pcomplete mechanism with support for many
-  commands. Similar to the Fish shell, pcmpl-args uses man page parsing to
-  dynamically retrieve the completions and helpful annotations.
 
 - [[https://github.com/minad/tempel][Tempel]]: Tiny template/snippet package with templates in Lisp syntax, which
   can be used in conjunction with Corfu.
