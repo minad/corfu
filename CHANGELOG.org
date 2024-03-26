@@ -2,6 +2,14 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- Preserve currently selected candidate on further input. This matters if
+  candidate preview is disabled (~corfu-preview-current=nil~).
+- Add new command ~corfu-expand~ bound to ~M-TAB~ by default. The command expands
+  the input via ~completion-try-completion~, for example the ~basic~ completion
+  style expands the common prefix of all candidates.
+
 * Version 1.2 (2024-01-23)
 
 - Support the EXWM window manager.
