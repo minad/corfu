@@ -1153,7 +1153,7 @@ AUTO is non-nil when initializing auto completion."
       (let ((pos (posn-at-point (+ beg (length corfu--base)))))
         (corfu--preview-current beg end)
         (corfu--candidates-popup pos)))
-     ;; 3) No candidates & corfu-quit-no-match & initialized => Confirmation popup.
+     ;; 3) No candidates & `corfu-quit-no-match' & initialized => Confirmation popup.
      ((pcase-exhaustive corfu-quit-no-match
         ('t nil)
         ('nil corfu--input)
@@ -1280,10 +1280,9 @@ If a candidate is selected, insert it.  Otherwise call
   (if (>= corfu--index 0)
       ;; Continue completion with selected candidate.  Exit with status
       ;; 'finished if input is a valid match and no further completion is
-      ;; possible. Furthermore treat the completion as finished if we are at
-      ;; the end of a boundary, even if other longer candidates would still
-      ;; match, since the user invoked `corfu-complete' with an explicitly
-      ;; selected candidate!
+      ;; possible. Additionally treat completion as finished if at the end of a
+      ;; boundary, even if other longer candidates would still match, since the
+      ;; user invoked `corfu-complete' with an explicitly selected candidate!
       (pcase-let ((`(,_beg ,_end ,table ,pred . ,_) completion-in-region--data)
                   (newstr (corfu--insert nil)))
         (when (and (test-completion newstr table pred)
