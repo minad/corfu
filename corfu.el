@@ -425,17 +425,16 @@ length override, set to t for manual completion."
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
 (defvar corfu--gtk-resize-child-frames
   (let ((case-fold-search t))
-    (and
      ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
      ;; More information:
      ;; * https://github.com/minad/corfu/issues/17
      ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
      ;; * https://lists.gnu.org/archive/html/emacs-devel/2020-02/msg00001.html
-     (string-match-p "gtk3" system-configuration-features)
-     (string-match-p "gnome\\|cinnamon"
-                     (or (getenv "XDG_CURRENT_DESKTOP")
-                         (getenv "DESKTOP_SESSION") ""))
-     'resize-mode)))
+    (and (string-match-p "gtk3" system-configuration-features)
+         (string-match-p "gnome\\|cinnamon"
+                         (or (getenv "XDG_CURRENT_DESKTOP")
+                             (getenv "DESKTOP_SESSION") ""))
+         'resize-mode)))
 
 ;; Function adapted from posframe.el by tumashu
 (defun corfu--make-frame (frame x y width height buffer)
@@ -710,12 +709,11 @@ FRAME is the existing frame."
 
 (defun corfu--match-symbol-p (pattern sym)
   "Return non-nil if SYM is matching an element of the PATTERN list."
-  (and (symbolp sym)
-       (cl-loop with case-fold-search = nil
-                for x in pattern
-                thereis (if (symbolp x)
-                            (eq sym x)
-                          (string-match-p x (symbol-name sym))))))
+  (cl-loop with case-fold-search = nil
+           for x in (and (symbolp sym) pattern)
+           thereis (if (symbolp x)
+                       (eq sym x)
+                     (string-match-p x (symbol-name sym)))))
 
 (defun corfu--metadata-get (prop)
   "Return PROP from completion metadata."
