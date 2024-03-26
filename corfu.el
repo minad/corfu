@@ -258,6 +258,7 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
   "C-g" #'corfu-quit
   "RET" #'corfu-insert
   "TAB" #'corfu-complete
+  "M-TAB" #'corfu-expand
   "M-g" 'corfu-info-location
   "M-h" 'corfu-info-documentation
   "M-SPC" #'corfu-insert-separator)

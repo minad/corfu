@@ -87,6 +87,7 @@ bindings:
 | ~next-line~, =down=, =M-n=     | ~corfu-next~               |
 | ~previous-line~, =up=, =M-p=   | ~corfu-previous~           |
 | ~completion-at-point~, =TAB= | ~corfu-complete~           |
+| =M-TAB=                    | ~corfu-expand~             |
 | =RET=                      | ~corfu-insert~             |
 | =M-g=                      | ~corfu-info-location~      |
 | =M-h=                      | ~corfu-info-documentation~ |
