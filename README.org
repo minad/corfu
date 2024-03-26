@@ -479,6 +479,30 @@ force snippet expansion, confirm a candidate explicitly with ~RET~.
   (global-corfu-mode))
 #+end_src
 
+** Expanding to the common candidate prefix with TAB
+
+If you leave the default configuration of the completion styles, such that the
+~basic~ completion style is still present, then pressing ~M-TAB~ (~corfu-expand~) will
+expand the current input to the common prefix of all completion candidates. In
+contrast, ~TAB~ (~corfu-complete~) behaves differently and expands input to the
+currently selected candidate.
+
+If you use the ~orderless~ completion style, then expansion works differently by
+default. Orderless only expands to single matching candidates, since due to its
+multi-component input, there does not necessarily exist an expansion to a common
+candidate prefix. However it is possible to define a separate ~tab~ completion
+style and register it as follows for Corfu. The ~tab~ completion style will only
+take over ~TAB~ completion (if prefix expansion is possible), but besides that
+won't affect Orderless candidate filtering.
+
+#+begin_src emacs-lisp
+(add-to-list 'completion-styles-alist
+             '(tab completion-basic-try-completion ignore
+               "Completion style which provides TAB completion only."))
+(add-hook 'corfu-mode-hook
+          (lambda () (setq-local completion-styles '(tab orderless basic))))
+#+end_src
+
 ** Transfer completion to the minibuffer
 
 Sometimes it is useful to transfer the Corfu completion session to the
