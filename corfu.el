@@ -1311,7 +1311,7 @@ input has been expanded."
          (goto-char end)
          (corfu--done str 'finished corfu--candidates)
          t)
-        (`(,newstr . ,newpt)
+        ((and `(,newstr . ,newpt) (guard (not (and (= pt newpt) (equal newstr str)))))
          (corfu--replace beg end newstr)
          (goto-char (+ beg newpt))
          ;; Exit with status 'finished if input is a valid match
