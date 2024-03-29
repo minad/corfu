@@ -787,16 +787,20 @@ FRAME is the existing frame."
     (corfu--popup-show pos pw width fcands (- corfu--index corfu--scroll)
                        (and (> corfu--total corfu-count) lo) bar)))
 
+(defun corfu--preview-current-p (&optional insert)
+  "Return t if the selected candidate is previewed, with auto INSERT."
+  (and (if insert (eq 'insert corfu-preview-current) corfu-preview-current)
+       (>= corfu--index 0) (/= corfu--index corfu--preselect)))
+
 (defun corfu--preview-current (beg end)
   "Show current candidate as overlay given BEG and END."
-  (when-let ((cand (and corfu-preview-current (>= corfu--index 0)
-                        (/= corfu--index corfu--preselect)
-                        (nth corfu--index corfu--candidates))))
+  (when (corfu--preview-current-p)
     (setq beg (+ beg (length corfu--base))
           corfu--preview-ov (make-overlay beg end nil))
     (overlay-put corfu--preview-ov 'priority 1000)
     (overlay-put corfu--preview-ov 'window (selected-window))
-    (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display) cand)))
+    (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display)
+                 (nth corfu--index corfu--candidates))))
 
 (defun corfu--range-valid-p ()
   "Check the completion range, return non-nil if valid."
@@ -1124,8 +1128,7 @@ A scroll bar is displayed from LO to LO+BAR."
   ;; currently selected candidate and bail out of completion. This way you can
   ;; continue typing after selecting a candidate. The candidate will be inserted
   ;; and your new input will be appended.
-  (and (eq corfu-preview-current 'insert)
-       (/= corfu--index corfu--preselect)
+  (and (corfu--preview-current-p 'insert)
        ;; See the comment about `overriding-local-map' in `corfu--post-command'.
        (not (or overriding-terminal-local-map
                 (corfu--match-symbol-p corfu-continue-commands this-command)))
@@ -1300,7 +1303,7 @@ If the currently selected candidate is previewed, invoke
 styles via `completion-try-completion'.  Return non-nil if the
 input has been expanded."
   (interactive)
-  (if (and (>= corfu--index 0) corfu-preview-current (/= corfu--index corfu--preselect))
+  (if (corfu--preview-current-p)
       (corfu-complete)
     (pcase-let* ((`(,beg ,end ,table ,pred . ,_) completion-in-region--data)
                  (pt (max 0 (- (point) beg)))
