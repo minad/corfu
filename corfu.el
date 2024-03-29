@@ -787,33 +787,15 @@ FRAME is the existing frame."
     (corfu--popup-show pos pw width fcands (- corfu--index corfu--scroll)
                        (and (> corfu--total corfu-count) lo) bar)))
 
-(defun corfu--preview-current-p (&optional insert)
-  "Return t if the selected candidate is previewed, with auto INSERT."
-  (and (if insert (eq 'insert corfu-preview-current) corfu-preview-current)
-       (>= corfu--index 0) (/= corfu--index corfu--preselect)))
-
-(defun corfu--preview-current (beg end)
-  "Show current candidate as overlay given BEG and END."
-  (when (corfu--preview-current-p)
-    (setq beg (+ beg (length corfu--base))
-          corfu--preview-ov (make-overlay beg end nil))
-    (overlay-put corfu--preview-ov 'priority 1000)
-    (overlay-put corfu--preview-ov 'window (selected-window))
-    (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display)
-                 (nth corfu--index corfu--candidates))))
-
 (defun corfu--range-valid-p ()
   "Check the completion range, return non-nil if valid."
   (pcase-let ((buf (current-buffer))
               (pt (point))
               (`(,beg ,end . ,_) completion-in-region--data))
     (and beg end
-         (eq buf (marker-buffer beg))
-         (eq buf (window-buffer))
+         (eq buf (marker-buffer beg)) (eq buf (window-buffer))
          (<= beg pt end)
-         (save-excursion
-           (goto-char beg)
-           (<= (pos-bol) pt (pos-eol))))))
+         (save-excursion (goto-char beg) (<= (pos-bol) pt (pos-eol))))))
 
 (defun corfu--continue-p ()
   "Check if completion should continue after a command.
@@ -838,6 +820,21 @@ the last command must be listed in `corfu-continue-commands'."
                                ;; with separator, any further chars allowed
                                (seq-contains-p (car corfu--input) corfu-separator)))
                       (funcall completion-in-region-mode--predicate)))))))
+
+(defun corfu--preview-current-p (&optional insert)
+  "Return t if the selected candidate is previewed, with auto INSERT."
+  (and (if insert (eq 'insert corfu-preview-current) corfu-preview-current)
+       (>= corfu--index 0) (/= corfu--index corfu--preselect)))
+
+(defun corfu--preview-current (beg end)
+  "Show current candidate as overlay given BEG and END."
+  (when (corfu--preview-current-p)
+    (setq beg (+ beg (length corfu--base))
+          corfu--preview-ov (make-overlay beg end nil))
+    (overlay-put corfu--preview-ov 'priority 1000)
+    (overlay-put corfu--preview-ov 'window (selected-window))
+    (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display)
+                 (nth corfu--index corfu--candidates))))
 
 (defun corfu--window-change (_)
   "Window and buffer change hook which quits Corfu."
