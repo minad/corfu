@@ -821,10 +821,9 @@ the last command must be listed in `corfu-continue-commands'."
                                (seq-contains-p (car corfu--input) corfu-separator)))
                       (funcall completion-in-region-mode--predicate)))))))
 
-(defun corfu--preview-current-p (&optional insert)
-  "Return t if the selected candidate is previewed, with auto INSERT."
-  (and (if insert (eq 'insert corfu-preview-current) corfu-preview-current)
-       (>= corfu--index 0) (/= corfu--index corfu--preselect)))
+(defun corfu--preview-current-p ()
+  "Return t if the selected candidate is previewed."
+  (and corfu-preview-current (>= corfu--index 0) (/= corfu--index corfu--preselect)))
 
 (defun corfu--preview-current (beg end)
   "Show current candidate as overlay given BEG and END."
@@ -1125,7 +1124,7 @@ A scroll bar is displayed from LO to LO+BAR."
   ;; currently selected candidate and bail out of completion. This way you can
   ;; continue typing after selecting a candidate. The candidate will be inserted
   ;; and your new input will be appended.
-  (and (corfu--preview-current-p 'insert)
+  (and (corfu--preview-current-p) (eq corfu-preview-current 'insert)
        ;; See the comment about `overriding-local-map' in `corfu--post-command'.
        (not (or overriding-terminal-local-map
                 (corfu--match-symbol-p corfu-continue-commands this-command)))
