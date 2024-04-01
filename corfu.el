@@ -713,9 +713,9 @@ FRAME is the existing frame."
 
 (defun corfu--metadata-get (prop)
   "Return PROP from completion metadata."
-  ;; Note: Do not use `completion-metadata-get' in order to avoid Marginalia.
-  ;; The Marginalia annotators are too heavy for the Corfu popup!
-  (cdr (assq prop corfu--metadata)))
+  ;; Marginalia are too heavy for the popup.
+  (cl-letf (((symbol-function 'marginalia--completion-metadata-get) #'ignore))
+    (compat-call completion-metadata-get corfu--metadata prop)))
 
 (defun corfu--format-candidates (cands)
   "Format annotated CANDS."
@@ -1080,11 +1080,9 @@ A scroll bar is displayed from LO to LO+BAR."
          (dep (plist-get completion-extra-properties :company-deprecated))
          (mf (run-hook-with-args-until-success 'corfu-margin-formatters corfu--metadata)))
     (setq cands
-          (if-let ((aff (or (corfu--metadata-get 'affixation-function)
-                            (plist-get completion-extra-properties :affixation-function))))
+          (if-let ((aff (corfu--metadata-get 'affixation-function)))
               (funcall aff cands)
-            (if-let ((ann (or (corfu--metadata-get 'annotation-function)
-                              (plist-get completion-extra-properties :annotation-function))))
+            (if-let ((ann (corfu--metadata-get 'annotation-function)))
                 (cl-loop for cand in cands collect
                          (let ((suff (or (funcall ann cand) "")))
                            ;; The default completion UI adds the
