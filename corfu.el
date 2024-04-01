@@ -6,7 +6,7 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
 ;; Version: 1.3
-;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4"))
+;; Package-Requires: ((emacs "27.1") (compat "30))
 ;; Homepage: https://github.com/minad/corfu
 ;; Keywords: abbrev, convenience, matching, completion, text
 
@@ -719,9 +719,8 @@ FRAME is the existing frame."
 
 (defun corfu--metadata-get (prop)
   "Return PROP from completion metadata."
-  ;; Note: Do not use `completion-metadata-get' in order to avoid Marginalia.
-  ;; The Marginalia annotators are too heavy for the Corfu popup!
-  (cdr (assq prop corfu--metadata)))
+  (dlet ((marginalia-mode nil)) ;; Marginalia are too heavy for the popup.
+    (compat-call completion-metadata-get prop corfu--metadata)))
 
 (defun corfu--format-candidates (cands)
   "Format annotated CANDS."
@@ -1086,11 +1085,9 @@ A scroll bar is displayed from LO to LO+BAR."
          (dep (plist-get completion-extra-properties :company-deprecated))
          (mf (run-hook-with-args-until-success 'corfu-margin-formatters corfu--metadata)))
     (setq cands
-          (if-let ((aff (or (corfu--metadata-get 'affixation-function)
-                            (plist-get completion-extra-properties :affixation-function))))
+          (if-let ((aff (corfu--metadata-get 'affixation-function)))
               (funcall aff cands)
-            (if-let ((ann (or (corfu--metadata-get 'annotation-function)
-                              (plist-get completion-extra-properties :annotation-function))))
+            (if-let ((ann (corfu--metadata-get 'annotation-function)))
                 (cl-loop for cand in cands collect
                          (let ((suff (or (funcall ann cand) "")))
                            ;; The default completion UI adds the
