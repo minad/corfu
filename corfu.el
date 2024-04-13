@@ -179,8 +179,7 @@ the completion backend is costly."
   :type 'float)
 
 (defcustom corfu-auto-commands
-  '("self-insert-command\\'"
-    backward-delete-char backward-delete-char-untabify org-delete-backward-char
+  '("self-insert-command\\'" "delete-backward-char\\'" "\\`backward-delete-char"
     c-electric-colon c-electric-lt-gt c-electric-slash c-scope-operator)
   "Commands which initiate auto completion.
 The list can container either command symbols or regular expressions."
