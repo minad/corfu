@@ -180,6 +180,7 @@ the completion backend is costly."
 
 (defcustom corfu-auto-commands
   '("self-insert-command\\'"
+    backward-delete-char backward-delete-char-untabify
     c-electric-colon c-electric-lt-gt c-electric-slash c-scope-operator)
   "Commands which initiate auto completion.
 The list can container either command symbols or regular expressions."

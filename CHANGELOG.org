@@ -2,6 +2,11 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- ~corfu-auto-commands~: Add ~backward-delete-char~ and
+  ~backward-delete-char-untabify~.
+
 * Version 1.3 (2024-04-05)
 
 - Preserve currently selected candidate on further input. This matters if
