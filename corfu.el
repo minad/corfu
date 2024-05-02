@@ -979,8 +979,9 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
       (`(,fun ,beg ,end ,table . ,plist)
        (let ((completion-in-region-mode-predicate
               (lambda ()
-                (when-let ((newbeg (car-safe (funcall fun))))
-                  (= newbeg beg))))
+                (and (<= corfu-auto-prefix (- (point) beg))
+                    (when-let ((newbeg (car-safe (funcall fun))))
+                      (= newbeg beg)))))
              (completion-extra-properties plist))
          (corfu--setup beg end table (plist-get plist :predicate))
          (corfu--exhibit 'auto))))))
