@@ -244,7 +244,7 @@ source code for further details.
 #+begin_src emacs-lisp
 (defun orderless-fast-dispatch (word index total)
   (and (= index 0) (= total 1) (length< word 4)
-       (cons 'orderless-literal-prefix word))))
+       (cons 'orderless-literal-prefix word)))
 
 (orderless-define-completion-style orderless-fast
   (orderless-style-dispatchers '(orderless-fast-dispatch))
