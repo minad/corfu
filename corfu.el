@@ -247,12 +247,6 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
   "<remap> <keyboard-escape-quit>" #'corfu-reset
   "<down>" #'corfu-next
   "<up>" #'corfu-previous
-  ;; XXX C-a is bound because of Eshell.
-  ;; Ideally Eshell would remap move-beginning-of-line.
-  "C-a" #'corfu-prompt-beginning
-  ;; XXX [tab] is bound because of org-mode and orgtbl-mode.
-  ;; The binding should be removed from org-mode-map.
-  "<tab>" #'corfu-complete
   "M-n" #'corfu-next
   "M-p" #'corfu-previous
   "C-g" #'corfu-quit
