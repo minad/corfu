@@ -529,7 +529,7 @@ FRAME is the existing frame."
 (defun corfu--filter-completions (&rest args)
   "Compute all completions for ARGS with lazy highlighting."
   (dlet ((completion-lazy-hilit t) (completion-lazy-hilit-fn nil))
-    (if (eval-when-compile (>= emacs-major-version 30))
+    (static-if (>= emacs-major-version 30)
         (cons (apply #'completion-all-completions args) completion-lazy-hilit-fn)
       (cl-letf* ((orig-pcm (symbol-function #'completion-pcm--hilit-commonality))
                  (orig-flex (symbol-function #'completion-flex-all-completions))
@@ -605,7 +605,7 @@ FRAME is the existing frame."
               ;; bug#6581: `equal-including-properties' uses `eq' to compare
               ;; properties until 29.1.  Approximate by comparing
               ;; `text-properties-at' position 0.
-              (if (if (eval-when-compile (< emacs-major-version 29))
+              (if (static-if (< emacs-major-version 29)
                       (equal (text-properties-at 0 (car beg))
                              (text-properties-at 0 (cadr dup)))
                     (equal-including-properties (car beg) (cadr dup)))
