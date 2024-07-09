@@ -714,7 +714,8 @@ FRAME is the existing frame."
 (defun corfu--metadata-get (prop)
   "Return PROP from completion metadata."
   ;; Marginalia are too heavy for the popup.
-  (cl-letf (((symbol-function 'marginalia--completion-metadata-get) #'ignore))
+  (cl-letf (((symbol-function 'marginalia--completion-metadata-get) #'ignore)
+            (completion-extra-properties (nth 4 completion-in-region--data)))
     (compat-call completion-metadata-get corfu--metadata prop)))
 
 (defun corfu--format-candidates (cands)
@@ -1076,9 +1077,10 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (cl-defgeneric corfu--affixate (cands)
   "Annotate CANDS with annotation function."
-  (let* ((completion-extra-properties (nth 4 completion-in-region--data))
-         (dep (plist-get completion-extra-properties :company-deprecated))
-         (mf (run-hook-with-args-until-success 'corfu-margin-formatters corfu--metadata)))
+  (let* ((extras (nth 4 completion-in-region--data))
+         (dep (plist-get extras :company-deprecated))
+         (mf (let ((completion-extra-properties extras))
+               (run-hook-with-args-until-success 'corfu-margin-formatters corfu--metadata))))
     (setq cands
           (if-let ((aff (corfu--metadata-get 'affixation-function)))
               (funcall aff cands)
