@@ -723,10 +723,9 @@ FRAME is the existing frame."
 
 (defun corfu--format-candidates (cands)
   "Format annotated CANDS."
-  (setq cands
-        (cl-loop for c in cands collect
-                 (cl-loop for s in c collect
-                          (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s))))
+  (cl-loop for c in cands do
+           (cl-loop for s in-ref c do
+                    (setf s (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s))))
   (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
          (pw (cl-loop for x in cands maximize (string-width (cadr x))))
          (sw (cl-loop for x in cands maximize (string-width (caddr x))))
