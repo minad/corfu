@@ -716,7 +716,9 @@ FRAME is the existing frame."
 
 (defun corfu--metadata-get (prop)
   "Return PROP from completion metadata."
-  ;; Marginalia are too heavy for Corfu. Use `completion-metadata-get' without advices.
+  ;; Marginalia and various icon packages advise `completion-metadata-get' to
+  ;; inject their annotations, but are meant only for minibuffer completion.
+  ;; Therefore call `completion-metadata-get' without advices here.
   (let ((completion-extra-properties (nth 4 completion-in-region--data)))
     (funcall (advice--cd*r (symbol-function (compat-function completion-metadata-get)))
              corfu--metadata prop)))
