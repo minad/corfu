@@ -348,19 +348,21 @@ form (X Y WIDTH HEIGHT DIR)."
                       (equal candidate corfu-popupinfo--candidate))))
            (new-coords (frame-edges corfu--frame 'inner-edges))
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
-      (when cand-changed
-        (if-let ((content (funcall corfu-popupinfo--function candidate)))
-            (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*")
-              (with-silent-modifications
-                (erase-buffer)
-                (insert content)
-                (goto-char (point-min)))
-              (dolist (var corfu-popupinfo--buffer-parameters)
-                (set (make-local-variable (car var)) (cdr var)))
-              (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
-                (setcar m 'corfu-popupinfo)))
-          (corfu-popupinfo--hide)
-          (setq cand-changed nil coords-changed nil)))
+      ;; Always retrieve new content regardless of candidate change
+      (if-let ((content (funcall corfu-popupinfo--function candidate)))
+          (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*")
+            (with-silent-modifications
+              (erase-buffer)
+              (insert content)
+              (goto-char (point-min)))
+            (dolist (var corfu-popupinfo--buffer-parameters)
+              (set (make-local-variable (car var)) (cdr var)))
+            (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
+              (setcar m 'corfu-popupinfo))
+            (setq cand-changed t))  ;; Ensure it marks candidate change as true
+        (corfu-popupinfo--hide)
+        (setq cand-changed nil coords-changed nil))
+      ;; Update the frame position regardless of candidate change
       (when (or cand-changed coords-changed)
         (pcase-let* ((border (alist-get 'internal-border-width corfu--frame-parameters))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
