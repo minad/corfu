@@ -716,10 +716,10 @@ FRAME is the existing frame."
 
 (defun corfu--metadata-get (prop)
   "Return PROP from completion metadata."
-  ;; Marginalia are too heavy for the popup.
-  (cl-letf (((symbol-function 'marginalia--completion-metadata-get) #'ignore)
-            (completion-extra-properties (nth 4 completion-in-region--data)))
-    (compat-call completion-metadata-get corfu--metadata prop)))
+  ;; Marginalia are too heavy for Corfu. Use `completion-metadata-get' without advices.
+  (let ((completion-extra-properties (nth 4 completion-in-region--data)))
+    (funcall (advice--cd*r (symbol-function (compat-function completion-metadata-get)))
+             corfu--metadata prop)))
 
 (defun corfu--format-candidates (cands)
   "Format annotated CANDS."
