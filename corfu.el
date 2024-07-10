@@ -590,6 +590,16 @@ FRAME is the existing frame."
           (eq t (compare-strings word 0 len it 0 len
                                  completion-ignore-case))))))
 
+(defalias 'corfu--equal-including-properties
+  ;; bug#6581: `equal-including-properties' uses `eq' to compare
+  ;; properties until 29.1.  Approximate by comparing
+  ;; `text-properties-at' position 0.
+  (static-if (< emacs-major-version 29)
+      (lambda (x y)
+        (and (equal x y)
+             (equal (text-properties-at 0 x) (text-properties-at 0 y))))
+    #'equal-including-properties))
+
 (defun corfu--delete-dups (list)
   "Delete `equal-including-properties' consecutive duplicates from LIST."
   (let ((beg list))
@@ -602,13 +612,7 @@ FRAME is the existing frame."
         (while (not (eq beg end))
           (let ((dup beg))
             (while (not (eq (cdr dup) end))
-              ;; bug#6581: `equal-including-properties' uses `eq' to compare
-              ;; properties until 29.1.  Approximate by comparing
-              ;; `text-properties-at' position 0.
-              (if (static-if (< emacs-major-version 29)
-                      (equal (text-properties-at 0 (car beg))
-                             (text-properties-at 0 (cadr dup)))
-                    (equal-including-properties (car beg) (cadr dup)))
+              (if (corfu--equal-including-properties (car beg) (cadr dup))
                   (setcdr dup (cddr dup))
                 (pop dup))))
           (pop beg)))))

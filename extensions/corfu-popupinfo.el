@@ -345,7 +345,8 @@ form (X Y WIDTH HEIGHT DIR)."
   (when (and (corfu-popupinfo--visible-p corfu--frame))
     (let* ((cand-changed
             (not (and (corfu-popupinfo--visible-p)
-                      (equal candidate corfu-popupinfo--candidate))))
+                      (corfu--equal-including-properties
+                       candidate corfu-popupinfo--candidate))))
            (new-coords (frame-edges corfu--frame 'inner-edges))
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
       (when cand-changed
