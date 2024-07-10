@@ -590,10 +590,9 @@ FRAME is the existing frame."
           (eq t (compare-strings word 0 len it 0 len
                                  completion-ignore-case))))))
 
+;; bug#6581: `equal-including-properties' uses `eq' for properties until 29.1.
+;; Approximate by comparing `text-properties-at' position 0.
 (defalias 'corfu--equal-including-properties
-  ;; bug#6581: `equal-including-properties' uses `eq' to compare
-  ;; properties until 29.1.  Approximate by comparing
-  ;; `text-properties-at' position 0.
   (static-if (< emacs-major-version 29)
       (lambda (x y)
         (and (equal x y)
