@@ -134,22 +134,22 @@ Here is an example configuration:
 
 ;; A few more useful configurations...
 (use-package emacs
-  :init
+  :custom
   ;; TAB cycle if there are only few candidates
-  ;; (setq completion-cycle-threshold 3)
+  ;; (completion-cycle-threshold 3)
 
   ;; Enable indentation+completion using the TAB key.
   ;; `completion-at-point' is often bound to M-TAB.
-  (setq tab-always-indent 'complete)
+  (tab-always-indent 'complete)
 
   ;; Emacs 30 and newer: Disable Ispell completion function. As an alternative,
   ;; try `cape-dict'.
-  (setq text-mode-ispell-word-completion nil)
+  (text-mode-ispell-word-completion nil)
 
   ;; Emacs 28 and newer: Hide commands in M-x which do not apply to the current
   ;; mode.  Corfu commands are hidden, since they are not used via M-x. This
   ;; setting is useful beyond Corfu.
-  (setq read-extended-command-predicate #'command-completion-default-include-p))
+  (read-extended-command-predicate #'command-completion-default-include-p))
 #+end_src
 
 Dabbrev completion is based on =completion-in-region= and can be used with Corfu.
@@ -179,13 +179,13 @@ default completion styles. The use of Orderless is not a necessity.
 #+begin_src emacs-lisp
 ;; Optionally use the `orderless' completion style.
 (use-package orderless
-  :init
+  :custom
   ;; Configure a custom style dispatcher (see the Consult wiki)
-  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+  ;; (orderless-style-dispatchers '(+orderless-dispatch))
+  ;; (orderless-component-separator #'orderless-escapable-split-on-space)
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 
 The =basic= completion style is specified as fallback in addition to =orderless= in
