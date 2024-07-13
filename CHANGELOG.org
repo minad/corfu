@@ -10,6 +10,7 @@
   =<tab>= instead of =TAB=, as was the case in old versions of Org. If you use such
   a mode, please report this as a bug for this mode. In the meantime you can use
   =(keymap-set corfu-map "<tab>" #'corfu-complete)=.
+- Add new command ~corfu-send~ as alternative to ~corfu-insert~.
 
 * Version 1.4 (2024-05-23)
 

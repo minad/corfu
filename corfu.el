@@ -1325,6 +1325,16 @@ Quit if no candidate is selected."
       (corfu--insert 'finished)
     (corfu-quit)))
 
+(defun corfu-send ()
+  "Insert current candidate and send it when inside comint or eshell."
+  (interactive)
+  (corfu-insert)
+  (cond
+   ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
+    (eshell-send-input))
+   ((and (derived-mode-p 'comint-mode) (fboundp 'comint-send-input))
+    (comint-send-input))))
+
 ;;;###autoload
 (define-minor-mode corfu-mode
   "COmpletion in Region FUnction."
