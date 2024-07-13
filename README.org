@@ -415,7 +415,7 @@ open. This can feel intrusive, in particular in combination with auto
 completion. ~RET~ may accidentally commit an automatically selected candidate,
 while you actually wanted to start a new line. As an alternative we can unbind
 the ~RET~ key completely from ~corfu-map~ or reserve the ~RET~ key only in shell
-modes.
+modes using a menu-item filter.
 
 #+begin_src emacs-lisp
 ;; TAB-only configuration
@@ -430,15 +430,14 @@ modes.
         ;; Option 1: Unbind RET completely
         ;;; ("RET" . nil)
         ;; Option 2: Use RET only in shell modes
-        ("RET" . (menu-item "" nil :filter corfu-send-filter)))
+        ("RET" . (menu-item
+                  "" nil :filter
+                  (lambda (&optional _)
+                    (and (or (derived-mode-p 'eshell-mode) (derived-mode-p 'comint-mode))
+                         #'corfu-send)))))
 
   :init
   (global-corfu-mode))
-
-(defun corfu-send-filter (&optional _)
-  "Insert completion candidate and send when inside comint/eshell."
-  (when (or (derived-mode-p 'eshell-mode) (derived-mode-p 'comint-mode))
-    #'corfu-send))
 #+end_src
 
 ** TAB-and-Go completion
