@@ -1348,7 +1348,7 @@ Quit if no candidate is selected."
     (kill-local-variable 'completion-in-region-function))))
 
 (defcustom global-corfu-modes t
-  "List of modes where Corfu should be enabled.
+  "List of modes where Corfu should be enabled by `global-corfu-mode'.
 The variable can either be t, nil or a list of t, nil, mode
 symbols or elements of the form (not modes).  Examples:
   - Enable everywhere, except in Org: ((not org-mode) t).
@@ -1356,22 +1356,37 @@ symbols or elements of the form (not modes).  Examples:
   - Enable only in text modes: (text-mode)."
   :type '(choice (const t) (repeat sexp)))
 
+(defcustom global-corfu-minibuffer t
+  "Corfu should be enabled in the minibuffer by `global-corfu-mode'.
+The variable can either be t, nil or a custom predicate function.  If
+the variable is set to t, Corfu is only enabled if the minibuffer has
+local `completion-at-point-functions'."
+  :type '(choice (const t) (const nil) function))
+
 ;;;###autoload
 (define-globalized-minor-mode global-corfu-mode
   corfu-mode corfu--on
-  :group 'corfu)
+  :group 'corfu
+  (remove-hook 'minibuffer-setup-hook #'corfu--on)
+  (when (and global-corfu-mode global-corfu-minibuffer)
+    (add-hook 'minibuffer-setup-hook #'corfu--on 100)))
 
 (defun corfu--on ()
-  "Turn `corfu-mode' on."
-  (when (and (not (or noninteractive (eq (aref (buffer-name) 0) ?\s)))
-             ;; TODO backport `easy-mmode--globalized-predicate-p'
-             (or (eq t global-corfu-modes)
-                 (eq t (cl-loop for p in global-corfu-modes thereis
-                                (pcase-exhaustive p
-                                  ('t t)
-                                  ('nil 0)
-                                  ((pred symbolp) (and (derived-mode-p p) t))
-                                  (`(not . ,m) (and (seq-some #'derived-mode-p m) 0)))))))
+  "Enable `corfu-mode' in the current buffer if conditions are satisfied.
+See `global-corfu-modes' and `global-corfu-minibuffer'."
+  (when (or (and (not noninteractive) (minibufferp) global-corfu-minibuffer
+                 (if (functionp global-corfu-minibuffer)
+                     (funcall global-corfu-minibuffer)
+                   (local-variable-p 'completion-at-point-functions)))
+            (and (not noninteractive) (not (eq (aref (buffer-name) 0) ?\s))
+                 ;; TODO backport `easy-mmode--globalized-predicate-p'
+                 (or (eq t global-corfu-modes)
+                     (eq t (cl-loop for p in global-corfu-modes thereis
+                                    (pcase-exhaustive p
+                                      ('t t)
+                                      ('nil 0)
+                                      ((pred symbolp) (and (derived-mode-p p) t))
+                                      (`(not . ,m) (and (seq-some #'derived-mode-p m) 0))))))))
     (corfu-mode 1)))
 
 ;; Emacs 28: Do not show Corfu commands with M-X

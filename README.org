@@ -262,40 +262,26 @@ Corfu can be used for completion in the minibuffer, since it relies on child
 frames to display the candidates. The Corfu popup can be shown even if it
 doesn't fully fit inside the minibuffer.
 
-By default, ~global-corfu-mode~ does not activate ~corfu-mode~ in the minibuffer, to
-avoid interference with specialised minibuffer completion UIs like Vertico or
-Mct. However you may still want to enable Corfu completion for commands like ~M-:~
-(~eval-expression~) or ~M-!~ (~shell-command~), which read from the minibuffer. In
-order to detect minibuffers with completion we check if the variable
-~completion-at-point-functions~ is set locally.
+~global-corfu-mode~ activates ~corfu-mode~ in the minibuffer if the variable
+~global-corfu-minibuffer~ is non-nil. In order to avoid interference with
+specialised minibuffer completion UIs like Vertico or Mct, Corfu is only enabled
+if the minibuffer sets the variable ~completion-at-point-functions~ locally. This
+way minibuffers with completion can be detected, such that minibuffer commands
+like ~M-:~ (~eval-expression~) or ~M-!~ (~shell-command~) are enhanced with Corfu
+completion.
+
+If needed, one can also enable Corfu more generally in all minibuffers, as long
+as no completion UI is active. In the following example we set
+~global-corfu-minibuffer~ to a predicate function, which checks for Mct and
+Vertico. Furthermore we ensure that Corfu is not enabled if a password is read
+from the minibuffer.
 
 #+begin_src emacs-lisp
-(defun corfu-enable-in-minibuffer ()
-  "Enable Corfu in the minibuffer."
-  (when (local-variable-p 'completion-at-point-functions)
-    ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
-    (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
-                corfu-popupinfo-delay nil)
-    (corfu-mode 1)))
-(add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
-#+end_src
-
-This is not recommended, but one can also enable Corfu more generally for every
-minibuffer, as long as no completion UI is active. In the following example we
-check for Mct and Vertico. Furthermore we ensure that Corfu is not enabled if a
-password is read from the minibuffer.
-
-#+begin_src emacs-lisp
-(defun corfu-enable-always-in-minibuffer ()
-  "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-  (unless (or (bound-and-true-p mct--active)
-              (bound-and-true-p vertico--input)
-              (eq (current-local-map) read-passwd-map))
-    ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
-    (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
-                corfu-popupinfo-delay nil)
-    (corfu-mode 1)))
-(add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
+(setq global-corfu-minibuffer
+      (lambda ()
+        (not (or (bound-and-true-p mct--active)
+                 (bound-and-true-p vertico--input)
+                 (eq (current-local-map) read-passwd-map)))))
 #+end_src
 
 ** Completing in the Eshell or Shell

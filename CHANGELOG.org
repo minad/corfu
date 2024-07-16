@@ -4,6 +4,8 @@
 
 * Development
 
+- New customization variable =global-corfu-minibuffer= to enable Corfu in the
+  minibuffer.
 - Unbind =C-a= in =corfu-map=. This binding is only needed in modes which override
   =C-a= instead of remapping ~move-beginning-of-line~.
 - Unbind =<tab>= in ~corfu-map~. This binding is only needed in modes which bind
