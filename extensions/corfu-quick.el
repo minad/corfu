@@ -146,9 +146,5 @@ TWO is non-nil if two keys should be displayed."
   (when (corfu-quick-jump)
     (corfu-complete)))
 
-;; Emacs 28: Do not show Corfu commands in M-X
-(dolist (sym '(corfu-quick-jump corfu-quick-insert corfu-quick-complete))
-  (put sym 'completion-predicate #'ignore))
-
 (provide 'corfu-quick)
 ;;; corfu-quick.el ends here

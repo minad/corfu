@@ -1392,7 +1392,9 @@ See `global-corfu-modes' and `global-corfu-minibuffer'."
 ;; Emacs 28: Do not show Corfu commands with M-X
 (dolist (sym '(corfu-next corfu-previous corfu-first corfu-last corfu-quit corfu-reset
                corfu-complete corfu-insert corfu-scroll-up corfu-scroll-down corfu-expand
-               corfu-send corfu-insert-separator corfu-prompt-beginning corfu-prompt-end))
+               corfu-send corfu-insert-separator corfu-prompt-beginning corfu-prompt-end
+               corfu-info-location corfu-info-documentation
+               corfu-quick-jump corfu-quick-insert corfu-quick-complete))
   (put sym 'completion-predicate #'ignore))
 
 (defun corfu--capf-wrapper-advice (orig fun which)

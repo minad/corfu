@@ -110,9 +110,5 @@ If called with a prefix ARG, the buffer is persistent."
             (set-window-start nil (point))))
       (user-error "No location available for `%s'" cand))))
 
-;; Emacs 28: Do not show Corfu commands with M-X
-(put #'corfu-info-location 'completion-predicate #'ignore)
-(put #'corfu-info-documentation 'completion-predicate #'ignore)
-
 (provide 'corfu-info)
 ;;; corfu-info.el ends here
