@@ -13,6 +13,7 @@
   a mode, please report this as a bug for this mode. In the meantime you can use
   =(keymap-set corfu-map "<tab>" #'corfu-complete)=.
 - Add new command ~corfu-send~ as alternative to ~corfu-insert~.
+- =corfu-popupinfo=: Support both =face= and =font-lock-face= highlighting.
 
 * Version 1.4 (2024-05-23)
 
