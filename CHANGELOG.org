@@ -14,6 +14,7 @@
   =(keymap-set corfu-map "<tab>" #'corfu-complete)=.
 - Add new command ~corfu-send~ as alternative to ~corfu-insert~.
 - =corfu-popupinfo=: Support both =face= and =font-lock-face= highlighting.
+- Bump Compat dependency to Compat 30.
 
 * Version 1.4 (2024-05-23)
 
