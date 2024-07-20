@@ -1414,7 +1414,7 @@ The ORIG function takes the FUN and WHICH arguments."
 ;; Register Corfu with ElDoc
 (advice-add #'eldoc-display-message-no-interference-p
             :before-while #'corfu--eldoc-advice)
-(eldoc-add-command #'corfu-complete #'corfu-insert)
+(eldoc-add-command #'corfu-complete #'corfu-insert #'corfu-expand #'corfu-send)
 
 (provide 'corfu)
 ;;; corfu.el ends here
