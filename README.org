@@ -121,7 +121,7 @@ Here is an example configuration:
   ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
   ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
-  ;; Enable Corfu only for certain modes.
+  ;; Enable Corfu only for certain modes. See also `global-corfu-modes'.
   ;; :hook ((prog-mode . corfu-mode)
   ;;        (shell-mode . corfu-mode)
   ;;        (eshell-mode . corfu-mode))
@@ -317,20 +317,16 @@ options.
 
 Pcomplete has a few bugs on Emacs 28 and older. We can work around the issues
 with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers
-which sanitize the Pcomplete function. If you use Emacs 28 or older installing
-these advices is recommended such that Pcomplete works properly. On Emacs 29 the
-advices should not be necessary anymore, since most relevant bugs have been
-fixed. I therefore recommend to avoid the advices on Emacs 29 and eventually
-report any remaining Pcomplete issues upstream.
+which sanitize the Pcomplete function. On Emacs 29 the advices should not be
+necessary anymore, since most relevant bugs have been fixed. In case you
+discover any remaining Pcomplete issues, please report them upstream.
 
 #+begin_src emacs-lisp
-;; The advices are only needed on Emacs 28 and older.
+;; Sanitize the `pcomplete-completions-at-point' Capf.  The Capf has undesired
+;; side effects on Emacs 28 and earlier.  These advices are not needed on Emacs
+;; 29 and newer.
 (when (< emacs-major-version 29)
-  ;; Silence the pcomplete capf. Hide errors or messages.
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-  ;; Ensure that pcomplete does not write to the buffer and behaves as a
-  ;; `completion-at-point-function' without side-effects.
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
 #+end_src
 
