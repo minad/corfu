@@ -926,9 +926,8 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
        (goto-char (+ beg newpt))
        (let* ((state (corfu--recompute newstr newpt table pred))
               (base (alist-get 'corfu--base state))
-              (total (alist-get 'corfu--total state))
-              (candidates (alist-get 'corfu--candidates state)))
-         (if (= total 1)
+              (cands (delete-consecutive-dups (alist-get 'corfu--candidates state))))
+         (if (length= cands 1)
              ;; If completion is finished and cannot be further completed, and
              ;; the value of `corfu-on-exact-match' is not 'show, return
              ;; 'finished.  Otherwise setup the Corfu popup.
@@ -937,14 +936,14 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                              newstr table pred newpt
                              (completion-metadata newstr table pred))))
                  (corfu--setup beg end table pred)
-               (corfu--exit-function newstr 'finished candidates))
-           (if (or (= total 0) (not threshold)
-                   (and (not (eq threshold t)) (< threshold total)))
+               (corfu--exit-function newstr 'finished cands))
+           (if (not (and cands threshold
+                         (or (eq threshold t) (length< cands threshold))))
                (corfu--setup beg end table pred)
-             (corfu--cycle-candidates total candidates (+ (length base) beg) end)
+             (corfu--cycle-candidates cands (+ (length base) beg) end)
              ;; Do not show Corfu when "trivially" cycling, i.e.,
              ;; when the completion is finished after the candidate.
-             (unless (equal (completion-boundaries (car candidates) table pred "")
+             (unless (equal (completion-boundaries (car cands) table pred "")
                             '(0 . 0))
                (corfu--setup beg end table pred)))))
        t))))
@@ -953,10 +952,11 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   "Show completion MSG."
   (let (message-log-max) (apply #'message msg)))
 
-(defun corfu--cycle-candidates (total cands beg end)
-  "Cycle between TOTAL number of CANDS.
+(defun corfu--cycle-candidates (cands beg end)
+  "Cycle between CANDS.
 See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   (let* ((idx 0)
+         (total (length cands))
          (map (make-sparse-keymap))
          (replace (lambda ()
                     (interactive)
