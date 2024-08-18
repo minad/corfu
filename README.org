@@ -406,17 +406,17 @@ modes using a menu-item filter.
   (corfu-auto t)               ;; Enable auto completion
   (corfu-preselect 'directory) ;; Select the first candidate, except for directories
 
-  ;; Free the RET key for less intrusive behavior.
-  :bind
-  (:map corfu-map
-        ;; Option 1: Unbind RET completely
-        ;;; ("RET" . nil)
-        ;; Option 2: Use RET only in shell modes
-        :filter
-        (or (derived-mode-p 'eshell-mode) (derived-mode-p 'comint-mode))
-        ("RET" . corfu-send))
-
   :init
+
+  ;; Free the RET key for less intrusive behavior.
+  ;; Option 1: Unbind RET completely
+  ;; (keymap-unset corfu-map "RET")
+  ;; Option 2: Use RET only in shell modes
+  (keymap-set corfu-map "RET" `( menu-item "" nil :filter
+                                 ,(lambda (&optional _)
+                                    (and (derived-mode-p 'eshell-mode 'comint-mode)
+                                         #'corfu-send))))
+
   (global-corfu-mode))
 #+end_src
 
