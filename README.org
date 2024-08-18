@@ -407,7 +407,9 @@ modes using a menu-item filter.
   (corfu-preselect 'directory) ;; Select the first candidate, except for directories
 
   :init
+  (global-corfu-mode)
 
+  :config
   ;; Free the RET key for less intrusive behavior.
   ;; Option 1: Unbind RET completely
   ;; (keymap-unset corfu-map "RET")
@@ -415,9 +417,7 @@ modes using a menu-item filter.
   (keymap-set corfu-map "RET" `( menu-item "" nil :filter
                                  ,(lambda (&optional _)
                                     (and (derived-mode-p 'eshell-mode 'comint-mode)
-                                         #'corfu-send))))
-
-  (global-corfu-mode))
+                                         #'corfu-send)))))
 #+end_src
 
 ** TAB-and-Go completion
