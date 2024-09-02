@@ -180,8 +180,7 @@ default completion styles. The use of Orderless is not a necessity.
 ;; Optionally use the `orderless' completion style.
 (use-package orderless
   :custom
-  ;; Configure a custom style dispatcher (see the Consult wiki)
-  ;; (orderless-style-dispatchers '(+orderless-dispatch))
+  ;; (orderless-style-dispatchers '(orderless-affix-dispatch))
   ;; (orderless-component-separator #'orderless-escapable-split-on-space)
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
@@ -191,11 +190,10 @@ default completion styles. The use of Orderless is not a necessity.
 The =basic= completion style is specified as fallback in addition to =orderless= in
 order to ensure that completion commands which rely on dynamic completion
 tables, e.g., ~completion-table-dynamic~ or ~completion-table-in-turn~, work
-correctly. See =+orderless-dispatch= in the [[https://github.com/minad/consult/wiki][Consult wiki]] for an advanced Orderless
-style dispatcher. Additionally enable =partial-completion= for file path
-expansion. =partial-completion= is important for file wildcard support. Multiple
-files can be opened at once with =find-file= if you enter a wildcard. You may also
-give the =initials= completion style a try.
+correctly. Additionally enable =partial-completion= for file path expansion.
+=partial-completion= is important for file wildcard support. Multiple files can be
+opened at once with =find-file= if you enter a wildcard. You may also give the
+=initials= completion style a try.
 
 See also the [[https://github.com/minad/corfu/wiki][Corfu Wiki]] and the [[https://github.com/minad/cape][Cape manual]] for additional Capf configuration
 tips. For more general documentation read the chapter about completion in the
