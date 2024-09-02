@@ -171,10 +171,10 @@ completion at point function provided by my [[https://github.com/minad/cape][Cap
   (add-to-list 'dabbrev-ignored-buffer-modes 'tags-table-mode))
 #+end_src
 
-If you start to configure the package more deeply, I recommend to give the
-Orderless completion style a try for filtering. Orderless completion is
-different from the familiar prefix TAB completion. Corfu can be used with the
-default completion styles. The use of Orderless is not a necessity.
+If you start to configure Corfu more deeply, I recommend to give the Orderless
+completion style a try for filtering. Orderless completion is different from the
+familiar prefix TAB completion. Note that Orderless is not a necessity; Corfu
+can be used as well with the default completion styles.
 
 #+begin_src emacs-lisp
 ;; Optionally use the `orderless' completion style.
