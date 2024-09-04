@@ -1386,7 +1386,7 @@ local `completion-at-point-functions'."
 
 (defun corfu--minibuffer-on ()
   "Enable `corfu-mode' in the minibuffer respecting `global-corfu-minibuffer'."
-  (when (and global-corfu-minibuffer (not noninteractive) (minibufferp)
+  (when (and global-corfu-minibuffer (not noninteractive)
              (if (functionp global-corfu-minibuffer)
                  (funcall global-corfu-minibuffer)
                (local-variable-p 'completion-at-point-functions)))
