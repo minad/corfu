@@ -6,7 +6,7 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
 ;; Version: 1.5
-;; Package-Requires: ((emacs "27.1") (compat "30"))
+;; Package-Requires: ((emacs "28.1") (compat "30"))
 ;; Homepage: https://github.com/minad/corfu
 ;; Keywords: abbrev, convenience, matching, completion, text
 
@@ -340,7 +340,7 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
   '((mode-line-format . nil)
     (header-line-format . nil)
     (tab-line-format . nil)
-    (tab-bar-format . nil) ;; Emacs 28 tab-bar-format
+    (tab-bar-format . nil)
     (frame-title-format . "")
     (truncate-lines . t)
     (cursor-in-non-selected-windows . nil)
@@ -629,7 +629,7 @@ FRAME is the existing frame."
                (after (substring str pt))
                (corfu--metadata (completion-metadata before table pred))
                ;; bug#47678: `completion-boundaries' fails for `partial-completion'
-               ;; if the cursor is moved between the slashes of "~//".
+               ;; if the cursor is moved before the slashes of "~//".
                ;; See also vertico.el which has the same issue.
                (bounds (condition-case nil
                            (completion-boundaries before table pred after)
@@ -1347,15 +1347,6 @@ Quit if no candidate is selected."
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function))))
 
-(defcustom global-corfu-modes t
-  "List of modes where Corfu should be enabled by `global-corfu-mode'.
-The variable can either be t, nil or a list of t, nil, mode
-symbols or elements of the form (not modes).  Examples:
-  - Enable everywhere, except in Org: ((not org-mode) t).
-  - Enable in programming modes except Python: ((not python-mode) prog-mode).
-  - Enable only in text modes: (text-mode)."
-  :type '(choice (const t) (repeat sexp)))
-
 (defcustom global-corfu-minibuffer t
   "Corfu should be enabled in the minibuffer by `global-corfu-mode'.
 The variable can either be t, nil or a custom predicate function.  If
@@ -1366,6 +1357,7 @@ local `completion-at-point-functions'."
 ;;;###autoload
 (define-globalized-minor-mode global-corfu-mode
   corfu-mode corfu--on
+  :predicate t
   :group 'corfu
   (remove-hook 'minibuffer-setup-hook #'corfu--minibuffer-on)
   (when (and global-corfu-mode global-corfu-minibuffer)
@@ -1373,15 +1365,7 @@ local `completion-at-point-functions'."
 
 (defun corfu--on ()
   "Enable `corfu-mode' in the current buffer respecting `global-corfu-modes'."
-  (when (and (not noninteractive) (not (eq (aref (buffer-name) 0) ?\s))
-             ;; TODO backport `easy-mmode--globalized-predicate-p'
-             (or (eq t global-corfu-modes)
-                 (eq t (cl-loop for p in global-corfu-modes thereis
-                                (pcase-exhaustive p
-                                  ('t t)
-                                  ('nil 0)
-                                  ((pred symbolp) (and (derived-mode-p p) t))
-                                  (`(not . ,m) (and (seq-some #'derived-mode-p m) 0)))))))
+  (unless (or noninteractive (eq (aref (buffer-name) 0) ?\s))
     (corfu-mode 1)))
 
 (defun corfu--minibuffer-on ()
@@ -1392,7 +1376,7 @@ local `completion-at-point-functions'."
                (local-variable-p 'completion-at-point-functions)))
     (corfu-mode 1)))
 
-;; Emacs 28: Do not show Corfu commands with M-X
+;; Do not show Corfu commands with M-X
 (dolist (sym '(corfu-next corfu-previous corfu-first corfu-last corfu-quit corfu-reset
                corfu-complete corfu-insert corfu-scroll-up corfu-scroll-down corfu-expand
                corfu-send corfu-insert-separator corfu-prompt-beginning corfu-prompt-end

@@ -6,7 +6,7 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
 ;; Version: 1.5
-;; Package-Requires: ((emacs "27.1") (compat "30") (corfu "1.5"))
+;; Package-Requires: ((emacs "28.1") (compat "30") (corfu "1.5"))
 ;; Homepage: https://github.com/minad/corfu
 
 ;; This file is part of GNU Emacs.
@@ -514,7 +514,7 @@ not be displayed until this command is called again, even if
   (cl-loop for (k . v) in corfu-popupinfo--initial-state do (set k v))
   (cl-callf2 assq-delete-all #'corfu-popupinfo-mode minor-mode-overriding-map-alist))
 
-;; Emacs 28: Do not show Corfu commands with M-X
+;; Do not show Corfu commands with M-X
 (dolist (sym '(corfu-popupinfo-scroll-down corfu-popupinfo-scroll-up
                corfu-popupinfo-documentation corfu-popupinfo-location
                corfu-popupinfo-beginning corfu-popupinfo-end
