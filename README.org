@@ -28,10 +28,12 @@ backends. The Emacs built-in Capfs and the Capfs provided by third-party
 programming language packages are often sufficient. Additional Capfs and
 completion utilities are provided by the [[https://github.com/minad/cape][Cape]] package.
 
-*NOTE*: Corfu uses child frames to show the popup and falls back to the default
-setting of the ~completion-in-region-function~ on non-graphical displays. If you
-want to use Corfu in the terminal, install the package [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]], which
-provides an alternative overlay-based display.
+*NOTE*: Corfu relies on child frames to show the popup, such that mixed fonts and
+font sizes won't interfere with the rendering. On non-graphical displays, Corfu
+falls back to the default setting of the ~completion-in-region-function~. There is
+an effort towards child frame support for terminal Emacs, which will hopefully
+arrive in Emacs 31 or 32. Until then you can use the [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package as a
+stop-gap solution, which provides an alternative display based on overlays.
 
 #+html: <img src="https://github.com/minad/corfu/blob/screenshots/light.png?raw=true">
 
@@ -504,7 +506,8 @@ out of the box. Nevertheless you may want to look into complementary packages to
 enhance your setup.
 
 - [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]]: The corfu-terminal package provides an overlay-based display
-  for Corfu, such that you can use Corfu in terminal Emacs.
+  for Corfu. This is needed until child frame support for terminal Emacs
+  arrives.
 
 - [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]: Shows as-you-type auto-suggestion candidate overlay
   with a visual indication of whether there are many or exactly one candidate
