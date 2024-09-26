@@ -7,7 +7,7 @@
 ;; Created: 2021
 ;; Version: 1.5
 ;; Package-Requires: ((emacs "28.1") (compat "30"))
-;; Homepage: https://github.com/minad/corfu
+;; URL: https://github.com/minad/corfu
 ;; Keywords: abbrev, convenience, matching, completion, text
 
 ;; This file is part of GNU Emacs.
@@ -43,7 +43,7 @@
 (defgroup corfu nil
   "COmpletion in Region FUnction."
   :link '(info-link :tag "Info Manual" "(corfu)")
-  :link '(url-link :tag "Homepage" "https://github.com/minad/corfu")
+  :link '(url-link :tag "Website" "https://github.com/minad/corfu")
   :link '(emacs-library-link :tag "Library Source" "corfu.el")
   :group 'convenience
   :group 'tools
