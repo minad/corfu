@@ -1354,7 +1354,8 @@ symbols or elements of the form (not modes).  Examples:
   - Enable everywhere, except in Org: ((not org-mode) t).
   - Enable in programming modes except Python: ((not python-mode) prog-mode).
   - Enable only in text modes: (text-mode)."
-  :type '(choice (const t) (repeat sexp)))
+  :type '(choice (const t) (repeat sexp))
+  :group 'corfu)
 
 ;; TODO use `:predicate' on Emacs 29
 (defcustom global-corfu-minibuffer t
@@ -1362,7 +1363,8 @@ symbols or elements of the form (not modes).  Examples:
 The variable can either be t, nil or a custom predicate function.  If
 the variable is set to t, Corfu is only enabled if the minibuffer has
 local `completion-at-point-functions'."
-  :type '(choice (const t) (const nil) function))
+  :type '(choice (const t) (const nil) function)
+  :group 'corfu)
 
 ;;;###autoload
 (define-globalized-minor-mode global-corfu-mode
