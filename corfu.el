@@ -5,7 +5,7 @@
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
-;; Version: 1.5
+;; Version: 1.6
 ;; Package-Requires: ((emacs "28.1") (compat "30"))
 ;; URL: https://github.com/minad/corfu
 ;; Keywords: abbrev, convenience, matching, completion, text
@@ -295,6 +295,9 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
 
 (defvar corfu--frame nil
   "Popup frame.")
+
+(defvar corfu--pixel-wise nil
+  "Whether width calculation should be done in pixels.")
 
 (defconst corfu--initial-state
   (mapcar
@@ -723,36 +726,99 @@ FRAME is the existing frame."
     (funcall (advice--cd*r (symbol-function (compat-function completion-metadata-get)))
              corfu--metadata prop)))
 
-(defun corfu--format-candidates (cands)
-  "Format annotated CANDS."
+(defun corfu--replace-newlines (cands)
+  "Replace newlines in candidates CANDS."
   (cl-loop for c in cands do
            (cl-loop for s in-ref c do
                     (setf s (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s))))
-  (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
-         (pw (cl-loop for x in cands maximize (string-width (cadr x))))
-         (sw (cl-loop for x in cands maximize (string-width (caddr x))))
+  cands)
+
+(cl-defgeneric corfu--string-width (str)
+  "Measure the width of string STR.
+
+The default implementation measures the string in terms of
+columns using `string-width'."
+  (string-width str))
+
+(cl-defgeneric corfu--truncate-string-to-width (str width)
+  "Truncate string STR to WIDTH.
+
+The default implementation delegates to
+`truncate-string-to-width'."
+  (truncate-string-to-width str width 0 nil t))
+
+(defun corfu--format-candidates (cands curr)
+  "Format annotated CANDS.
+CURR is index of the currently selected candidate."
+  (let* ((cw 0)
+         (pw 0)
+         (sw 0)
+         (cands (cl-loop for (c p s) in cands
+                         with triple = nil
+                         do
+                         (let (cpw ppw spw)
+                           (setq cpw (corfu--string-width c)
+                                 ppw (corfu--string-width p)
+                                 spw (corfu--string-width s)
+                                 cw (max cw cpw)
+                                 pw (max pw ppw)
+                                 sw (max sw spw)
+                                 triple (list (cons cpw c)
+                                              (cons ppw p)
+                                              (cons spw s))))
+                         collect triple))
          (width (+ pw cw sw))
+         (fw (if corfu--pixel-wise (default-font-width) 1))
+         (min-width (* corfu-min-width fw))
          ;; -4 because of margins and some additional safety
-         (max-width (min corfu-max-width (- (frame-width) 4))))
-    (when (> width max-width)
-      (setq sw (max 0 (- max-width pw cw))
-            width (+ pw cw sw)))
-    (when (< width corfu-min-width)
-      (setq cw (+ cw (- corfu-min-width width))
-            width corfu-min-width))
-    (setq width (min width max-width))
-    (list pw width
-          (cl-loop for (cand prefix suffix) in cands collect
-                   (truncate-string-to-width
-                    (concat
-                     prefix (make-string (max 0 (- pw (string-width prefix))) ?\s)
-                     cand
-                     (when (/= sw 0)
-                       (make-string (+ (max 0 (- cw (string-width cand)))
-                                       (max 0 (- sw (string-width suffix))))
-                                    ?\s))
-                     suffix)
-                    width)))))
+         (line-width (* (min corfu-max-width (- (frame-width) 4)) fw)))
+    ;; ensure line width is > min width and < max width, no need to ensure
+    ;; there's at least 1 space between segments, capf should have taken cared
+    ;; of it.
+    (when (> width line-width)
+      (setq sw (max 0 (- line-width pw cw))
+            width (+ pw cw sw))
+      (when (> width line-width)
+        (setq cw (max 0 (- line-width pw))
+              width (+ pw cw sw))))
+    (when (< width min-width)
+      (setq cw (+ cw (- min-width width))))
+
+    (cl-loop for ((cand-width . cand) (prefix-width . prefix) (suffix-width . suffix)) in cands
+             with i = 0
+             do
+             ;; `corfu-current' may affect width too
+             (when (= i curr)
+               (cl-loop for s in (list cand prefix suffix)
+                        do (add-face-text-property 0 (length s) 'corfu-current t s)))
+
+             ;; `corfu--truncate-string-to-width' can be expensive, only
+             ;; calls it when necessary
+             (when (> cand-width cw)
+               (setq cand (corfu--truncate-string-to-width cand cw)
+                     cand-width (corfu--string-width cand)))
+
+             (when (> suffix-width sw)
+               (setq suffix (corfu--truncate-string-to-width suffix sw)
+                     suffix-width (corfu--string-width suffix)))
+
+             (cl-incf i)
+
+             collect
+             ;; do not use `:align-to' as it is buggy
+             (concat
+              prefix
+              (if corfu--pixel-wise
+                  (propertize " " 'display `(space :width (,(- pw prefix-width))))
+                (make-string (- pw prefix-width) ?\ ))
+              cand
+              (if corfu--pixel-wise
+                  (propertize " " 'display `(space :width (,(- cw cand-width))))
+                (make-string (- cw cand-width) ?\ ))
+              (if corfu--pixel-wise
+                  (propertize " " 'display `(space :width (,(- sw suffix-width))))
+                (make-string (- sw suffix-width) ?\ ))
+              suffix))))
 
 (defun corfu--compute-scroll ()
   "Compute new scroll position."
@@ -768,19 +834,23 @@ FRAME is the existing frame."
   (pcase-let* ((last (min (+ corfu--scroll corfu-count) corfu--total))
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
                (lo (min (- corfu-count bar 1) (floor (* corfu-count corfu--scroll) corfu--total)))
-               (`(,mf . ,acands) (corfu--affixate
-                                  (cl-loop repeat corfu-count
-                                           for c in (nthcdr corfu--scroll corfu--candidates)
-                                           collect (funcall corfu--hilit (substring c)))))
-               (`(,pw ,width ,fcands) (corfu--format-candidates acands))
-               ;; Disable the left margin if a margin formatter is active.
-               (corfu-left-margin-width (if mf 0 corfu-left-margin-width)))
+               (curr (- corfu--index corfu--scroll))
+               (dcands (corfu--affixate
+                        (cl-loop repeat corfu-count
+                                 for c in (nthcdr corfu--scroll corfu--candidates)
+                                 collect (funcall corfu--hilit (substring c)))))
+               (rcands (corfu--replace-newlines dcands))
+               (lines (corfu--format-candidates rcands curr))
+               (prefix-width (cl-loop for c in rcands maximize (corfu--string-width (cadr c))))
+               (line-width (cl-loop for l in lines maximize (corfu--string-width l)))
+               ;; Disable the left margin if there are prefixes
+               (corfu-left-margin-width (if (> prefix-width 0) 0 corfu-left-margin-width)))
     ;; Nonlinearity at the end and the beginning
     (when (/= corfu--scroll 0)
       (setq lo (max 1 lo)))
     (when (/= last corfu--total)
       (setq lo (min (- corfu-count bar 2) lo)))
-    (corfu--popup-show pos pw width fcands (- corfu--index corfu--scroll)
+    (corfu--popup-show pos prefix-width line-width lines curr
                        (and (> corfu--total corfu-count) lo) bar)))
 
 (defun corfu--range-valid-p ()
@@ -1007,9 +1077,12 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 Auto completion is only performed if the tick did not change."
   (list (selected-window) (current-buffer) (buffer-chars-modified-tick) (point)))
 
-(cl-defgeneric corfu--popup-show (pos off width lines &optional curr lo bar)
-  "Show LINES as popup at POS - OFF.
-WIDTH is the width of the popup.
+(cl-defgeneric corfu--popup-show (pos pw lw lines &optional curr lo bar)
+  "Show LINES as popup at POS - PW.
+PW is the number of pixels required to display the longest prefix on graphical
+displays, or columns in the terminal.
+LW is the number of pixels required to display the longest line on graphical
+displays, or columns in the terminal.
 The current candidate CURR is highlighted.
 A scroll bar is displayed from LO to LO+BAR."
   (let ((lh (default-line-height)))
@@ -1026,13 +1099,16 @@ A scroll bar is displayed from LO to LO+BAR."
                              (propertize " " 'display `(space :width (,(- mr bw))))
                              (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
              (pos (posn-x-y pos))
-             (width (+ (* width cw) ml mr))
+             (width (+ (* lw (if corfu--pixel-wise 1 cw)) ml mr))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
              ;; parent frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
              (border (alist-get 'internal-border-width corfu--frame-parameters))
-             (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
+             (x (max 0 (min (+ (car edge) (- (or (car pos) 0)
+                                             ml
+                                             (* pw (if corfu--pixel-wise 1 cw))
+                                             border))
                             (- (frame-pixel-width) width))))
              (yb (+ (cadr edge) (window-tab-line-height) (or (cdr pos) 0) lh))
              (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
@@ -1080,7 +1156,7 @@ A scroll bar is displayed from LO to LO+BAR."
     str))
 
 (cl-defgeneric corfu--affixate (cands)
-  "Annotate CANDS with annotation function."
+  "Apply decoration functions to candidates CANDS."
   (let* ((extras (nth 4 completion-in-region--data))
          (dep (plist-get extras :company-deprecated))
          (mf (let ((completion-extra-properties extras))
@@ -1105,7 +1181,7 @@ A scroll bar is displayed from LO to LO+BAR."
              (when (and dep (funcall dep c))
                (setcar x (setq c (substring c)))
                (add-face-text-property 0 (length c) 'corfu-deprecated 'append c)))
-    (cons mf cands)))
+    cands))
 
 (cl-defgeneric corfu--prepare ()
   "Insert selected candidate unless command is marked to continue completion."
@@ -1129,7 +1205,8 @@ A scroll bar is displayed from LO to LO+BAR."
   "Exhibit Corfu UI.
 AUTO is non-nil when initializing auto completion."
   (pcase-let ((`(,beg ,end ,table ,pred . ,_) completion-in-region--data)
-              (`(,str . ,pt) (corfu--update 'interruptible)))
+              (`(,str . ,pt) (corfu--update 'interruptible))
+              (no-match-msg (propertize "No match" 'face 'italic)))
     (cond
      ;; 1) Single exactly matching candidate and no further completion is possible.
      ((and (not (equal str ""))
@@ -1151,7 +1228,8 @@ AUTO is non-nil when initializing auto completion."
         ('t nil)
         ('nil corfu--input)
         ('separator (seq-contains-p (car corfu--input) corfu-separator)))
-      (corfu--popup-show (posn-at-point beg) 0 8 '(#("No match" 0 8 (face italic)))))
+      (corfu--popup-show (posn-at-point beg) 0 (corfu--string-width no-match-msg)
+                         (list no-match-msg)))
      ;; 4) No candidates & auto completing or initialized => Quit.
      ((or auto corfu--input) (corfu-quit)))))
 
