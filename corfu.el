@@ -1062,7 +1062,9 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (cl-defgeneric corfu--popup-support-p ()
   "Return non-nil if child frames are supported."
-  (display-graphic-p))
+  (or (display-graphic-p)
+      ;; Upcoming feature: Gerd Möllmann's child frame support on TTY.
+      (featurep 'tty-child-frames)))
 
 (cl-defgeneric corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
