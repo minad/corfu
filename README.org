@@ -30,10 +30,10 @@ completion utilities are provided by the [[https://github.com/minad/cape][Cape]]
 
 *NOTE*: Corfu relies on child frames to show the popup, such that mixed fonts and
 font sizes won't interfere with the rendering. On non-graphical displays, Corfu
-falls back to the default setting of the ~completion-in-region-function~. There is
-an effort towards [[https://lists.gnu.org/archive/html/emacs-devel/2024-10/msg00003.html][child frame support for terminal Emacs]], which will hopefully
-arrive in Emacs 31 or 32. Until then you can use the [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package as a
-stop-gap solution, which provides an alternative display based on overlays.
+falls back to the default setting of the ~completion-in-region-function~. There
+exists a feature branch with [[https://lists.gnu.org/archive/html/emacs-devel/2024-10/msg00491.html][child frame support for terminal Emacs]], which will
+hopefully land in Emacs 31. Until then you can use the [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package as
+a stop-gap solution, which provides an alternative display based on overlays.
 
 #+html: <img src="https://github.com/minad/corfu/blob/screenshots/light.png?raw=true">
 
