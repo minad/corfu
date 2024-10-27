@@ -371,8 +371,7 @@ form (X Y WIDTH HEIGHT DIR)."
                            (corfu-popupinfo--size)
                          (cons
                           (- (frame-pixel-width corfu-popupinfo--frame) border border)
-                          (- (frame-pixel-height corfu-popupinfo--frame) border border)))))
-                     (margin-quirk (not corfu-popupinfo--frame)))
+                          (- (frame-pixel-height corfu-popupinfo--frame) border border))))))
           (setq corfu-popupinfo--frame
                 (corfu--make-frame corfu-popupinfo--frame
                                    area-x area-y area-w area-h
@@ -380,14 +379,7 @@ form (X Y WIDTH HEIGHT DIR)."
                 corfu-popupinfo--toggle t
                 corfu-popupinfo--lock-dir area-d
                 corfu-popupinfo--candidate candidate
-                corfu-popupinfo--coordinates new-coords)
-          ;; XXX HACK: Force margin update. For some reason, the call to
-          ;; `set-window-buffer' in `corfu--make-frame' is not effective the
-          ;; first time. Why does Emacs have all these quirks?
-          (when margin-quirk
-            (set-window-buffer
-             (frame-root-window corfu-popupinfo--frame)
-             " *corfu-popupinfo*")))))))
+                corfu-popupinfo--coordinates new-coords))))))
 
 (defun corfu-popupinfo--hide ()
   "Clear the info popup buffer content and hide it."
