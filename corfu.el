@@ -136,6 +136,18 @@ separator: Only stay alive if there is no match and
   "Width of the right margin in units of the character width."
   :type 'float)
 
+(defcustom corfu-bar-width 0.2
+  "Width of the bar in units of the character width."
+  :type 'float)
+
+(defcustom corfu-bar-on-fringe t
+  "Whether the bar is shown on the fringe.
+
+If t, the bar is shown on the fringe with no truncation indicator.
+If nil, the bar is shown on the margin with ellipsis as the truncation
+indicator."
+  :type 'boolean)
+
 (defcustom corfu-margin-formatters nil
   "Registry for margin formatter functions.
 Each function of the list is called with the completion metadata as
@@ -207,8 +219,10 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
   "Face used to highlight the currently selected candidate.")
 
 (defface corfu-bar
-  '((((class color) (min-colors 88) (background dark)) :background "#a8a8a8")
-    (((class color) (min-colors 88) (background light)) :background "#505050")
+  '((((class color) (min-colors 88) (background dark))
+     :background "#a8a8a8" :foreground "#a8a8a8")
+    (((class color) (min-colors 88) (background light))
+     :background "#505050" :foreground "#505050")
     (t :background "gray"))
   "The background color is used for the scrollbar indicator.")
 
@@ -225,6 +239,27 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
 (defface corfu-deprecated
   '((t :inherit shadow :strike-through t))
   "Face used for deprecated candidates.")
+
+(define-fringe-bitmap 'corfu-scroll-bar
+  (vector
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   #b11111111111111
+   )
+  255 16 '(center . t))
 
 (defvar-keymap corfu-mode-map
   :doc "Keymap used when `corfu-mode' is active.")
@@ -411,6 +446,10 @@ length override, set to t for manual completion."
       (setq-local face-remapping-alist (copy-tree fr)
                   line-spacing ls)
       (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
+      ;; truncation ellipsis when `corfu-bar-on-fringe' is nil
+      (let ((dt (make-display-table)))
+        (set-display-table-slot dt 'truncation ?\x2026)
+        (setq-local buffer-display-table dt))
       buffer)))
 
 (defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
@@ -1045,12 +1084,19 @@ A scroll bar is displayed from LO to LO+BAR."
     (with-current-buffer (corfu--make-buffer " *corfu*")
       (let* ((ch (default-line-height))
              (cw (default-font-width))
-             (sbar (propertize " " 'display `((margin right-margin)
-                                              ,(propertize " " 'face 'corfu-bar))))
+             (mr (ceiling (* cw corfu-right-margin-width)))
+             (bw (ceiling (* cw corfu-bar-width)))
+             (sbar (propertize " " 'display
+                               (if corfu-bar-on-fringe
+                                   '(right-fringe corfu-scroll-bar corfu-bar)
+                                 `((margin right-margin)
+                                   ,(propertize " " 'face 'corfu-bar)))))
              (pos (posn-x-y pos))
-             (width (+ (if lo cw 0) ;; scroll bar margin
-                       ;; -4 because of margins and some additional safety
-                       (min (* cw (min (- (frame-width) 4) corfu-max-width)) content-width)))
+             (width (+
+                     ;; scroll bar
+                     (if lo (if corfu-bar-on-fringe (- mr bw) cw) 0)
+                     ;; -4 because of margins and some additional safety
+                     (min (* cw (min (- (frame-width) 4) corfu-max-width)) content-width)))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
              ;; parent frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
@@ -1064,14 +1110,14 @@ A scroll bar is displayed from LO to LO+BAR."
                   yb)))
         (with-silent-modifications
           (erase-buffer)
+
           ;; scroll bar required
-          (setq-local right-margin-width (if lo 1 0))
-          ;; truncation required
-          (if (> content-width width)
-              (let ((dt (make-display-table)))
-                (set-display-table-slot dt 'truncation ?\x2026)
-                (setq-local buffer-display-table dt))
-            (setq-local buffer-display-table nil))
+          (if lo
+              (if corfu-bar-on-fringe
+                  (setq-local right-fringe-width bw)
+                (setq-local right-margin-width 1))
+            (setq-local right-fringe-width 0)
+            (setq-local right-margin-width 0))
 
           (insert (string-join
                    (cl-loop for i from 0 to (1- (length lines))
