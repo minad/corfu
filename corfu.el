@@ -775,16 +775,18 @@ buffers."
                     (setf s (replace-regexp-in-string "[ \t]*\n[ \t]*" " " s))))
   cands)
 
-(defun corfu--format-candidates (cands curr)
+(defun corfu--format-candidates (cands curr ml mr)
   "Format annotated CANDS.
-CURR is index of the currently selected candidate."
+CURR is index of the currently selected candidate.
+ML is the left margin padding in pixels on graphical displays or columns on the
+terminal.
+MR is the left margin padding in pixels on graphical displays or columns on the
+terminal."
   (let* ((cw (string-pixel-width (string-join (cl-loop for x in cands collect (car x)) "\n")))
          (pw (string-pixel-width (string-join (cl-loop for x in cands collect (cadr x)) "\n")))
          (sw (string-pixel-width (string-join (cl-loop for x in cands collect (caddr x)) "\n")))
          (fw (default-font-width))
          (width (max (+ pw cw sw) (* fw corfu-min-width)))
-         (ml (max 0 (ceiling (* fw corfu-left-margin-width))))
-         (mr (max 0 (ceiling (* fw corfu-right-margin-width))))
          (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
          (marginr (and (> mr 0) (propertize " " 'display `(space :width (,mr))))))
 
@@ -834,11 +836,16 @@ CURR is index of the currently selected candidate."
                (rcands (corfu--replace-newlines dcands))
                (prefix-pixel-width (string-pixel-width
                                     (string-join (cl-loop for c in rcands collect (cadr c)) "\n")))
+               (fw (default-font-width))
                ;; Disable the left margin if there are prefixes
-               (corfu-left-margin-width (if (> prefix-pixel-width 0) 0 corfu-left-margin-width))
-               (left-margin-width (max 0 (ceiling (* (default-font-width) corfu-left-margin-width))))
-               (offset (+ prefix-pixel-width left-margin-width))
-               (lines (corfu--format-candidates rcands curr))
+               (ml (if (> prefix-pixel-width 0) 0 corfu-left-margin-width))
+               (ml (max 0 (ceiling (* fw ml))))
+               ;; Adjust right margin width according to scroll bar width
+               (bw (max 0 (ceiling (* fw corfu-bar-width))))
+               (mr (max 0 (ceiling (* fw corfu-right-margin-width))))
+               (mr (- (max mr bw) (min mr bw)))
+               (offset (+ prefix-pixel-width ml))
+               (lines (corfu--format-candidates rcands curr ml mr))
                (content-width (string-pixel-width (string-join lines "\n"))))
     ;; Nonlinearity at the end and the beginning
     (when (/= corfu--scroll 0)
@@ -1084,8 +1091,9 @@ A scroll bar is displayed from LO to LO+BAR."
     (with-current-buffer (corfu--make-buffer " *corfu*")
       (let* ((ch (default-line-height))
              (cw (default-font-width))
-             (mr (ceiling (* cw corfu-right-margin-width)))
-             (bw (ceiling (* cw corfu-bar-width)))
+             (mr (max 0 (ceiling (* cw corfu-right-margin-width))))
+             (bw (max 0 (ceiling (* cw corfu-bar-width))))
+             (bw (min mr bw))
              (sbar (propertize " " 'display
                                (if corfu-bar-on-fringe
                                    '(right-fringe corfu-scroll-bar corfu-bar)
@@ -1094,7 +1102,7 @@ A scroll bar is displayed from LO to LO+BAR."
              (pos (posn-x-y pos))
              (width (+
                      ;; scroll bar
-                     (if lo (if corfu-bar-on-fringe (- mr bw) cw) 0)
+                     (if lo (if corfu-bar-on-fringe bw cw) 0)
                      ;; -4 because of margins and some additional safety
                      (min (* cw (min (- (frame-width) 4) corfu-max-width)) content-width)))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
