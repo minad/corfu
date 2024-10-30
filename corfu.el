@@ -145,7 +145,12 @@ separator: Only stay alive if there is no match and
 Each function of the list is called with the completion metadata as
 argument until an appropriate formatter is found.  The function should
 return a formatter function, which takes the candidate string and must
-return a string, possibly an icon."
+return a string, possibly an icon.  In order to preserve correct popup
+alignment, the length and display width of the returned string must
+precisely span the same number of fixed number of fixed-width characters
+of the fixed-width popup font, ideally one or two characters.  For
+example the kind-icon package returns a string of length two with a
+display width of two characters."
   :type 'hook)
 
 (defcustom corfu-sort-function #'corfu-sort-length-alpha
