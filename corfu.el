@@ -776,7 +776,7 @@ terminal."
              do
              ;; `corfu-current' may affect frame-width too
              (when (= i curr)
-               (cl-loop for s in (list cand prefix suffix)
+               (cl-loop for s in (list cand prefix suffix marginl marginr)
                         do (add-face-text-property 0 (length s) 'corfu-current t s)))
 
              (cl-incf i)
