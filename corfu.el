@@ -219,10 +219,8 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
   "Face used to highlight the currently selected candidate.")
 
 (defface corfu-bar
-  '((((class color) (min-colors 88) (background dark))
-     :background "#a8a8a8" :foreground "#a8a8a8")
-    (((class color) (min-colors 88) (background light))
-     :background "#505050" :foreground "#505050")
+  '((((class color) (min-colors 88) (background dark)) :background "#a8a8a8")
+    (((class color) (min-colors 88) (background light)) :background "#505050")
     (t :background "gray"))
   "The background color is used for the scrollbar indicator.")
 
@@ -241,25 +239,8 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
   "Face used for deprecated candidates.")
 
 (define-fringe-bitmap 'corfu-scroll-bar
-  (vector
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   #b11111111111111
-   )
-  255 16 '(center . t))
+  (vector #b0)
+  255 16 '(center t))
 
 (defvar-keymap corfu-mode-map
   :doc "Keymap used when `corfu-mode' is active.")
