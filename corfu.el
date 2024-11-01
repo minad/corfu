@@ -1017,10 +1017,10 @@ A scroll bar is displayed from LO to LO+BAR."
     (with-current-buffer (corfu--make-buffer " *corfu*")
       (let* ((ch (default-line-height))
              (cw (default-font-width))
-             (bw (ceiling (* cw corfu-bar-width)))
              (fringe (display-graphic-p))
              (ml (ceiling (* cw corfu-left-margin-width)))
-             (mr (ceiling (* cw corfu-right-margin-width)))
+             (bw (ceiling (* cw corfu-bar-width)))
+             (mr (max bw (ceiling (* cw corfu-right-margin-width))))
              (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
              (sbar (if fringe
                        #(" " 0 1 (display (right-fringe corfu--bar corfu-bar)))
