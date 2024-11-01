@@ -209,10 +209,10 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
 
 (defface corfu-current
   '((((class color) (min-colors 88) (background dark))
-     :background "#00415e" :foreground "white")
+     :background "#00415e" :foreground "white" :extend t)
     (((class color) (min-colors 88) (background light))
-     :background "#c0efff" :foreground "black")
-    (t :background "blue" :foreground "white"))
+     :background "#c0efff" :foreground "black" :extend t)
+    (t :background "blue" :foreground "white" :extend t))
   "Face used to highlight the currently selected candidate.")
 
 (defface corfu-bar
@@ -1025,10 +1025,8 @@ A scroll bar is displayed from LO to LO+BAR."
              (mr (ceiling (* cw corfu-right-margin-width)))
              (bw (ceiling (min mr (* cw corfu-bar-width))))
              (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
-             (marginr (and (> mr 0) (propertize " " 'display `(space :align-to right))))
              (sbar (when (> bw 0)
-                     (concat (propertize " " 'display `(space :align-to (- right (,mr))))
-                             (propertize " " 'display `(space :width (,(- mr bw))))
+                     (concat (propertize " " 'display `(space :align-to (- right (,bw))))
                              (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
              (pos (posn-x-y pos))
              (width (+ (* width cw) ml mr))
@@ -1046,17 +1044,17 @@ A scroll bar is displayed from LO to LO+BAR."
              (row 0))
         (with-silent-modifications
           (erase-buffer)
-          (insert (mapconcat (lambda (line)
-                               (let ((str (concat marginl line
-                                                  (if (and lo (<= lo row (+ lo bar)))
-                                                      sbar
-                                                    marginr))))
-                                 (when (eq row curr)
-                                   (add-face-text-property
-                                    0 (length str) 'corfu-current 'append str))
-                                 (cl-incf row)
-                                 str))
-                             lines "\n"))
+          (apply #'insert
+           (cl-loop for line in lines collect
+                    (let ((str (concat
+                                marginl line
+                                (and lo (<= lo row (+ lo bar)) sbar)
+                                "\n")))
+                      (when (= row curr)
+                        (add-face-text-property
+                         0 (length str) 'corfu-current 'append str))
+                      (cl-incf row)
+                      str)))
           (goto-char (point-min)))
         (setq corfu--frame (corfu--make-frame corfu--frame x y width height))))))
 
