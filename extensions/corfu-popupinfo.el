@@ -159,6 +159,9 @@ all values are in pixels relative to the origin.  See
 (defvar corfu-popupinfo--lock-dir nil
   "Locked position direction of the info popup.")
 
+(defconst corfu-popupinfo--buffer " *corfu-popupinfo*"
+  "Buffer used by the popup.")
+
 (defconst corfu-popupinfo--initial-state
   (mapcar
    (lambda (k) (cons k (symbol-value k)))
@@ -244,7 +247,7 @@ all values are in pixels relative to the origin.  See
          (max-height (* lh corfu-popupinfo-max-height))
          (max-width (* cw corfu-popupinfo-max-width)))
     (or (when corfu-popupinfo-resize
-          (with-current-buffer " *corfu-popupinfo*"
+          (with-current-buffer corfu-popupinfo--buffer
             (cl-letf* (((window-dedicated-p) nil)
                        ((window-buffer) (current-buffer))
                        (size (window-text-pixel-size
@@ -352,7 +355,7 @@ form (X Y WIDTH HEIGHT DIR)."
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
       (when cand-changed
         (if-let ((content (funcall corfu-popupinfo--function candidate)))
-            (with-current-buffer (corfu--make-buffer " *corfu-popupinfo*")
+            (with-current-buffer (corfu--make-buffer corfu-popupinfo--buffer)
               (with-silent-modifications
                 (erase-buffer)
                 (insert content)
@@ -376,7 +379,7 @@ form (X Y WIDTH HEIGHT DIR)."
           (setq corfu-popupinfo--frame
                 (corfu--make-frame corfu-popupinfo--frame
                                    area-x area-y area-w area-h
-                                   " *corfu-popupinfo*")
+                                   corfu-popupinfo--buffer)
                 corfu-popupinfo--toggle t
                 corfu-popupinfo--lock-dir area-d
                 corfu-popupinfo--candidate candidate
@@ -387,7 +390,7 @@ form (X Y WIDTH HEIGHT DIR)."
           (when margin-quirk
             (set-window-buffer
              (frame-root-window corfu-popupinfo--frame)
-             " *corfu-popupinfo*")))))))
+             corfu-popupinfo--buffer)))))))
 
 (defun corfu-popupinfo--hide ()
   "Clear the info popup buffer content and hide it."
@@ -402,7 +405,7 @@ visible, the other window is moved to beginning or end."
   (interactive "P")
   (if (corfu-popupinfo--visible-p)
       (with-selected-frame corfu-popupinfo--frame
-        (with-current-buffer " *corfu-popupinfo*"
+        (with-current-buffer corfu-popupinfo--buffer
           (with-no-warnings
             (end-of-buffer n))))
     (end-of-buffer-other-window n)))
@@ -423,7 +426,7 @@ the other window is scrolled."
   (interactive "p")
   (if (corfu-popupinfo--visible-p)
       (with-selected-frame corfu-popupinfo--frame
-        (with-current-buffer " *corfu-popupinfo*"
+        (with-current-buffer corfu-popupinfo--buffer
           (scroll-up n)))
     (scroll-other-window n)))
 
