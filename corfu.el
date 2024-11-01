@@ -147,10 +147,9 @@ argument until an appropriate formatter is found.  The function should
 return a formatter function, which takes the candidate string and must
 return a string, possibly an icon.  In order to preserve correct popup
 alignment, the length and display width of the returned string must
-precisely span the same number of fixed number of fixed-width characters
-of the fixed-width popup font, ideally one or two characters.  For
-example the kind-icon package returns a string of length two with a
-display width of two characters."
+precisely span the same number of characters of the fixed-width popup
+font.  For example the kind-icon package returns a string of length 3
+with a display width of 3 characters."
   :type 'hook)
 
 (defcustom corfu-sort-function #'corfu-sort-length-alpha
