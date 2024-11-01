@@ -437,8 +437,8 @@ length override, set to t for manual completion."
          'resize-mode)))
 
 ;; Function adapted from posframe.el by tumashu
-(defun corfu--make-frame (frame x y width height buffer)
-  "Show BUFFER in child frame at X/Y with WIDTH/HEIGHT.
+(defun corfu--make-frame (frame x y width height)
+  "Show current buffer in child frame at X/Y with WIDTH/HEIGHT.
 FRAME is the existing frame."
   (when-let (((frame-live-p frame))
              (timer (frame-parameter frame 'corfu--hide-timer)))
@@ -488,8 +488,8 @@ FRAME is the existing frame."
                           unless (equal (alist-get k is) v) collect p)))
       (when diff (modify-frame-parameters frame diff)))
     (let ((win (frame-root-window frame)))
-      (unless (eq (window-buffer win) buffer)
-        (set-window-buffer win buffer))
+      (unless (eq (window-buffer win) (current-buffer))
+        (set-window-buffer win (current-buffer)))
       ;; Disallow selection of root window (gh:minad/corfu#63)
       (set-window-parameter win 'no-delete-other-windows t)
       (set-window-parameter win 'no-other-window t)
@@ -1058,8 +1058,7 @@ A scroll bar is displayed from LO to LO+BAR."
                                  str))
                              lines "\n"))
           (goto-char (point-min)))
-        (setq corfu--frame (corfu--make-frame corfu--frame x y
-                                              width height (current-buffer)))))))
+        (setq corfu--frame (corfu--make-frame corfu--frame x y width height))))))
 
 (cl-defgeneric corfu--popup-hide ()
   "Hide Corfu popup."
