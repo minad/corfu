@@ -746,9 +746,10 @@ FRAME is the existing frame."
                     (concat
                      prefix (make-string (- pw (string-width prefix)) ?\s)
                      cand
-                     (make-string (max 1 (- width pw (string-width cand)
-					    (string-width suffix)))
-				  ?\s)
+                     (when (> sw 0)
+                       (make-string (max 0 (- width pw (string-width cand)
+                                              (string-width suffix)))
+                                    ?\s))
                      suffix)
                     width)))))
 
