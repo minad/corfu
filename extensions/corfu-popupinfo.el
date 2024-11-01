@@ -130,7 +130,6 @@ documentation from the backend is usually expensive."
     (left-margin-width . 1)
     (right-margin-width . 1)
     (word-wrap . t)
-    (fringe-indicator-alist (continuation))
     (char-property-alias-alist (face font-lock-face)))
   "Buffer parameters.")
 

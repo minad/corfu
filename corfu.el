@@ -326,8 +326,6 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
     (outer-border-width . 0)
     (internal-border-width . 1)
     (child-frame-border-width . 1)
-    (left-fringe . 0)
-    (right-fringe . 0)
     (vertical-scroll-bars . nil)
     (horizontal-scroll-bars . nil)
     (menu-bar-lines . 0)
@@ -352,12 +350,12 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
     (cursor-type . nil)
     (show-trailing-whitespace . nil)
     (display-line-numbers . nil)
-    (left-fringe-width . nil)
-    (right-fringe-width . nil)
+    (left-fringe-width . 0)
+    (right-fringe-width . 0)
     (left-margin-width . 0)
     (right-margin-width . 0)
     (fringes-outside-margins . 0)
-    (fringe-indicator-alist . nil)
+    (fringe-indicator-alist (continuation) (truncation))
     (indicate-empty-lines . nil)
     (indicate-buffer-boundaries . nil)
     (buffer-read-only . t))
@@ -462,6 +460,8 @@ FRAME is the existing frame."
                    `((parent-frame . ,parent)
                      (minibuffer . ,(minibuffer-window parent))
                      (width . 0) (height . 0) (visibility . nil)
+                     (right-fringe . ,right-fringe-width)
+                     (left-fringe . ,left-fringe-width)
                      ,@corfu--frame-parameters))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
@@ -483,6 +483,8 @@ FRAME is the existing frame."
            (should `((background-color
                       . ,(face-attribute 'corfu-default :background nil 'default))
                      (font . ,(frame-parameter parent 'font))
+                     (right-fringe . ,right-fringe-width)
+                     (left-fringe . ,left-fringe-width)
                      ,@corfu--frame-parameters))
            (diff (cl-loop for p in should for (k . v) = p
                           unless (equal (alist-get k is) v) collect p)))
@@ -1015,15 +1017,18 @@ A scroll bar is displayed from LO to LO+BAR."
     (with-current-buffer (corfu--make-buffer " *corfu*")
       (let* ((ch (default-line-height))
              (cw (default-font-width))
+             (bw (ceiling (* cw corfu-bar-width)))
+             (fringe (display-graphic-p))
              (ml (ceiling (* cw corfu-left-margin-width)))
              (mr (ceiling (* cw corfu-right-margin-width)))
-             (bw (ceiling (min mr (* cw corfu-bar-width))))
              (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
-             (sbar (when (> bw 0)
+             (sbar (if fringe
+                       #(" " 0 1 (display (right-fringe corfu--bar corfu-bar)))
                      (concat (propertize " " 'display `(space :align-to (- right (,bw))))
                              (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
+             (cbar (and fringe #(" " 0 1 (display (right-fringe corfu--bar corfu-current)))))
              (pos (posn-x-y pos))
-             (width (+ (* width cw) ml mr))
+             (width (+ (* width cw) ml mr (if fringe (- bw) 0)))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
              ;; parent frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
@@ -1036,13 +1041,17 @@ A scroll bar is displayed from LO to LO+BAR."
                     (- yb height lh border border)
                   yb))
              (row 0))
+        (setq right-fringe-width (if fringe bw 0))
+        (when (and (> right-fringe-width 0) (not (fringe-bitmap-p 'corfu--bar)))
+          (define-fringe-bitmap 'corfu--bar []))
         (with-silent-modifications
           (erase-buffer)
           (apply #'insert
            (cl-loop for line in lines collect
                     (let ((str (concat
                                 marginl line
-                                (and lo (<= lo row (+ lo bar)) sbar)
+                                (or (and lo (<= lo row (+ lo bar)) sbar)
+                                    (and (= row curr) cbar))
                                 "\n")))
                       (when (= row curr)
                         (add-face-text-property
