@@ -734,23 +734,16 @@ FRAME is the existing frame."
          (width (+ pw cw sw))
          ;; -4 because of margins and some additional safety
          (max-width (min corfu-max-width (- (frame-width) 4))))
-    (when (> width max-width)
-      (setq sw (max 0 (- max-width pw cw))
-            width (+ pw cw sw)))
-    (when (< width corfu-min-width)
-      (setq cw (+ cw (- corfu-min-width width))
-            width corfu-min-width))
-    (setq width (min width max-width))
+    (setq width (min (max corfu-min-width width) max-width))
     (list pw width
           (cl-loop for (cand prefix suffix) in cands collect
                    (truncate-string-to-width
                     (concat
-                     prefix (make-string (max 0 (- pw (string-width prefix))) ?\s)
+                     prefix (make-string (- pw (string-width prefix)) ?\s)
                      cand
-                     (when (/= sw 0)
-                       (make-string (+ (max 0 (- cw (string-width cand)))
-                                       (max 0 (- sw (string-width suffix))))
-                                    ?\s))
+                     (make-string (max 1 (- width pw (string-width cand)
+					    (string-width suffix)))
+				  ?\s)
                      suffix)
                     width)))))
 
