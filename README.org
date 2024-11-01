@@ -61,7 +61,7 @@ a stop-gap solution, which provides an alternative display based on overlays.
 - Lazy completion candidate highlighting for performance.
 - Support for candidate annotations (=annotation-function=, =affixation-function=).
 - Deprecated candidates are displayed as crossed out.
-- Icons can be provided by an external package via margin formatter functions.
+- Icons are provided by external packages via margin formatter functions.
 - Rich set of extensions: Quick keys, Index keys, Sorting by history, Candidate
   documentation in echo area, popup or separate buffer.
 
@@ -524,9 +524,8 @@ enhance your setup.
 
 - [[https://github.com/jdtsmith/kind-icon][kind-icon]], [[https://github.com/LuigiPiucco/nerd-icons-corfu][nerd-icons-corfu]]: Icons are supported by Corfu via external
   packages. The nerd-icons-corfu package relies on the Nerd icon font, which is
-  supported on terminal, while kind-icon uses SVGs from monochromatic icon sets.
-  As of today, kind-icon is the only recommended library since it ensures
-  correct icon alignment.
+  even supported on terminal, while kind-icon uses SVGs from monochromatic icon
+  sets.
 
 - [[https://github.com/minad/tempel][Tempel]]: Tiny template/snippet package with templates in Lisp syntax, which
   can be used in conjunction with Corfu.
