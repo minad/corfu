@@ -479,7 +479,8 @@ FRAME is the existing frame."
     ;; overrides the parameter `tool-bar-lines' for every frame, including child
     ;; frames.  The child frame API is a pleasure to work with.  It is full of
     ;; lovely surprises.
-    (let* ((is (frame-parameters frame))
+    (let* ((win (frame-root-window frame))
+           (is (frame-parameters frame))
            (should `((background-color
                       . ,(face-attribute 'corfu-default :background nil 'default))
                      (font . ,(frame-parameter parent 'font))
@@ -488,9 +489,9 @@ FRAME is the existing frame."
                      ,@corfu--frame-parameters))
            (diff (cl-loop for p in should for (k . v) = p
                           unless (equal (alist-get k is) v) collect p)))
-      (when diff (modify-frame-parameters frame diff)))
-    (let ((win (frame-root-window frame)))
-      (unless (eq (window-buffer win) (current-buffer))
+      (when diff (modify-frame-parameters frame diff))
+      ;; XXX HACK: `set-window-buffer' must be called to force fringe update.
+      (when (or diff (eq (window-buffer win) (current-buffer)))
         (set-window-buffer win (current-buffer)))
       ;; Disallow selection of root window (gh:minad/corfu#63)
       (set-window-parameter win 'no-delete-other-windows t)
