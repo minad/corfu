@@ -5,6 +5,10 @@
 * Development
 
 - Require Emacs 28.1.
+- Use fringe to display scroll bar. Make sure that the scroll bar cannot be
+  pushed outside the child frame by the content. This affects for example
+  ~cape-emoji~.
+- Improve suffix alignment.
 
 * Version 1.5 (2024-07-26)
 
