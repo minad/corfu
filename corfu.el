@@ -1052,9 +1052,9 @@ A scroll bar is displayed from LO to LO+BAR."
                     (let ((str (concat
                                 marginl line
                                 (or (and lo (<= lo row (+ lo bar)) sbar)
-                                    (and (= row curr) cbar))
+                                    (and (eq row curr) cbar))
                                 "\n")))
-                      (when (= row curr)
+                      (when (eq row curr)
                         (add-face-text-property
                          0 (length str) 'corfu-current 'append str))
                       (cl-incf row)
