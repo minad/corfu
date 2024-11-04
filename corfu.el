@@ -136,7 +136,7 @@ separator: Only stay alive if there is no match and
   "Width of the right margin in units of the character width."
   :type 'float)
 
-(defcustom corfu-bar-width 0.2
+(defcustom corfu-scroll-bar-width 0.2
   "Width of the bar in units of the character width."
   :type 'float)
 
@@ -214,11 +214,11 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
     (t :background "blue" :foreground "white" :extend t))
   "Face used to highlight the currently selected candidate.")
 
-(defface corfu-bar
-  '((((class color) (min-colors 88) (background dark)) :background "#a8a8a8")
-    (((class color) (min-colors 88) (background light)) :background "#505050")
-    (t :background "gray"))
-  "The background color is used for the scrollbar indicator.")
+(defface corfu-scroll-bar
+  '((((class color) (min-colors 88) (background dark)) :foreground "#a8a8a8")
+    (((class color) (min-colors 88) (background light)) :foreground "#505050")
+    (t :foreground "gray"))
+  "The foreground color is used for the scrollbar indicator.")
 
 (defface corfu-border
   '((((class color) (min-colors 88) (background dark)) :background "#323232")
@@ -1017,16 +1017,20 @@ A scroll bar is displayed from LO to LO+BAR."
              (cw (default-font-width))
              (fringe (display-graphic-p))
              (ml (ceiling (* cw corfu-left-margin-width)))
-             (bw (ceiling (* cw corfu-bar-width)))
+             (bw (ceiling (* cw corfu-scroll-bar-width)))
              (mr (max bw (ceiling (* cw corfu-right-margin-width))))
              (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
              (sbar (if fringe
-                       #(" " 0 1 (display (right-fringe corfu--bar corfu-bar)))
+                       #(" " 0 1 (display (right-fringe corfu--bar corfu-scroll-bar)))
                      (concat (propertize " " 'display `(space :align-to (- right (,bw))))
-                             (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
-             (cbar (and fringe #(" " 0 1 (display (right-fringe corfu--bar corfu-current)))))
+                             (propertize " " 'face '(:inherit corfu-scroll-bar :inverse-video t)
+                                         'display `(space :width (,bw))))))
+             (cbar (if fringe
+                       #(" " 0 1 (display (right-fringe corfu--bar corfu--bar-cur)))
+                     sbar))
+             (cmargin (and fringe #(" " 0 1 (display (right-fringe corfu--nil corfu-current)))))
              (pos (posn-x-y pos))
-             (pwidth (+ (* width cw) ml mr (if fringe (- bw) 0)))
+             (pwidth (+ (* width cw) ml (if fringe 0 mr)))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
              ;; parent frame (gh:minad/corfu#261).
              (pheight (max lh (* (length lines) ch)))
@@ -1039,9 +1043,13 @@ A scroll bar is displayed from LO to LO+BAR."
                     (- yb pheight lh border border)
                   yb))
              (row 0))
-        (setq right-fringe-width (if fringe bw 0))
+        (setq right-fringe-width (if fringe mr 0))
         (when (and (> right-fringe-width 0) (not (fringe-bitmap-p 'corfu--bar)))
-          (define-fringe-bitmap 'corfu--bar []))
+          (define-fringe-bitmap 'corfu--nil [])
+          (define-fringe-bitmap 'corfu--bar (vector (1- (ash 1 bw))) 1 mr '(top periodic))
+          ;; Fringe bitmaps require symbol face specification, define internal faces.
+          (set-face-attribute (make-face 'corfu--bar-cur) nil
+                              :inherit '(corfu-scroll-bar corfu-current)))
         (with-silent-modifications
           (erase-buffer)
           (apply #'insert
@@ -1049,8 +1057,9 @@ A scroll bar is displayed from LO to LO+BAR."
                     (let ((str (concat
                                 marginl
                                 (if fringe line (truncate-string-to-width line width))
-                                (or (and lo (<= lo row (+ lo bar)) sbar)
-                                    (and (eq row curr) cbar))
+                                (if (and lo (<= lo row (+ lo bar)))
+                                    (if (eq row curr) cbar sbar)
+                                  (and (eq row curr) cmargin))
                                 "\n")))
                       (when (eq row curr)
                         (add-face-text-property
