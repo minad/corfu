@@ -1015,11 +1015,13 @@ A scroll bar is displayed from LO to LO+BAR."
     (with-current-buffer (corfu--make-buffer " *corfu*")
       (let* ((ch (default-line-height))
              (cw (default-font-width))
-             (fringe (display-graphic-p))
              (ml (ceiling (* cw corfu-left-margin-width)))
              (bw (ceiling (* cw corfu-scroll-bar-width)))
              (mr (max bw (ceiling (* cw corfu-right-margin-width))))
              (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
+             ;; PROBLEM: Even if the fringe is allowed to be larger, fringe
+             ;; bitmaps can only have a width between 1 and 16. :(
+             (fringe (and (<= 1 mr 16) (display-graphic-p)))
              (sbar (if fringe
                        #(" " 0 1 (display (right-fringe corfu--bar corfu-scroll-bar)))
                      (concat (propertize " " 'display `(space :align-to (- right (,bw))))
@@ -1042,11 +1044,13 @@ A scroll bar is displayed from LO to LO+BAR."
              (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
                     (- yb pheight lh border border)
                   yb))
-             (row 0))
+             (row 0)
+             (bbits (1- (ash 1 bw))))
         (setq right-fringe-width (if fringe mr 0))
-        (when (and (> right-fringe-width 0) (not (fringe-bitmap-p 'corfu--bar)))
+        (when (and (> right-fringe-width 0) (not (eq (get 'corfu--bar 'corfu--bar-bits) bbits)))
+          (define-fringe-bitmap 'corfu--bar (vector (put 'corfu--bar 'corfu--bar-bits bbits))
+            1 mr '(top periodic))
           (define-fringe-bitmap 'corfu--nil [])
-          (define-fringe-bitmap 'corfu--bar (vector (1- (ash 1 bw))) 1 mr '(top periodic))
           ;; Fringe bitmaps require symbol face specification, define internal faces.
           (set-face-attribute (make-face 'corfu--bar-cur) nil
                               :inherit '(corfu-scroll-bar corfu-current)))
