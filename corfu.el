@@ -738,20 +738,21 @@ FRAME is the existing frame."
   (let* ((cw (cl-loop for x in cands maximize (string-width (car x))))
          (pw (cl-loop for x in cands maximize (string-width (cadr x))))
          (sw (cl-loop for x in cands maximize (string-width (caddr x))))
-         (width (+ pw cw sw))
          ;; -4 because of margins and some additional safety
-         (max-width (min corfu-max-width (- (frame-width) 4))))
-    (setq width (min (max corfu-min-width width) max-width))
+         (max-width (min corfu-max-width (- (frame-width) 4)))
+         (width (min (max corfu-min-width (+ pw cw sw)) max-width))
+         (trunc (not (display-graphic-p))))
     (list pw width
-          (cl-loop for (cand prefix suffix) in cands collect
-                   (concat
-                    prefix (make-string (- pw (string-width prefix)) ?\s)
-                    cand
-                    (when (> sw 0)
-                      (make-string (max 0 (- width pw (string-width cand)
-                                             (string-width suffix)))
-                                   ?\s))
-                    suffix)))))
+          (cl-loop
+           for (cand prefix suffix) in cands collect
+           (let ((s (concat
+                     prefix (make-string (- pw (string-width prefix)) ?\s) cand
+                     (when (> sw 0)
+                       (make-string (max 0 (- width pw (string-width cand)
+                                              (string-width suffix)))
+                                    ?\s))
+                     suffix)))
+             (if trunc (truncate-string-to-width s width) s))))))
 
 (defun corfu--compute-scroll ()
   "Compute new scroll position."
@@ -1035,17 +1036,17 @@ A scroll bar is displayed from LO to LO+BAR."
                            #("  " 0 1 (display (left-fringe corfu--nil corfu-current))
                              1 2 (display (right-fringe corfu--nil corfu-current)))))
              (pos (posn-x-y pos))
-             (pwidth (+ (* width cw) (if fringe 0 (+ ml mr))))
+             (width (+ (* width cw) (if fringe 0 (+ ml mr))))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
              ;; parent frame (gh:minad/corfu#261).
-             (pheight (max lh (* (length lines) ch)))
+             (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
              (border (alist-get 'internal-border-width corfu--frame-parameters))
              (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
-                            (- (frame-pixel-width) pwidth))))
+                            (- (frame-pixel-width) width))))
              (yb (+ (cadr edge) (window-tab-line-height) (or (cdr pos) 0) lh))
              (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
-                    (- yb pheight lh border border)
+                    (- yb height lh border border)
                   yb))
              (row 0)
              (bmp (logxor (1- (ash 1 mr)) (1- (ash 1 bw)))))
@@ -1067,8 +1068,7 @@ A scroll bar is displayed from LO to LO+BAR."
           (apply #'insert
            (cl-loop for line in lines collect
                     (let ((str (concat
-                                marginl
-                                (if fringe line (truncate-string-to-width line width))
+                                marginl line
                                 (if (and lo (<= lo row (+ lo bar)))
                                     (if (eq row curr) cbar sbar)
                                   (and (eq row curr) cmargin))
@@ -1079,7 +1079,7 @@ A scroll bar is displayed from LO to LO+BAR."
                       (cl-incf row)
                       str)))
           (goto-char (point-min)))
-        (setq corfu--frame (corfu--make-frame corfu--frame x y pwidth pheight))))))
+        (setq corfu--frame (corfu--make-frame corfu--frame x y width height))))))
 
 (cl-defgeneric corfu--popup-hide ()
   "Hide Corfu popup."
