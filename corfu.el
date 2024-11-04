@@ -136,7 +136,7 @@ separator: Only stay alive if there is no match and
   "Width of the right margin in units of the character width."
   :type 'float)
 
-(defcustom corfu-scroll-bar-width 0.2
+(defcustom corfu-bar-width 0.2
   "Width of the bar in units of the character width."
   :type 'float)
 
@@ -214,11 +214,11 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
     (t :background "blue" :foreground "white" :extend t))
   "Face used to highlight the currently selected candidate.")
 
-(defface corfu-scroll-bar
-  '((((class color) (min-colors 88) (background dark)) :foreground "#a8a8a8")
-    (((class color) (min-colors 88) (background light)) :foreground "#505050")
-    (t :foreground "gray"))
-  "The foreground color is used for the scrollbar indicator.")
+(defface corfu-bar
+  '((((class color) (min-colors 88) (background dark)) :background "#a8a8a8")
+    (((class color) (min-colors 88) (background light)) :background "#505050")
+    (t :background "gray"))
+  "The background color is used for the scrollbar indicator.")
 
 (defface corfu-border
   '((((class color) (min-colors 88) (background dark)) :background "#323232")
@@ -1019,17 +1019,17 @@ A scroll bar is displayed from LO to LO+BAR."
              ;; between 1 and 16. Therefore restrict the fringe width to 16.
              (ml (min 16 (ceiling (* cw corfu-left-margin-width))))
              (mr (min 16 (ceiling (* cw corfu-right-margin-width))))
-             (bw (min mr (ceiling (* cw corfu-scroll-bar-width))))
+             (bw (min mr (ceiling (* cw corfu-bar-width))))
              (fringe (display-graphic-p))
              (marginl (and (not fringe) (propertize " " 'display `(space :width (,ml)))))
              (sbar (if fringe
-                       #(" " 0 1 (display (right-fringe corfu--bar corfu-scroll-bar)))
-                     (concat (propertize " " 'display `(space :align-to (- right (,bw))))
-                             (propertize " " 'face '(:inherit corfu-scroll-bar :inverse-video t)
-                                         'display `(space :width (,bw))))))
+                       #(" " 0 1 (display (right-fringe corfu--bar corfu--bar)))
+                     (concat
+                      (propertize " " 'display `(space :align-to (- right (,bw))))
+                      (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
              (cbar (if fringe
                        #("  " 0 1 (display (left-fringe corfu--nil corfu-current))
-                         1 2 (display (right-fringe corfu--bar corfu--bar-cur)))
+                         1 2 (display (right-fringe corfu--bar corfu--cbar)))
                      sbar))
              (cmargin (and fringe
                            #("  " 0 1 (display (left-fringe corfu--nil corfu-current))
@@ -1050,13 +1050,18 @@ A scroll bar is displayed from LO to LO+BAR."
              (row 0)
              (bmp (logxor (1- (ash 1 mr)) (1- (ash 1 bw)))))
         (setq left-fringe-width (if fringe ml 0) right-fringe-width (if fringe mr 0))
+        ;; Define an inverted corfu--bar face
+        (unless (equal (and (facep 'corfu--bar) (face-attribute 'corfu--bar :foreground))
+                       (face-attribute 'corfu-bar :background))
+          (set-face-attribute (make-face 'corfu--bar) nil
+                              :foreground (face-attribute 'corfu-bar :background)))
         (unless (or (= right-fringe-width 0) (eq (get 'corfu--bar 'corfu--bmp) bmp))
           (put 'corfu--bar 'corfu--bmp bmp)
           (define-fringe-bitmap 'corfu--bar (vector (lognot bmp)) 1 mr '(top periodic))
           (define-fringe-bitmap 'corfu--nil [])
           ;; Fringe bitmaps require symbol face specification, define internal face.
-          (set-face-attribute (make-face 'corfu--bar-cur) nil
-                              :inherit '(corfu-scroll-bar corfu-current)))
+          (set-face-attribute (make-face 'corfu--cbar) nil
+                              :inherit '(corfu--bar corfu-current)))
         (with-silent-modifications
           (erase-buffer)
           (apply #'insert

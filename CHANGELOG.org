@@ -5,13 +5,9 @@
 * Development
 
 - Require Emacs 28.1.
-- Use fringe to display scroll bar. Make sure that the scroll bar cannot be
-  pushed outside the child frame by the content. This affects for example
-  ~cape-emoji~.
-- New face ~corfu-scroll-bar~ which replaces the old face ~corfu-bar~. For technical
-  reasons the foreground color is used for the scroll bar, and not the
-  background as for the old face.
-- Renamed ~corfu-bar-width~ to ~corfu-scroll-bar-width~ for consistency.
+- Use fringe to display scroll bar. This change improves performance and makes
+  sure that the scroll bar cannot be pushed outside the child frame by the
+  content. This affects for example ~cape-emoji~.
 - Improve suffix alignment.
 
 * Version 1.5 (2024-07-26)
