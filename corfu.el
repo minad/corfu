@@ -1020,19 +1020,22 @@ A scroll bar is displayed from LO to LO+BAR."
              (ml (min 16 (ceiling (* cw corfu-left-margin-width))))
              (mr (min 16 (ceiling (* cw corfu-right-margin-width))))
              (bw (min mr (ceiling (* cw corfu-scroll-bar-width))))
-             (marginl (and (> ml 0) (propertize " " 'display `(space :width (,ml)))))
              (fringe (display-graphic-p))
+             (marginl (and (not fringe) (propertize " " 'display `(space :width (,ml)))))
              (sbar (if fringe
                        #(" " 0 1 (display (right-fringe corfu--bar corfu-scroll-bar)))
                      (concat (propertize " " 'display `(space :align-to (- right (,bw))))
                              (propertize " " 'face '(:inherit corfu-scroll-bar :inverse-video t)
                                          'display `(space :width (,bw))))))
              (cbar (if fringe
-                       #(" " 0 1 (display (right-fringe corfu--bar corfu--bar-cur)))
+                       #("  " 0 1 (display (left-fringe corfu--nil corfu-current))
+                         1 2 (display (right-fringe corfu--bar corfu--bar-cur)))
                      sbar))
-             (cmargin (and fringe #(" " 0 1 (display (right-fringe corfu--nil corfu-current)))))
+             (cmargin (and fringe
+                           #("  " 0 1 (display (left-fringe corfu--nil corfu-current))
+                             1 2 (display (right-fringe corfu--nil corfu-current)))))
              (pos (posn-x-y pos))
-             (pwidth (+ (* width cw) ml (if fringe 0 mr)))
+             (pwidth (+ (* width cw) (if fringe 0 (+ ml mr))))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
              ;; parent frame (gh:minad/corfu#261).
              (pheight (max lh (* (length lines) ch)))
@@ -1046,7 +1049,7 @@ A scroll bar is displayed from LO to LO+BAR."
                   yb))
              (row 0)
              (bmp (logxor (1- (ash 1 mr)) (1- (ash 1 bw)))))
-        (setq right-fringe-width (if fringe mr 0))
+        (setq left-fringe-width (if fringe ml 0) right-fringe-width (if fringe mr 0))
         (unless (or (= right-fringe-width 0) (eq (get 'corfu--bar 'corfu--bmp) bmp))
           (put 'corfu--bar 'corfu--bmp bmp)
           (define-fringe-bitmap 'corfu--bar (vector (lognot bmp)) 1 mr '(top periodic))
