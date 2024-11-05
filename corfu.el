@@ -1016,8 +1016,11 @@ A scroll bar is displayed from LO to LO+BAR."
     (with-current-buffer (corfu--make-buffer " *corfu*")
       (let* ((ch (default-line-height))
              (cw (default-font-width))
-             ;; Even for larger fringes, fringe bitmaps can only have a width
-             ;; between 1 and 16. Therefore restrict the fringe width to 16.
+             ;; NOTE: Even for larger fringes, fringe bitmaps can only have a
+             ;; width between 1 and 16. Therefore we restrict the fringe width
+             ;; to 16 pixel. This restriction may cause problem on HDPi systems.
+             ;; Hopefully Emacs will adopt larger fringe bitmaps in the future
+             ;; and lift the 16 pixel restriction.
              (ml (min 16 (ceiling (* cw corfu-left-margin-width))))
              (mr (min 16 (ceiling (* cw corfu-right-margin-width))))
              (bw (min mr (ceiling (* cw corfu-bar-width))))
