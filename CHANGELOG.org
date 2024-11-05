@@ -11,6 +11,7 @@
 - Improve suffix alignment.
 - Remember popup width during completion to avoid width fluctuations. Basically
   the popup is only allowed to grow.
+- ~corfu-insert-separator~: Jump back to prompt if a candidate is previewed.
 
 * Version 1.5 (2024-07-26)
 

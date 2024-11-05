@@ -1233,9 +1233,15 @@ there hasn't been any input, then quit."
 
 (defun corfu-insert-separator ()
   "Insert a separator character, inhibiting quit on completion boundary.
-See `corfu-separator' for more details."
+If the currently selected candidate is previewed, jump to the input
+prompt instead.  See `corfu-separator' for more details."
   (interactive)
-  (insert corfu-separator))
+  (if (not (corfu--preview-current-p))
+      (insert corfu-separator)
+    (corfu--goto -1)
+    (unless (or (= (car completion-in-region--data) (point))
+                (= (char-before) corfu-separator))
+      (insert corfu-separator))))
 
 (defun corfu-next (&optional n)
   "Go forward N candidates."
