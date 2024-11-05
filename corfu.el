@@ -44,6 +44,7 @@
   "COmpletion in Region FUnction."
   :link '(info-link :tag "Info Manual" "(corfu)")
   :link '(url-link :tag "Website" "https://github.com/minad/corfu")
+  :link '(url-link :tag "Wiki" "https://github.com/minad/corfu/wiki")
   :link '(emacs-library-link :tag "Library Source" "corfu.el")
   :group 'convenience
   :group 'tools
