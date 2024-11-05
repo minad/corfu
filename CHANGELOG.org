@@ -9,6 +9,8 @@
   sure that the scroll bar cannot be pushed outside the child frame by the
   content. This affects for example ~cape-emoji~.
 - Improve suffix alignment.
+- Remember popup width during completion to avoid width fluctuations. Basically
+  the popup is only allowed to grow.
 
 * Version 1.5 (2024-07-26)
 

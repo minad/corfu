@@ -300,6 +300,9 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
 (defvar corfu--frame nil
   "Popup frame.")
 
+(defvar corfu--width 0
+  "Popup width of current completion to reduce width fluctuations.")
+
 (defconst corfu--initial-state
   (mapcar
    (lambda (k) (cons k (symbol-value k)))
@@ -313,7 +316,8 @@ See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
      corfu--total
      corfu--preview-ov
      corfu--change-group
-     corfu--metadata))
+     corfu--metadata
+     corfu--width))
   "Initial Corfu state.")
 
 (defvar corfu--frame-parameters
@@ -740,8 +744,9 @@ FRAME is the existing frame."
          (sw (cl-loop for x in cands maximize (string-width (caddr x))))
          ;; -4 because of margins and some additional safety
          (max-width (min corfu-max-width (- (frame-width) 4)))
-         (width (min (max corfu-min-width (+ pw cw sw)) max-width))
+         (width (min (max corfu--width corfu-min-width (+ pw cw sw)) max-width))
          (trunc (not (display-graphic-p))))
+    (setq corfu--width width)
     (list pw width
           (cl-loop
            for (cand prefix suffix) in cands collect
