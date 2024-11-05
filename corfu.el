@@ -744,7 +744,7 @@ FRAME is the existing frame."
          (sw (cl-loop for x in cands maximize (string-width (caddr x))))
          (width (min (max corfu--width corfu-min-width (+ pw cw sw))
                      ;; -4 because of margins and some additional safety
-                     (min corfu-max-width (- (frame-width) 4))))
+                     corfu-max-width (- (frame-width) 4)))
          (trunc (not (display-graphic-p))))
     (setq corfu--width width)
     (list pw width
