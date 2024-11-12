@@ -521,7 +521,7 @@ FRAME is the existing frame."
     (make-frame-invisible frame)
     (with-current-buffer (window-buffer (frame-root-window frame))
       (with-silent-modifications
-        (erase-buffer)))))
+        (delete-region (point-min) (point-max))))))
 
 (defun corfu--hide-frame (frame)
   "Hide child FRAME."
@@ -1073,7 +1073,7 @@ A scroll bar is displayed from LO to LO+BAR."
           (set-face-attribute (make-face 'corfu--cbar) nil
                               :inherit '(corfu--bar corfu-current)))
         (with-silent-modifications
-          (erase-buffer)
+          (delete-region (point-min) (point-max))
           (apply #'insert
            (cl-loop for line in lines collect
                     (let ((str (concat
