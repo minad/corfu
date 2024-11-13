@@ -57,7 +57,7 @@
 Make the buffer persistent with NAME if non-nil."
   (if name
       (unless (buffer-local-value 'buffer-file-name buffer)
-        (if-let ((old (get-buffer name)))
+        (if-let* ((old (get-buffer name)))
             (setq buffer (prog1 old (kill-buffer buffer)))
           (with-current-buffer buffer
             (rename-buffer name))))
@@ -74,9 +74,9 @@ If called with a prefix ARG, the buffer is persistent."
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
   (let ((cand (nth corfu--index corfu--candidates)))
-    (if-let ((extra (nth 4 completion-in-region--data))
-             (fun (plist-get extra :company-doc-buffer))
-             (res (funcall fun cand)))
+    (if-let* ((extra (nth 4 completion-in-region--data))
+              (fun (plist-get extra :company-doc-buffer))
+              (res (funcall fun cand)))
         (set-window-start (corfu-info--display-buffer
                            (get-buffer (or (car-safe res) res))
                            (and arg (format "*corfu doc: %s*" cand)))
@@ -92,10 +92,10 @@ If called with a prefix ARG, the buffer is persistent."
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
   (let ((cand (nth corfu--index corfu--candidates)))
-    (if-let ((extra (nth 4 completion-in-region--data))
-             (fun (plist-get extra :company-location))
-             ;; BUG: company-location may throw errors if location is not found
-             (loc (ignore-errors (funcall fun cand))))
+    (if-let* ((extra (nth 4 completion-in-region--data))
+              (fun (plist-get extra :company-location))
+              ;; BUG: company-location may throw errors if location is not found
+              (loc (ignore-errors (funcall fun cand))))
         (with-selected-window
             (corfu-info--display-buffer
              (or (and (bufferp (car loc)) (car loc))
@@ -103,7 +103,7 @@ If called with a prefix ARG, the buffer is persistent."
              (and arg (format "*corfu loc: %s*" cand)))
           (without-restriction
             (goto-char (point-min))
-            (when-let ((pos (cdr loc)))
+            (when-let* ((pos (cdr loc)))
               (if (bufferp (car loc))
                   (goto-char pos)
                 (forward-line (1- pos))))
