@@ -255,6 +255,22 @@ source code for further details.
             completion-styles '(orderless-fast basic))
 #+end_src
 
+** Buffer-local/Corfu-only completion settings
+
+Sometimes it makes sense to use separate completion style settings for
+minibuffer completion and in-buffer Corfu completion. For example inside the
+minibuffer you may prefer Orderless completion, while for Corfu prefix
+completion is sufficient. Such a configuration is possible by setting the
+~completion-styles~ variables buffer-locally, as follows:
+
+#+begin_src emacs-lisp
+(add-hook 'corfu-mode-hook
+          (lambda ()
+            (setq-local completion-styles '(basic)
+                        completion-category-overrides nil
+                        completion-category-defaults nil)))
+#+end_src
+
 ** Completing in the minibuffer
 
 Corfu can be used for completion in the minibuffer, since it relies on child
