@@ -1057,7 +1057,6 @@ A scroll bar is displayed from LO to LO+BAR."
              (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
                     (- yb height lh border border)
                   yb))
-             (row 0)
              (bmp (logxor (1- (ash 1 mr)) (1- (ash 1 bw)))))
         (setq left-fringe-width (if fringe ml 0) right-fringe-width (if fringe mr 0))
         ;; Define an inverted corfu--bar face
@@ -1075,17 +1074,15 @@ A scroll bar is displayed from LO to LO+BAR."
         (with-silent-modifications
           (delete-region (point-min) (point-max))
           (apply #'insert
-           (cl-loop for line in lines collect
-                    (let ((str (concat
-                                marginl line
-                                (if (and lo (<= lo row (+ lo bar)))
-                                    (if (eq row curr) cbar sbar)
-                                  (and (eq row curr) cmargin))
-                                "\n")))
+           (cl-loop for row from 0 for line in lines collect
+                    (let ((str (concat marginl line
+                                       (if (and lo (<= lo row (+ lo bar)))
+                                           (if (eq row curr) cbar sbar)
+                                         (and (eq row curr) cmargin))
+                                       "\n")))
                       (when (eq row curr)
                         (add-face-text-property
                          0 (length str) 'corfu-current 'append str))
-                      (cl-incf row)
                       str)))
           (goto-char (point-min)))
         (setq corfu--frame (corfu--make-frame corfu--frame x y width height))))))
