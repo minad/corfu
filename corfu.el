@@ -814,14 +814,12 @@ the last command must be listed in `corfu-continue-commands'."
        (or overriding-terminal-local-map
            ;; Check if it is an explicitly listed continue command
            (corfu--match-symbol-p corfu-continue-commands this-command)
-           (pcase-let ((`(,beg ,end . ,_) completion-in-region--data))
-             (and (or (not corfu--input) (< beg end)) ;; Check for empty input
-                  (or (not corfu-quit-at-boundary) ;; Check separator or predicate
-                      (and (eq corfu-quit-at-boundary 'separator)
-                           (or (eq this-command #'corfu-insert-separator)
-                               ;; with separator, any further chars allowed
-                               (seq-contains-p (car corfu--input) corfu-separator)))
-                      (funcall completion-in-region-mode--predicate)))))))
+           (and (or (not corfu-quit-at-boundary) ;; Check separator or predicate
+                    (and (eq corfu-quit-at-boundary 'separator)
+                         (or (eq this-command #'corfu-insert-separator)
+                             ;; with separator, any further chars allowed
+                             (seq-contains-p (car corfu--input) corfu-separator)))
+                    (funcall completion-in-region-mode--predicate))))))
 
 (defun corfu--preview-current-p ()
   "Return t if the selected candidate is previewed."
