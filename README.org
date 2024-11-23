@@ -230,7 +230,7 @@ due to the high load on the Lisp runtime and garbage collector.
 #+begin_src emacs-lisp
 (setq corfu-auto        t
       corfu-auto-delay  0  ;; TOO SMALL - NOT RECOMMENDED!
-      corfu-auto-prefix 1) ;; TOO SMALL - NOT RECOMMENDED!
+      corfu-auto-prefix 0) ;; TOO SMALL - NOT RECOMMENDED!
 
 (add-hook 'corfu-mode-hook
           (lambda ()
@@ -282,7 +282,7 @@ enables efficient prefix filtering for input shorter than 4 characters.
 
 (setq corfu-auto        t
       corfu-auto-delay  0  ;; TOO SMALL - NOT RECOMMENDED
-      corfu-auto-prefix 1) ;; TOO SMALL - NOT RECOMMENDED
+      corfu-auto-prefix 0) ;; TOO SMALL - NOT RECOMMENDED
 
 (add-hook 'corfu-mode-hook
           (lambda ()
