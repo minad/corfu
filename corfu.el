@@ -81,8 +81,7 @@ The value should lie between 0 and corfu-count/2."
   :type '(choice (const insert) (const show) (const quit) (const nil)))
 
 (defcustom corfu-continue-commands
-  ;; nil is undefined command
-  '(nil ignore universal-argument universal-argument-more digit-argument
+  '(ignore universal-argument universal-argument-more digit-argument
     "\\`corfu-" "\\`scroll-other-window")
   "Continue Corfu completion after executing these commands.
 The list can container either command symbols or regular expressions."
