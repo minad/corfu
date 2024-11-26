@@ -829,12 +829,19 @@ the last command must be listed in `corfu-continue-commands'."
 (defun corfu--preview-current (beg end)
   "Show current candidate as overlay given BEG and END."
   (when (corfu--preview-current-p)
+    (corfu--preview-delete)
     (setq beg (+ beg (length corfu--base))
           corfu--preview-ov (make-overlay beg end nil))
     (overlay-put corfu--preview-ov 'priority 1000)
     (overlay-put corfu--preview-ov 'window (selected-window))
     (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display)
                  (nth corfu--index corfu--candidates))))
+
+(defun corfu--preview-delete ()
+  "Delete the preview overlay."
+  (when corfu--preview-ov
+    (delete-overlay corfu--preview-ov)
+    (setq corfu--preview-ov nil)))
 
 (defun corfu--window-change (_)
   "Window and buffer change hook which quits Corfu."
@@ -1141,9 +1148,7 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (cl-defgeneric corfu--prepare ()
   "Insert selected candidate unless command is marked to continue completion."
-  (when corfu--preview-ov
-    (delete-overlay corfu--preview-ov)
-    (setq corfu--preview-ov nil))
+  (corfu--preview-delete)
   ;; Ensure that state is initialized before next Corfu command
   (when (and (symbolp this-command) (string-prefix-p "corfu-" (symbol-name this-command)))
     (corfu--update))
@@ -1190,7 +1195,7 @@ AUTO is non-nil when initializing auto completion."
 (cl-defgeneric corfu--teardown (buffer)
   "Tear-down Corfu in BUFFER, which might be dead at this point."
   (corfu--popup-hide)
-  (when corfu--preview-ov (delete-overlay corfu--preview-ov))
+  (corfu--preview-delete)
   (remove-hook 'post-command-hook #'corfu--post-command)
   (when (buffer-live-p buffer)
     (with-current-buffer buffer
