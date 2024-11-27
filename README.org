@@ -47,7 +47,7 @@ a stop-gap solution, which provides an alternative display based on overlays.
 
 * Features
 
-- Timer-based auto-completions (/off/ by default, set ~corfu-auto~).
+- Timer-based auto-completions (/off/ by default).
 - Popup display with scrollbar indicator and arrow key navigation.
 - The popup can be summoned explicitly by pressing =TAB= at any time.
 - The current candidate is inserted with =TAB= and selected with =RET=.
@@ -67,10 +67,10 @@ a stop-gap solution, which provides an alternative display based on overlays.
 
 * Installation
 
-Corfu is available from [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]]. You can install it directly via =M-x package-install RET corfu RET=.
-After installation, activate the global minor mode with =M-x global-corfu-mode RET=.
-Set the variable ~corfu-auto~ to t in order to enable auto completion. For manual
-completion press =M-TAB= (or =TAB=) within a buffer.
+Corfu is available from [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]]. You can install it directly via =M-x
+package-install RET corfu RET=. After installation, activate the global minor
+mode with =M-x global-corfu-mode RET=. For completion press =M-TAB= (or =TAB=) within
+a buffer. Auto completion is disabled by default for safety and unobtrusiveness.
 
 * Key bindings
 
@@ -104,8 +104,13 @@ use ~use-package~. Corfu is flexibly customizable via ~corfu-*~ customization
 variables, such that you can adapt it precisely to your requirements. However in
 order to quickly try out the Corfu completion package, it should be sufficient
 to activate ~global-corfu-mode~. You can experiment with manual completion for
-example in an Elisp buffer or in an Eshell or Shell buffer. For auto completion,
-set ~corfu-auto~ to t before turning on ~global-corfu-mode~.
+example in an Elisp buffer or in an Eshell or Shell buffer.
+
+Auto completion is disabled by default in Corfu. Note that completion can be
+vulnerable to arbitrary code execution in untrusted files. In particular the
+~elisp-completion-at-point~ completion function performs macro expansion and code
+evaluation. Auto completion can be enabled by setting ~corfu-auto~ to t locally or
+globally before enabling the local ~corfu-mode~ or the ~global-corfu-mode~.
 
 Here is an example configuration:
 
@@ -114,7 +119,6 @@ Here is an example configuration:
   ;; Optional customizations
   ;; :custom
   ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  ;; (corfu-auto t)                 ;; Enable auto completion
   ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
   ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
   ;; (corfu-preview-current nil)    ;; Disable current candidate preview
@@ -203,10 +207,13 @@ about completion in the [[https://www.gnu.org/software/emacs/manual/html_node/el
 
 ** Auto completion
 
-Auto completion is disabled by default, but can be enabled by setting ~corfu-auto~
-to t. Furthermore you may want to configure Corfu to quit completion eagerly,
-such that the completion popup stays out of your way when it appeared
-unexpectedly.
+Auto completion is disabled by default for safety and unobtrusiveness. Note that
+completion can be vulnerable to arbitrary code execution. Auto completion can be
+enabled by setting ~corfu-auto~ to t. Only enable auto completion locally in
+trusted buffers or globally if you edit trusted files only.
+
+You may want to configure Corfu to quit completion eagerly, such that the
+completion popup stays out of your way when it appeared unexpectedly.
 
 #+begin_src emacs-lisp
 ;; Enable auto completion and configure quitting

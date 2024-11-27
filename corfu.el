@@ -191,7 +191,11 @@ The list can container either command symbols or regular expressions."
 
 (defcustom corfu-auto nil
   "Enable auto completion.
-See also the settings `corfu-auto-delay', `corfu-auto-prefix' and
+Auto completion is disabled by default for safety and unobtrusiveness.
+Note that auto completion is particularly dangerous in untrusted files
+since some completion functions may perform arbitrary code execution,
+notably the Emacs built-in `elisp-completion-at-point' .  See also the
+settings `corfu-auto-delay', `corfu-auto-prefix' and
 `corfu-auto-commands'."
   :type 'boolean)
 
