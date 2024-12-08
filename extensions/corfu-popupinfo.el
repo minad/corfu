@@ -516,10 +516,10 @@ not be displayed until this command is called again, even if
   (cl-callf2 assq-delete-all #'corfu-popupinfo-mode minor-mode-overriding-map-alist))
 
 ;; Do not show Corfu commands with M-X
-(dolist (sym '(corfu-popupinfo-scroll-down corfu-popupinfo-scroll-up
-               corfu-popupinfo-documentation corfu-popupinfo-location
-               corfu-popupinfo-beginning corfu-popupinfo-end
-               corfu-popupinfo-toggle))
+(dolist (sym '( corfu-popupinfo-scroll-down corfu-popupinfo-scroll-up
+                corfu-popupinfo-documentation corfu-popupinfo-location
+                corfu-popupinfo-beginning corfu-popupinfo-end
+                corfu-popupinfo-toggle))
   (put sym 'completion-predicate #'ignore))
 
 (provide 'corfu-popupinfo)
