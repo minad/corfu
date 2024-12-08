@@ -210,6 +210,10 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (t :background "gray"))
   "Default face, foreground and background colors used for the popup.")
 
+(defface corfu-preview
+  '((t :inherit corfu-default))
+  "Face used for the candidate preview.")
+
 (defface corfu-current
   '((((class color) (min-colors 88) (background dark))
      :background "#00415e" :foreground "white" :extend t)
@@ -839,7 +843,7 @@ the last command must be listed in `corfu-continue-commands'."
     (overlay-put corfu--preview-ov 'priority 1000)
     (overlay-put corfu--preview-ov 'window (selected-window))
     (overlay-put corfu--preview-ov (if (= beg end) 'after-string 'display)
-                 (nth corfu--index corfu--candidates))))
+                 (propertize (nth corfu--index corfu--candidates) 'face 'corfu-preview))))
 
 (defun corfu--preview-delete ()
   "Delete the preview overlay."
