@@ -28,12 +28,9 @@ backends. The Emacs built-in Capfs and the Capfs provided by third-party
 programming language packages are often sufficient. Additional Capfs and
 completion utilities are provided by the separate [[https://github.com/minad/cape][Cape]] package.
 
-*NOTE*: Corfu relies on child frames to show the popup, such that mixed fonts and
-font sizes won't interfere with the rendering. On non-graphical displays, Corfu
-falls back to the default setting of the ~completion-in-region-function~. There
-exists a feature branch with [[https://lists.gnu.org/archive/html/emacs-devel/2024-10/msg00491.html][child frame support for terminal Emacs]], which will
-hopefully land in Emacs 31. Until then you can use the [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package as
-a stop-gap solution, which provides an alternative display based on overlays.
+*NOTE*: Corfu relies on child frames to show the popup. Emacs 31 supports child
+frames also for terminal Emacs. On older Emacs versions, you can use the
+[[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package.
 
 #+html: <img src="https://github.com/minad/corfu/blob/screenshots/light.png?raw=true">
 
@@ -546,13 +543,13 @@ Corfu works well together with all packages providing code completion via the
 out of the box. Nevertheless you may want to look into complementary packages to
 enhance your setup.
 
-- [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]]: The corfu-terminal package provides an overlay-based display
-  for Corfu. This is needed until child frame support for terminal Emacs
-  arrives.
-
 - [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]: Shows as-you-type auto-suggestion candidate overlay
   with a visual indication of whether there are many or exactly one candidate
   available (works only with =corfu-auto= disabled).
+
+- [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]]: Child frames are supported by terminal Emacs 31 out of the
+  box. On older Emacs versions, this package provides an overlay-based popup
+  display.
 
 - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced =orderless=
   completion style, where the filter expressions are separated by spaces or
