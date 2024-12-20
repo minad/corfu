@@ -943,26 +943,30 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
        (let* ((state (corfu--recompute newstr newpt table pred))
               (base (alist-get 'corfu--base state))
               (total (alist-get 'corfu--total state))
-              (candidates (alist-get 'corfu--candidates state)))
-         (if (= total 1)
-             ;; If completion is finished and cannot be further completed, and
-             ;; the value of `corfu-on-exact-match' is not 'show, return
-             ;; 'finished.  Otherwise setup the Corfu popup.
-             (if (or (eq corfu-on-exact-match 'show)
-                     (consp (completion-try-completion
-                             newstr table pred newpt
-                             (completion-metadata newstr table pred))))
-                 (corfu--setup beg end table pred)
-               (corfu--exit-function newstr 'finished candidates))
-           (if (or (= total 0) (not threshold)
-                   (and (not (eq threshold t)) (< threshold total)))
+              (cands (alist-get 'corfu--candidates state)))
+         (cond
+          ((= total 0)
+           ;; No candidates found for `newstr' -> Completion is finished.
+           (corfu--exit-function newstr 'finished nil))
+          ((= total 1)
+           ;; If completion is finished and cannot be extended further and
+           ;; `corfu-on-exact-match' is not 'show, return 'finished.  Otherwise
+           ;; setup the popup.
+           (if (or (eq corfu-on-exact-match 'show)
+                   (consp (completion-try-completion
+                           newstr table pred newpt
+                           (completion-metadata newstr table pred))))
                (corfu--setup beg end table pred)
-             (corfu--cycle-candidates total candidates (+ (length base) beg) end)
-             ;; Do not show Corfu when "trivially" cycling, i.e.,
-             ;; when the completion is finished after the candidate.
-             (unless (equal (completion-boundaries (car candidates) table pred "")
-                            '(0 . 0))
-               (corfu--setup beg end table pred)))))
+             (corfu--exit-function newstr 'finished cands)))
+          ;; Too many candidates for cycling -> Setup popup.
+          ((or (not threshold) (and (not (eq threshold t)) (< threshold total)))
+           (corfu--setup beg end table pred))
+          (t
+           ;; Cycle through candidates.
+           (corfu--cycle-candidates total cands (+ (length base) beg) end)
+           ;; Do not show Corfu when completion is finished after the candidate.
+           (unless (equal (completion-boundaries (car cands) table pred "") '(0 . 0))
+             (corfu--setup beg end table pred)))))
        t))))
 
 (defun corfu--message (&rest msg)
