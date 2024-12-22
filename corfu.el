@@ -945,17 +945,15 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
               (total (alist-get 'corfu--total state))
               (cands (alist-get 'corfu--candidates state)))
          (cond
-          ((= total 0)
-           ;; No candidates found for `newstr' -> Completion is finished.
-           (corfu--exit-function newstr 'finished nil))
-          ((= total 1)
+          ((<= total 1)
            ;; If completion is finished and cannot be extended further and
            ;; `corfu-on-exact-match' is not 'show, return 'finished.  Otherwise
            ;; setup the popup.
-           (if (or (eq corfu-on-exact-match 'show)
-                   (consp (completion-try-completion
-                           newstr table pred newpt
-                           (completion-metadata newstr table pred))))
+           (if (and (= total 1)
+                    (or (eq corfu-on-exact-match 'show)
+                        (consp (completion-try-completion
+                                newstr table pred newpt
+                                (completion-metadata newstr table pred)))))
                (corfu--setup beg end table pred)
              (corfu--exit-function newstr 'finished cands)))
           ;; Too many candidates for cycling -> Setup popup.
