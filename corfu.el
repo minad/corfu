@@ -385,11 +385,10 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
 
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
-The wrapper determines if the Capf is applicable at the current
-position and performs sanity checking on the returned result.
-For non-exclusive Capfs wrapper additionally checks if the
-current input can be completed successfully.  PREFIX is a prefix
-length override, set to t for manual completion."
+The wrapper determines if the Capf is applicable at the current position
+and performs sanity checking on the returned result.  For non-exclusive
+Capfs, the wrapper checks if the current input can be completed.  PREFIX
+is a prefix length override, which is t for manual completion."
   (pcase (funcall fun)
     ((and res `(,beg ,end ,table . ,plist))
      (and (integer-or-marker-p beg) ;; Valid Capf result
