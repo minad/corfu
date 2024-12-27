@@ -1344,9 +1344,8 @@ input has been expanded."
       (corfu-complete)
     (pcase-let* ((`(,beg ,end ,table ,pred . ,_) completion-in-region--data)
                  (pt (max 0 (- (point) beg)))
-                 (str (buffer-substring-no-properties beg end))
-                 (metadata (completion-metadata (substring str 0 pt) table pred)))
-      (pcase (completion-try-completion str table pred pt metadata)
+                 (str (buffer-substring-no-properties beg end)))
+      (pcase (completion-try-completion str table pred pt corfu--metadata)
         ('t
          (goto-char end)
          (corfu--done str 'finished corfu--candidates)
