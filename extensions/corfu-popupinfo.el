@@ -345,7 +345,7 @@ form (X Y WIDTH HEIGHT DIR)."
   (when corfu-popupinfo--timer
     (cancel-timer corfu-popupinfo--timer)
     (setq corfu-popupinfo--timer nil))
-  (when (and (corfu-popupinfo--visible-p corfu--frame))
+  (when (corfu-popupinfo--visible-p corfu--frame)
     (let* ((cand-changed
             (not (and (corfu-popupinfo--visible-p)
                       (corfu--equal-including-properties
