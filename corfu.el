@@ -1078,7 +1078,7 @@ A scroll bar is displayed from LO to LO+BAR."
         (unless (or (= right-fringe-width 0) (eq (get 'corfu--bar 'corfu--bmp) bmp))
           (put 'corfu--bar 'corfu--bmp bmp)
           (define-fringe-bitmap 'corfu--bar (vector (lognot bmp)) 1 mr '(top periodic))
-          (define-fringe-bitmap 'corfu--nil [])
+          (define-fringe-bitmap 'corfu--nil [0] 1 1)
           ;; Fringe bitmaps require symbol face specification, define internal face.
           (set-face-attribute (make-face 'corfu--cbar) nil
                               :inherit '(corfu--bar corfu-current)))
