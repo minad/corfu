@@ -1123,9 +1123,8 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (cl-defgeneric corfu--affixate (cands)
   "Annotate CANDS with annotation function."
-  (let* ((extras (nth 4 completion-in-region--data))
-         (dep (plist-get extras :company-deprecated))
-         (mf (let ((completion-extra-properties extras))
+  (let* ((dep (corfu--metadata-get 'company-deprecated))
+         (mf (let ((completion-extra-properties (nth 4 completion-in-region--data)))
                (run-hook-with-args-until-success 'corfu-margin-formatters corfu--metadata))))
     (setq cands
           (if-let ((aff (corfu--metadata-get 'affixation-function)))

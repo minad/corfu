@@ -74,8 +74,7 @@ If called with a prefix ARG, the buffer is persistent."
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
   (let ((cand (nth corfu--index corfu--candidates)))
-    (if-let ((extra (nth 4 completion-in-region--data))
-             (fun (plist-get extra :company-doc-buffer))
+    (if-let ((fun (corfu--metadata-get 'company-doc-buffer))
              (res (funcall fun cand)))
         (set-window-start (corfu-info--display-buffer
                            (get-buffer (or (car-safe res) res))
@@ -92,8 +91,7 @@ If called with a prefix ARG, the buffer is persistent."
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
   (let ((cand (nth corfu--index corfu--candidates)))
-    (if-let ((extra (nth 4 completion-in-region--data))
-             (fun (plist-get extra :company-location))
+    (if-let ((fun (corfu--metadata-get 'company-location))
              ;; BUG: company-location may throw errors if location is not found
              (loc (ignore-errors (funcall fun cand))))
         (with-selected-window
