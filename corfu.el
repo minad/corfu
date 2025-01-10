@@ -369,7 +369,7 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
   "Default child frame buffer parameters.")
 
 (defvar corfu--mouse-ignore-map
-  (let ((map (make-sparse-keymap)))
+  (let ((map (define-keymap "<touchscreen-begin>" #'ignore)))
     (dotimes (i 7)
       (dolist (k '(mouse down-mouse drag-mouse double-mouse triple-mouse))
         (keymap-set map (format "<%s-%s>" k (1+ i)) #'ignore)))
