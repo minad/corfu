@@ -338,6 +338,7 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (menu-bar-lines . 0)
     (tool-bar-lines . 0)
     (tab-bar-lines . 0)
+    (tab-bar-lines-keep-state . t)
     (no-other-frame . t)
     (unsplittable . t)
     (undecorated . t)
