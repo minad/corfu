@@ -1065,7 +1065,8 @@ A scroll bar is displayed from LO to LO+BAR."
              (border (alist-get 'internal-border-width corfu--frame-parameters))
              (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
                             (- (frame-pixel-width) width))))
-             (yb (+ (cadr edge) (window-tab-line-height) (or (cdr pos) 0) lh))
+             (yb (+ (cadr edge) (or (cdr pos) 0) lh
+                    (static-if (< emacs-major-version 30) (window-tab-line-height) 0)))
              (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
                     (- yb height lh border border)
                   yb))
