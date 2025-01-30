@@ -32,13 +32,13 @@ completion utilities are provided by the separate [[https://github.com/minad/cap
 frames also for terminal Emacs. On older Emacs versions, you can use the
 [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package.
 
-#+html: <img src="https://github.com/minad/corfu/blob/screenshots/light.png?raw=true">
+[[file:light.png]]
 
-#+html: <img src="https://github.com/minad/corfu/blob/screenshots/dark.png?raw=true">
+[[file:dark.png]]
 
-#+html: <img src="https://github.com/minad/corfu/blob/screenshots/popupinfo-light.png?raw=true">
+[[file:popupinfo-light.png]]
 
-#+html: <img src="https://github.com/minad/corfu/blob/screenshots/popupinfo-dark.png?raw=true">
+[[file:popupinfo-dark.png]]
 
 #+toc: headlines 8
 
