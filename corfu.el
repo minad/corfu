@@ -205,7 +205,7 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
   :group 'faces)
 
 (defface corfu-default
-  '((((class color) (min-colors 88) (background dark)) :background "#191a1b")
+  '((((class color) (min-colors 88) (background dark)) :background "#191a1b" :foreground "white")
     (((class color) (min-colors 88) (background light)) :background "#f0f0f0")
     (t :background "gray"))
   "Default face, foreground and background colors used for the popup.")
