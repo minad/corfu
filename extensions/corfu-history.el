@@ -50,12 +50,12 @@ or the property `history-length' of `corfu-history'.")
   "Hash table of Corfu candidates.")
 
 (defcustom corfu-history-duplicate 1.0
-  "Weight of duplicate elements, multiplied with the length of the history.
+  "Weight of duplicate elements, multiplied by the length of the history.
 Duplicate elements in the history are prioritized such that they appear
 earlier in the completion list.  The value should be between 0.0 and
-1.0. For 0 only the recency of history elements matters.  If the value
-is 1.0, frequency is more relevant than recency.  Note that
-`history-delete-duplicates' must be disabled for duplicates to appear."
+1.0. For 0, only the recency of history elements matters.  If the value
+is 1.0, frequency is more relevant than recency.  Note that duplicates
+occur only if `history-delete-duplicates' is disabled."
   :type 'float
   :group 'corfu)
 
