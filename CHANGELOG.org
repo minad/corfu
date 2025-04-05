@@ -2,6 +2,11 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- ~corfu-history-duplicate~: Prioritize duplicate history elements when sorting by
+  history via ~corfu-history-mode~.
+
 * Version 2.0 (2025-03-28)
 
 - ~corfu-quick~: Ensure that popup does not move.
