@@ -69,13 +69,14 @@ occur only if `history-delete-duplicates' is disabled."
   "Sort CANDS by history."
   (unless corfu-history--hash
     (let* ((len (length corfu-history))
-           (weight (round (* len corfu-history-duplicate))))
-      (setq corfu-history--hash (make-hash-table :test #'equal :size len))
-      (cl-loop for elem in corfu-history for idx from 0
-               for dup = (gethash elem corfu-history--hash) do
-               (puthash elem (if dup (- dup weight) idx) corfu-history--hash))))
-  (cl-loop for max = most-positive-fixnum for cand on cands do
-           (setcar cand (cons (car cand) (gethash (car cand) corfu-history--hash max))))
+           (dup (round (* len corfu-history-duplicate)))
+           (ht (make-hash-table :test #'equal :size len)))
+      (cl-loop for elem in corfu-history for idx from 0 do
+               (puthash elem (if-let ((n (gethash elem ht))) (- n dup) idx) ht))
+      (setq corfu-history--hash ht)))
+  (cl-loop for ht = corfu-history--hash for max = most-positive-fixnum
+           for cand on cands do
+           (setcar cand (cons (car cand) (gethash (car cand) ht max))))
   (setq cands (sort cands #'corfu-history--sort-predicate))
   (cl-loop for cand on cands do (setcar cand (caar cand)))
   cands)
