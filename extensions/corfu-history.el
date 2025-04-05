@@ -50,7 +50,7 @@ or the property `history-length' of `corfu-history'.")
   "Hash table of Corfu candidates.")
 
 (defcustom corfu-history-duplicate 1.0
-  "Weight of duplicate elements, multiplied with `history-length'.
+  "Weight of duplicate elements, multiplied with the length of the history.
 Duplicate elements in the history are prioritized such that they appear
 earlier in the completion list.  The value should be between 0.0 and
 1.0. For 0 only the recency of history elements matters.  If the value
@@ -68,11 +68,12 @@ is 1.0, frequency is more relevant than recency.  Note that
 (defun corfu-history--sort (cands)
   "Sort CANDS by history."
   (unless corfu-history--hash
-    (setq corfu-history--hash (make-hash-table :test #'equal :size (length corfu-history)))
-    (cl-loop for weight = (round (* history-length corfu-history-duplicate))
-             for elem in corfu-history for idx from 0
-             for dup = (gethash elem corfu-history--hash) do
-             (puthash elem (if dup (- dup weight) idx) corfu-history--hash)))
+    (let* ((len (length corfu-history))
+           (weight (round (* len corfu-history-duplicate))))
+      (setq corfu-history--hash (make-hash-table :test #'equal :size len))
+      (cl-loop for elem in corfu-history for idx from 0
+               for dup = (gethash elem corfu-history--hash) do
+               (puthash elem (if dup (- dup weight) idx) corfu-history--hash))))
   (cl-loop for max = most-positive-fixnum for cand on cands do
            (setcar cand (cons (car cand) (gethash (car cand) corfu-history--hash max))))
   (setq cands (sort cands #'corfu-history--sort-predicate))
