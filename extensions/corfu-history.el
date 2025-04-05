@@ -62,13 +62,8 @@ or the property `history-length' of `corfu-history'.")
     (cl-loop for elem in corfu-history for index from 0 do
              (unless (gethash elem corfu-history--hash)
                (puthash elem index corfu-history--hash))))
-  ;; Decorate each candidate with (index<<13) + length. This way we sort first by index and then by
-  ;; length. We assume that the candidates are shorter than 2**13 characters and that the history is
-  ;; shorter than 2**16 entries.
-  (cl-loop for cand on cands do
-           (setcar cand (cons (car cand)
-                              (+ (ash (gethash (car cand) corfu-history--hash #xFFFF) 13)
-                                 (length (car cand))))))
+  (cl-loop for max = most-positive-fixnum for cand on cands do
+           (setcar cand (cons (car cand) (gethash (car cand) corfu-history--hash max))))
   (setq cands (sort cands #'corfu-history--sort-predicate))
   (cl-loop for cand on cands do (setcar cand (caar cand)))
   cands)
