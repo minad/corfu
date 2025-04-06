@@ -58,12 +58,13 @@ or the property `history-length' of `corfu-history'.")
 (defun corfu-history--sort (cands)
   "Sort CANDS by history."
   (unless corfu-history--hash
-    (setq corfu-history--hash (make-hash-table :test #'equal :size (length corfu-history)))
-    (cl-loop for elem in corfu-history for index from 0 do
-             (unless (gethash elem corfu-history--hash)
-               (puthash elem index corfu-history--hash))))
-  (cl-loop for max = most-positive-fixnum for cand on cands do
-           (setcar cand (cons (car cand) (gethash (car cand) corfu-history--hash max))))
+    (let ((ht (make-hash-table :test #'equal :size (length corfu-history))))
+      (cl-loop for elem in corfu-history for index from 0 do
+               (unless (gethash elem ht) (puthash elem index ht)))
+      (setq corfu-history--hash ht)))
+  (cl-loop for ht = corfu-history--hash for max = most-positive-fixnum
+           for cand on cands do
+           (setcar cand (cons (car cand) (gethash (car cand) ht max))))
   (setq cands (sort cands #'corfu-history--sort-predicate))
   (cl-loop for cand on cands do (setcar cand (caar cand)))
   cands)
