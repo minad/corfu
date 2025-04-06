@@ -50,18 +50,19 @@ or the property `history-length' of `corfu-history'.")
   "Hash table of Corfu candidates.")
 
 (defcustom corfu-history-duplicate 10
-  "Maximal number of history positions gained by duplicate history elements.
+  "History position shift for duplicate history elements.
 The more often a duplicate element occurs in the history, the earlier it
-appears in the completion list.  The position gain decays exponentially
-with `corfu-history-decay'.  Note that duplicates occur only if
+appears in the completion list.  The shift decays exponentially with
+`corfu-history-decay'.  Note that duplicates occur only if
 `history-delete-duplicates' is disabled."
   :type 'number
   :group 'corfu)
 
-(defcustom corfu-history-decay 0.005
-  "Exponential decay for the position gain of duplicate elements.
-See also `corfu-history-duplicate'."
-  :type 'float
+(defcustom corfu-history-decay 20
+  "Exponential decay for the position shift of duplicate elements.
+The shift will decay away after `corfu-history-duplicate' times
+`corfu-history-decay' history elements."
+  :type 'number
   :group 'corfu)
 
 (defun corfu-history--sort-predicate (x y)
@@ -73,12 +74,12 @@ See also `corfu-history-duplicate'."
 (defun corfu-history--sort (cands)
   "Sort CANDS by history."
   (unless corfu-history--hash
-    (let ((ht (make-hash-table :test #'equal :size (length corfu-history))))
+    (let ((ht (make-hash-table :test #'equal :size (length corfu-history)))
+          (decay (/ -1.0 (* corfu-history-duplicate corfu-history-decay))))
       (cl-loop for elem in corfu-history for idx from 0
                for r = (if-let ((r (gethash elem ht)))
                            ;; Reduce duplicate rank with exponential decay.
-                           (- r (round (* corfu-history-duplicate
-                                          (exp (* -1.0 corfu-history-decay idx)))))
+                           (- r (round (* corfu-history-duplicate (exp (* decay idx)))))
                          ;; Never outrank the most recent element.
                          (if (= idx 0) (/ most-negative-fixnum 2) idx))
                do (puthash elem r ht))
