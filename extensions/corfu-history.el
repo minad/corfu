@@ -49,14 +49,12 @@ or the property `history-length' of `corfu-history'.")
 (defvar corfu-history--hash nil
   "Hash table of Corfu candidates.")
 
-(defcustom corfu-history-duplicate 1.0
-  "Weight of duplicate elements, multiplied by the length of the history.
-Duplicate elements in the history are prioritized such that they appear
-earlier in the completion list.  The value should be between 0.0 and
-1.0. For 0, only the recency of history elements matters.  If the value
-is 1.0, frequency is more relevant than recency.  Note that duplicates
-occur only if `history-delete-duplicates' is disabled."
-  :type 'float
+(defcustom corfu-history-duplicate 10
+  "Number of history positions gained by duplicate history elements.
+The more often a duplicates element occurs in the history, the earlier
+it appears in the completion list.  Note that duplicates occur only in
+the history if `history-delete-duplicates' is disabled."
+  :type 'natum
   :group 'corfu)
 
 (defun corfu-history--sort-predicate (x y)
@@ -68,11 +66,12 @@ occur only if `history-delete-duplicates' is disabled."
 (defun corfu-history--sort (cands)
   "Sort CANDS by history."
   (unless corfu-history--hash
-    (let* ((len (length corfu-history))
-           (dup (round (* len corfu-history-duplicate)))
-           (ht (make-hash-table :test #'equal :size len)))
+    (let ((ht (make-hash-table :test #'equal :size (length corfu-history))))
       (cl-loop for elem in corfu-history for idx from 0 do
-               (puthash elem (if-let ((n (gethash elem ht))) (- n dup) idx) ht))
+               (puthash elem (if-let ((n (gethash elem ht)))
+                                 (- n corfu-history-duplicate)
+                               (if (= idx 0) (/ most-negative-fixnum 2) idx))
+                        ht))
       (setq corfu-history--hash ht)))
   (cl-loop for ht = corfu-history--hash for max = most-positive-fixnum
            for cand on cands do
