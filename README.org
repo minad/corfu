@@ -525,7 +525,7 @@ following extensions come with the Corfu ELPA package:
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-echo.el][corfu-echo]]: =corfu-echo-mode= displays a brief candidate documentation in the
   echo area.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-history.el][corfu-history]]: =corfu-history-mode= remembers selected candidates and sorts the
-  candidates by their history position.
+  candidates by their history position and frequency.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-indexed.el][corfu-indexed]]: =corfu-indexed-mode= allows you to select indexed candidates with
   prefix arguments.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-info.el][corfu-info]]: Actions to access the candidate location and documentation.
