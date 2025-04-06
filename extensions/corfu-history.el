@@ -51,9 +51,9 @@ or the property `history-length' of `corfu-history'.")
 
 (defcustom corfu-history-duplicate 10
   "Number of history positions gained by duplicate history elements.
-The more often a duplicates element occurs in the history, the earlier
-it appears in the completion list.  Note that duplicates occur only in
-the history if `history-delete-duplicates' is disabled."
+The more often a duplicate element occurs in the history, the earlier it
+appears in the completion list.  Note that duplicates occur only if
+`history-delete-duplicates' is disabled."
   :type 'natum
   :group 'corfu)
 
