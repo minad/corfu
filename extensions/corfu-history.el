@@ -26,10 +26,12 @@
 
 ;;; Commentary:
 
-;; Enable `corfu-history-mode' to sort candidates by their history
-;; position.  Maintain a list of recently selected candidates.  In order
-;; to save the history across Emacs sessions, enable `savehist-mode' and
-;; add `corfu-history' to `savehist-additional-variables'.
+;; Enable `corfu-history-mode' to sort candidates by their history position.
+;; The recently selected candidates are stored in the `corfu-history' variable.
+;; If `history-delete-duplicates' is nil, duplicate elements are ranked higher
+;; with exponential decay.  In order to save the history across Emacs sessions,
+;; enable `savehist-mode' and add `corfu-history' to
+;; `savehist-additional-variables'.
 ;;
 ;; (corfu-history-mode 1)
 ;; (savehist-mode 1)
