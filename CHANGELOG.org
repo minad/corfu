@@ -7,6 +7,9 @@
 - =corfu-history-duplicate= and =corfu-history-decay=: New customization options to
   adjust the rank of duplicate history elements, such that they appear earlier
   in the completion list.
+- =corfu-history-mode=: Ensure that the =corfu-history= is saved if =savehist-mode= is
+  enabled. Automatically add =corfu-history= to
+  =savehist-minibuffer-history-variables=.
 
 * Version 2.0 (2025-03-28)
 
