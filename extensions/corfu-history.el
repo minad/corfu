@@ -30,12 +30,10 @@
 ;; The recently selected candidates are stored in the `corfu-history' variable.
 ;; If `history-delete-duplicates' is nil, duplicate elements are ranked higher
 ;; with exponential decay.  In order to save the history across Emacs sessions,
-;; enable `savehist-mode' and add `corfu-history' to
-;; `savehist-additional-variables'.
+;; enable `savehist-mode'.
 ;;
 ;; (corfu-history-mode 1)
 ;; (savehist-mode 1)
-;; (add-to-list 'savehist-additional-variables 'corfu-history)
 
 ;;; Code:
 
@@ -102,6 +100,10 @@ See also `corfu-history-duplicate'."
 
 (cl-defmethod corfu--insert :before (_status &context (corfu-history-mode (eql t)))
   (when (>= corfu--index 0)
+    (unless (or (not (bound-and-true-p savehist-mode))
+                (memq 'corfu-history (bound-and-true-p savehist-ignored-variables)))
+      (defvar savehist-minibuffer-history-variables)
+      (add-to-list 'savehist-minibuffer-history-variables 'corfu-history))
     (add-to-history 'corfu-history
                     (substring-no-properties
                      (nth corfu--index corfu--candidates)))
