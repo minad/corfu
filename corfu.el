@@ -886,7 +886,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   (setq beg (if (markerp beg) beg (copy-marker beg))
         end (if (and (markerp end) (marker-insertion-type end)) end (copy-marker end t))
         completion-in-region--data (list beg end table pred completion-extra-properties))
-  (completion-in-region-mode 1)
+  (completion-in-region-mode)
   (activate-change-group (setq corfu--change-group (prepare-change-group)))
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
   (add-hook 'pre-command-hook #'corfu--prepare nil 'local)
@@ -1431,7 +1431,7 @@ local `completion-at-point-functions'."
                                   ('nil 0)
                                   ((pred symbolp) (and (derived-mode-p p) t))
                                   (`(not . ,m) (and (seq-some #'derived-mode-p m) 0)))))))
-    (corfu-mode 1)))
+    (corfu-mode)))
 
 (defun corfu--minibuffer-on ()
   "Enable `corfu-mode' in the minibuffer respecting `global-corfu-minibuffer'."
@@ -1439,7 +1439,7 @@ local `completion-at-point-functions'."
              (if (functionp global-corfu-minibuffer)
                  (funcall global-corfu-minibuffer)
                (local-variable-p 'completion-at-point-functions)))
-    (corfu-mode 1)))
+    (corfu-mode)))
 
 ;; Do not show Corfu commands with M-X
 (dolist (sym '( corfu-next corfu-previous corfu-first corfu-last corfu-quit corfu-reset
