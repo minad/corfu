@@ -77,13 +77,13 @@ See also `corfu-history-duplicate'."
   (unless corfu-history--hash
     (let ((ht (make-hash-table :test #'equal :size (length corfu-history))))
       (cl-loop for elem in corfu-history for idx from 0
-               for w = (if-let ((w (gethash elem ht)))
-                           ;; Reduce duplicate weight with exponential decay.
-                           (- w (round (* corfu-history-duplicate
+               for r = (if-let ((r (gethash elem ht)))
+                           ;; Reduce duplicate rank with exponential decay.
+                           (- r (round (* corfu-history-duplicate
                                           (exp (* -1.0 corfu-history-decay idx)))))
                          ;; Never outrank the most recent element.
                          (if (= idx 0) (/ most-negative-fixnum 2) idx))
-               do (puthash elem w ht))
+               do (puthash elem r ht))
       (setq corfu-history--hash ht)))
   (cl-loop for ht = corfu-history--hash for max = most-positive-fixnum
            for cand on cands do

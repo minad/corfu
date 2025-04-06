@@ -4,8 +4,9 @@
 
 * Development
 
-- ~corfu-history-duplicate~: Prioritize duplicate history elements when sorting by
-  history via ~corfu-history-mode~.
+- =corfu-history-duplicate= and =corfu-history-decay=: New customization options to
+  adjust the rank of duplicate history elements, such that they appear earlier
+  in the completion list.
 
 * Version 2.0 (2025-03-28)
 
