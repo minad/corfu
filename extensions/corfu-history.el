@@ -32,8 +32,8 @@
 ;; with exponential decay.  In order to save the history across Emacs sessions,
 ;; enable `savehist-mode'.
 ;;
-;; (corfu-history-mode 1)
-;; (savehist-mode 1)
+;; (corfu-history-mode)
+;; (savehist-mode)
 
 ;;; Code:
 
