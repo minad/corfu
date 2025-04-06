@@ -50,11 +50,18 @@ or the property `history-length' of `corfu-history'.")
   "Hash table of Corfu candidates.")
 
 (defcustom corfu-history-duplicate 10
-  "Number of history positions gained by duplicate history elements.
+  "Maximal number of history positions gained by duplicate history elements.
 The more often a duplicate element occurs in the history, the earlier it
-appears in the completion list.  Note that duplicates occur only if
+appears in the completion list.  The position gain decays exponentially
+with `corfu-history-decay'.  Note that duplicates occur only if
 `history-delete-duplicates' is disabled."
-  :type 'natum
+  :type 'number
+  :group 'corfu)
+
+(defcustom corfu-history-decay 0.005
+  "Exponential decay for the position gain of duplicate elements.
+See also `corfu-history-duplicate'."
+  :type 'float
   :group 'corfu)
 
 (defun corfu-history--sort-predicate (x y)
@@ -67,11 +74,14 @@ appears in the completion list.  Note that duplicates occur only if
   "Sort CANDS by history."
   (unless corfu-history--hash
     (let ((ht (make-hash-table :test #'equal :size (length corfu-history))))
-      (cl-loop for elem in corfu-history for idx from 0 do
-               (puthash elem (if-let ((n (gethash elem ht)))
-                                 (- n corfu-history-duplicate)
-                               (if (= idx 0) (/ most-negative-fixnum 2) idx))
-                        ht))
+      (cl-loop for elem in corfu-history for idx from 0
+               for w = (if-let ((w (gethash elem ht)))
+                           ;; Reduce duplicate weight with exponential decay.
+                           (- w (round (* corfu-history-duplicate
+                                          (exp (* -1.0 corfu-history-decay idx)))))
+                         ;; Never outrank the most recent element.
+                         (if (= idx 0) (/ most-negative-fixnum 2) idx))
+               do (puthash elem w ht))
       (setq corfu-history--hash ht)))
   (cl-loop for ht = corfu-history--hash for max = most-positive-fixnum
            for cand on cands do
