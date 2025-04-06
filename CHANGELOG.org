@@ -8,7 +8,7 @@
   adjust the rank of duplicate history elements, such that they appear earlier
   in the completion list.
 - =corfu-history-mode=: Add =corfu-history= to =savehist-minibuffer-history-variables=
-  in order to ensure that the history is saved if =savehist-mode= is enabled.
+  in order to save the history if =savehist-mode= is enabled.
 
 * Version 2.0 (2025-03-28)
 
