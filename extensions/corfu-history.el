@@ -58,7 +58,7 @@ appears in the completion list.  The shift decays exponentially with
   :type 'number
   :group 'corfu)
 
-(defcustom corfu-history-decay 20
+(defcustom corfu-history-decay 10
   "Exponential decay for the position shift of duplicate elements.
 The shift will decay away after `corfu-history-duplicate' times
 `corfu-history-decay' history elements."
