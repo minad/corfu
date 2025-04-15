@@ -777,10 +777,14 @@ FRAME is the existing frame."
   (pcase-let* ((last (min (+ corfu--scroll corfu-count) corfu--total))
                (bar (ceiling (* corfu-count corfu-count) corfu--total))
                (lo (min (- corfu-count bar 1) (floor (* corfu-count corfu--scroll) corfu--total)))
-               (`(,mf . ,acands) (corfu--affixate
-                                  (cl-loop repeat corfu-count
-                                           for c in (nthcdr corfu--scroll corfu--candidates)
-                                           collect (funcall corfu--hilit (substring c)))))
+               (`(,mf . ,acands)
+                (corfu--affixate
+                 (cl-loop
+                  repeat corfu-count for c in (nthcdr corfu--scroll corfu--candidates)
+                  collect (funcall corfu--hilit
+                                   ;; bug#77754: Highlight unquoted string.
+                                   (substring (or (get-text-property
+                                                   0 'completion--unquoted c) c))))))
                (`(,pw ,width ,fcands) (corfu--format-candidates acands))
                ;; Disable the left margin if a margin formatter is active.
                (corfu-left-margin-width (if mf 0 corfu-left-margin-width)))
