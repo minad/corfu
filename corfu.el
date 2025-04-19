@@ -1034,7 +1034,7 @@ Auto completion is only performed if the tick did not change."
 WIDTH is the width of the popup.
 The current candidate CURR is highlighted.
 A scroll bar is displayed from LO to LO+BAR."
-  (let ((lh (default-line-height)))
+  (let ((lh (cdr (posn-object-width-height pos))))
     (with-current-buffer (corfu--make-buffer " *corfu*")
       (let* ((ch (default-line-height))
              (cw (default-font-width))
