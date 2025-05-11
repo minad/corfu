@@ -872,14 +872,10 @@ and the stack trace is shown in the *Messages* buffer."
                  (condition-case nil
                      (progn ,@body nil)
                    ((debug error) t)))))
-     (cond
-      (debug-on-error
-       (let ((debugger #'corfu--debug))
-         (funcall body)))
-      ((funcall body)
+     (when (or debug-on-error (funcall body))
        (let ((debug-on-error t)
              (debugger #'corfu--debug))
-         (funcall body))))))
+         (funcall body)))))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
