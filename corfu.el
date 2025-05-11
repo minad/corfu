@@ -706,15 +706,9 @@ FRAME is the existing frame."
       ;; Bind non-essential=t to prevent Tramp from opening new connections,
       ;; without the user explicitly requesting it via M-TAB.
       (pcase (let ((non-essential t))
-               ;; XXX Guard against errors during candidate generation.
-               ;; bug#61274: `dabbrev-capf' signals errors.
-               (condition-case err
-                   (if interruptible
-                       (while-no-input (corfu--recompute str pt table pred))
-                     (corfu--recompute str pt table pred))
-                 (error
-                  (message "Corfu completion error: %s" (error-message-string err))
-                  t)))
+               (if interruptible
+                   (while-no-input (corfu--recompute str pt table pred))
+                 (corfu--recompute str pt table pred)))
         ('nil (keyboard-quit))
         ((and state (pred consp))
          (setq corfu--input input)
