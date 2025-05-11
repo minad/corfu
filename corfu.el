@@ -865,10 +865,21 @@ the last command must be listed in `corfu-continue-commands'."
   nil)
 
 (defmacro corfu--guard (&rest body)
-  "Guard BODY showing a stack trace on error."
-  `(condition-case nil
-       (let ((debug-on-error t) (debugger #'corfu--debug)) ,@body)
-     ((debug error) nil)))
+  "Guard BODY such that errors are caught.
+If an error occurs, the BODY is retried with `debug-on-error' enabled
+and the stack trace is shown in the *Messages* buffer."
+  `(let ((body (lambda ()
+                 (condition-case nil
+                     (progn ,@body nil)
+                   ((debug error) t)))))
+     (cond
+      (debug-on-error
+       (let ((debugger #'corfu--debug))
+         (funcall body)))
+      ((funcall body)
+       (let ((debug-on-error t)
+             (debugger #'corfu--debug))
+         (funcall body))))))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
