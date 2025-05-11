@@ -602,34 +602,21 @@ enhance your setup.
 
 * Debugging Corfu
 
-When you observe an error in the =corfu--post-command= post command hook, you
-should install an advice to enforce debugging. This allows you to obtain a stack
-trace in order to narrow down the location of the error. The reason is that post
-command hooks are automatically disabled (and not debugged) by Emacs. Otherwise
-Emacs would become unusable, given that the hooks are executed after every
-command.
+Corfu will automatically print a stack trace to the =*Messages*= buffer when an
+error is detected. The stack trace allows you to narrow down the exact code
+location which caused the error.
 
-#+begin_src emacs-lisp
-(setq debug-on-error t)
-
-(defun force-debug (func &rest args)
-  (condition-case e
-      (apply func args)
-    ((debug error) (signal (car e) (cdr e)))))
-
-(advice-add #'corfu--post-command :around #'force-debug)
-#+end_src
-
-When Capfs do not yield the expected result you can use ~cape-capf-debug~ to add
-debug messages to a Capf. The Capf will then produce a completion log in the
-messages buffer.
+When Capfs do not yield the expected result, you can wrap a Capf with
+~cape-capf-debug~ from the [[https://github.com/minad/cape][Cape]] package, creating a new Capf, which adds
+completion log messages for debugging. The completion log messages are added to
+the =*Messages*= buffer.
 
 #+begin_src emacs-lisp
 (setq completion-at-point-functions (list (cape-capf-debug #'cape-dict)))
 #+end_src
 
-Note that you will sometimes find crashes inside Capfs. Such issues are bugs in
-the Capfs must be fixed there. They cannot be worked around in Corfu.
+Sometimes you will find errors inside Capfs. Such errors are bugs in the Capfs
+must be fixed there, since they Corfu cannot work around them.
 
 * Contributions
 

@@ -856,13 +856,34 @@ the last command must be listed in `corfu-continue-commands'."
   (unless (corfu--range-valid-p)
     (corfu-quit)))
 
+(defun corfu--debug (&rest _)
+  "Debugger used by `corfu--guard'."
+  (require 'backtrace)
+  (declare-function backtrace-to-string "backtrace")
+  (declare-function backtrace-get-frames "backtrace")
+  (let ((inhibit-message t))
+    (message "Corfu detected an error:\n%s"
+             (backtrace-to-string (backtrace-get-frames #'corfu--debug))))
+  (let (message-log-max)
+    (message "%s %s"
+             (propertize "Corfu detected an error:" 'face 'error)
+             (substitute-command-keys "Press \\[view-echo-area-messages] to see the stack trace")))
+  nil)
+
+(defmacro corfu--guard (&rest body)
+  "Guard BODY showing a stack trace on error."
+  `(condition-case nil
+       (let ((debug-on-error t) (debugger #'corfu--debug)) ,@body)
+     ((debug error) nil)))
+
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
-  (if (corfu--continue-p)
-      (corfu--exhibit)
-    (corfu-quit))
-  (when corfu-auto
-    (corfu--auto-post-command)))
+  (corfu--guard
+   (if (corfu--continue-p)
+       (corfu--exhibit)
+     (corfu-quit))
+   (when corfu-auto
+     (corfu--auto-post-command))))
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
@@ -993,36 +1014,38 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 
 (defun corfu--auto-complete-deferred (&optional tick)
   "Initiate auto completion if TICK did not change."
-  (when (and (not completion-in-region-mode)
-             (or (not tick) (equal tick (corfu--auto-tick))))
-    (pcase (while-no-input ;; Interruptible Capf query
-             (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
-      (`(,fun ,beg ,end ,table . ,plist)
-       (let ((completion-in-region-mode-predicate
-              (lambda ()
-                (when-let ((newbeg (car-safe (funcall fun))))
-                  (= newbeg beg))))
-             (completion-extra-properties plist))
-         (corfu--setup beg end table (plist-get plist :predicate))
-         (corfu--exhibit 'auto))))))
+  (corfu--guard
+   (when (and (not completion-in-region-mode)
+              (or (not tick) (equal tick (corfu--auto-tick))))
+     (pcase (while-no-input ;; Interruptible Capf query
+              (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
+       (`(,fun ,beg ,end ,table . ,plist)
+        (let ((completion-in-region-mode-predicate
+               (lambda ()
+                 (when-let ((newbeg (car-safe (funcall fun))))
+                   (= newbeg beg))))
+              (completion-extra-properties plist))
+          (corfu--setup beg end table (plist-get plist :predicate))
+          (corfu--exhibit 'auto)))))))
 
 (defun corfu--auto-post-command ()
   "Post command hook which initiates auto completion."
-  (cancel-timer corfu--auto-timer)
-  (when (and (not completion-in-region-mode)
-             (not defining-kbd-macro)
-             (not buffer-read-only)
-             (corfu--match-symbol-p corfu-auto-commands this-command)
-             (corfu--popup-support-p))
-    (if (<= corfu-auto-delay 0)
-        (corfu--auto-complete-deferred)
-      ;; Do not use `timer-set-idle-time' since this leads to
-      ;; unpredictable pauses, in particular with `flyspell-mode'.
-      (timer-set-time corfu--auto-timer
-                      (timer-relative-time nil corfu-auto-delay))
-      (timer-set-function corfu--auto-timer #'corfu--auto-complete-deferred
-                          (list (corfu--auto-tick)))
-      (timer-activate corfu--auto-timer))))
+  (corfu--guard
+   (cancel-timer corfu--auto-timer)
+   (when (and (not completion-in-region-mode)
+              (not defining-kbd-macro)
+              (not buffer-read-only)
+              (corfu--match-symbol-p corfu-auto-commands this-command)
+              (corfu--popup-support-p))
+     (if (<= corfu-auto-delay 0)
+         (corfu--auto-complete-deferred)
+       ;; Do not use `timer-set-idle-time' since this leads to
+       ;; unpredictable pauses, in particular with `flyspell-mode'.
+       (timer-set-time corfu--auto-timer
+                       (timer-relative-time nil corfu-auto-delay))
+       (timer-set-function corfu--auto-timer #'corfu--auto-complete-deferred
+                           (list (corfu--auto-tick)))
+       (timer-activate corfu--auto-timer)))))
 
 (defun corfu--auto-tick ()
   "Return the current tick/status of the buffer.
