@@ -868,14 +868,14 @@ the last command must be listed in `corfu-continue-commands'."
   "Protect FUN such that errors are caught.
 If an error occurs, the FUN is retried with `debug-on-error' enabled and
 the stack trace is shown in the *Messages* buffer."
-  (let ((fun (lambda ()
-               (condition-case nil
-                   (progn (funcall fun) nil)
-                 ((debug error) t)))))
-    (when (or debug-on-error (funcall fun))
-      (let ((debug-on-error t)
-            (debugger #'corfu--debug))
-        (funcall fun)))))
+  (when (or debug-on-error (condition-case nil
+                               (progn (funcall fun) nil)
+                             ((debug error) t)))
+    (let ((debug-on-error t)
+          (debugger #'corfu--debug))
+      (condition-case nil
+          (funcall fun)
+        ((debug error) nil)))))
 
 (defun corfu--post-command ()
   "Refresh Corfu after last command."
