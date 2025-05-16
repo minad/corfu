@@ -852,12 +852,10 @@ the last command must be listed in `corfu-continue-commands'."
 
 (defun corfu--debug (&rest _)
   "Debugger used by `corfu--protect'."
-  (require 'backtrace)
-  (declare-function backtrace-to-string "backtrace")
-  (declare-function backtrace-get-frames "backtrace")
   (let ((inhibit-message t))
-    (message "Corfu detected an error:\n%s"
-             (backtrace-to-string (backtrace-get-frames #'corfu--debug))))
+    (require 'backtrace)
+    (declare-function backtrace-to-string "backtrace")
+    (message "Corfu detected an error:\n%s" (backtrace-to-string)))
   (let (message-log-max)
     (message "%s %s"
              (propertize "Corfu detected an error:" 'face 'error)
