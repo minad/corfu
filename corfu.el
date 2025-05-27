@@ -452,6 +452,7 @@ FRAME is the existing frame."
   (let* ((window-min-height 1)
          (window-min-width 1)
          (inhibit-redisplay t)
+         (x-fast-protocol-requests t)
          (x-gtk-resize-child-frames corfu--gtk-resize-child-frames)
          (before-make-frame-hook)
          (after-make-frame-functions)
