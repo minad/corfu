@@ -867,7 +867,7 @@ the last command must be listed in `corfu-continue-commands'."
   "Protect FUN such that errors are caught.
 If an error occurs, the FUN is retried with `debug-on-error' enabled and
 the stack trace is shown in the *Messages* buffer."
-  (static-if (>= emacs-major-version 30)
+  (static-if (fboundp 'handler-bind) ;; Available on Emacs 30
       (ignore-errors
         (handler-bind ((error #'corfu--debug))
           (funcall fun)))
