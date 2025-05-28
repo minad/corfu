@@ -499,7 +499,7 @@ FRAME is the existing frame."
                           unless (equal (alist-get k is) v) collect p)))
       (when diff (modify-frame-parameters frame diff))
       ;; XXX HACK: `set-window-buffer' must be called to force fringe update.
-      (when (or diff (eq (window-buffer win) (current-buffer)))
+      (when (or diff (not (eq (window-buffer win) (current-buffer))))
         (set-window-buffer win (current-buffer)))
       ;; Disallow selection of root window (gh:minad/corfu#63)
       (set-window-parameter win 'no-delete-other-windows t)
@@ -515,6 +515,7 @@ FRAME is the existing frame."
   ;; Unparent child frame if EXWM is used, otherwise EXWM buffers are drawn on
   ;; top of the Corfu child frame.
   (when (and (bound-and-true-p exwm--connection) (frame-parent frame))
+    (redisplay t)
     (set-frame-parameter frame 'parent-frame nil))
   frame)
 
