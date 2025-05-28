@@ -344,7 +344,8 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (undecorated . t)
     (cursor-type . nil)
     (no-special-glyphs . t)
-    (desktop-dont-save . t))
+    (desktop-dont-save . t)
+    (inhibit-double-buffering . t))
   "Default child frame parameters.")
 
 (defvar corfu--buffer-parameters
