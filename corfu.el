@@ -428,7 +428,6 @@ is a prefix length override, which is t for manual completion."
       (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
       buffer)))
 
-(defvar x-gtk-resize-child-frames) ;; Not present on non-gtk builds
 (defvar corfu--gtk-resize-child-frames
   (let ((case-fold-search t))
      ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
@@ -441,6 +440,10 @@ is a prefix length override, which is t for manual completion."
                          (or (getenv "XDG_CURRENT_DESKTOP")
                              (getenv "DESKTOP_SESSION") ""))
          'resize-mode)))
+
+;; Not present on non-gtk/non-x builds
+(defvar x-gtk-resize-child-frames)
+(defvar x-fast-protocol-requests)
 
 ;; Function adapted from posframe.el by tumashu
 (defun corfu--make-frame (frame x y width height)
