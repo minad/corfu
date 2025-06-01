@@ -345,7 +345,7 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (cursor-type . nil)
     (no-special-glyphs . t)
     (desktop-dont-save . t)
-    (inhibit-double-buffering . t))
+    (inhibit-double-buffering . t)) ;; Avoid display artifacts on X/Gtk builds
   "Default child frame parameters.")
 
 (defvar corfu--buffer-parameters
