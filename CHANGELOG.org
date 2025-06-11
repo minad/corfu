@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 2.3 (2025-06-12)
 
 - Minor corrections and fixes.
 
