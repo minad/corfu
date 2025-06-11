@@ -367,7 +367,8 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (fringe-indicator-alist (continuation) (truncation))
     (indicate-empty-lines . nil)
     (indicate-buffer-boundaries . nil)
-    (buffer-read-only . t))
+    (buffer-read-only . t)
+    (pixel-scroll-precision-mode . nil))
   "Default child frame buffer parameters.")
 
 (defvar corfu--mouse-ignore-map
