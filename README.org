@@ -393,6 +393,13 @@ Then, when a new orderless component is desired, use =M-SPC=
 and arbitrary orderless search terms and new separators can be entered
 thereafter.
 
+Alternatively, bind ~corfu-insert-or-escape-separator~ in place of
+~corfu-insert-separator~ to be able to escape and/or remove the separator
+indefinitely by repeating the bound key sequence. Or keep using
+~corfu-insert-separator~ and also bind ~corfu-escape-separator~, which only
+escapes/unescapes indefinitely, thus skipping one state in the loop since in
+this case a key is dedicated for insertion.
+
 To treat the entire input as Orderless input, you can set the customization
 option ~corfu-quit-at-boundary~ to nil. This disables the predicate which checks
 if the current completion boundary has been left. In contrast, if you always

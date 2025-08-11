@@ -1289,6 +1289,48 @@ prompt instead.  See `corfu-separator' for more details."
                 (= (char-before) corfu-separator))
       (insert corfu-separator))))
 
+(defun corfu-insert-or-escape-separator ()
+  "Rotate prompt between inserting, escaping and removing the separator.
+An alternative to `corfu-insert-separator', useful in cases where including the
+separator in the query is important, and the user wants a single bind for
+everything. It can be called repeatedly, and will do, in order (starting from a
+prompt without any separators):
+
+1. Insert the separator character at prompt end.
+2. Insert a backslash character before the inserted separator, to treat it as
+   part of the prompt instead of as a split point for components.
+3. Remove the separator and backslash.
+
+The sequence will loop to 1 if called further, allowing to fix accidental
+changes to the prompt. Note this function can remove the separator character."
+  (interactive)
+  (if (char-equal (char-before) corfu-separator)
+      (if (char-equal (char-before (1- (point))) ?\\)
+          (save-excursion (delete-char -2))                   ;; Case 3
+        (save-excursion (backward-char 1) (insert-char ?\\))) ;; Case 2
+    (call-interactively #'corfu-insert-separator)))           ;; Case 1
+
+(defun corfu-escape-separator ()
+  "Rotate prompt between escaping and unescaping the separator.
+A complement to `corfu-insert-separator', useful in cases where including the
+separator in the query is important, and the user wants escaping to be separate
+from inserting. It can be called repeatedly, and will do, in order:
+
+0. (when there is no separator) Insert the separator character at prompt end.
+1. Insert a backslash character before the already present separator, to treat
+   it as part of the prompt instead of as a split point for components.
+2. Remove the backslash.
+
+The sequence will loop to 1 if called further, allowing to fix accidental
+changes to the prompt. Note this function cannot remove the separator
+character."
+  (interactive)
+  (if (char-equal (char-before) corfu-separator)
+      (if (char-equal (char-before (1- (point))) ?\\)
+          (save-excursion (backward-char 1) (delete-char -1)) ;; Case 2
+        (save-excursion (backward-char 1) (insert-char ?\\))) ;; Case 1
+    (call-interactively #'corfu-insert-separator)))           ;; Case 0
+
 (defun corfu-next (&optional n)
   "Go forward N candidates."
   (interactive "p")
