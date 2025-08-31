@@ -465,6 +465,9 @@ FRAME is the existing frame."
     (unless (and (frame-live-p frame)
                  (eq (frame-parent frame)
                      (and (not (bound-and-true-p exwm--connection)) parent))
+                 ;; Handle mixed tty/graphical sessions
+                 (eq (display-graphic-p frame)
+                     (display-graphic-p parent))
                  ;; If there is more than one window, `frame-root-window' may
                  ;; return nil.  Recreate the frame in this case.
                  (window-live-p (frame-root-window frame)))
@@ -519,7 +522,8 @@ FRAME is the existing frame."
   (make-frame-visible frame)
   ;; Unparent child frame if EXWM is used, otherwise EXWM buffers are drawn on
   ;; top of the Corfu child frame.
-  (when (and (bound-and-true-p exwm--connection) (frame-parent frame))
+  (when (and (bound-and-true-p exwm--connection)
+             (display-graphic-p frame) (frame-parent frame))
     (redisplay t)
     (set-frame-parameter frame 'parent-frame nil))
   frame)
