@@ -172,7 +172,6 @@ completion at point function provided by my [[https://github.com/minad/cape][Cap
          ("C-M-/" . dabbrev-expand))
   :config
   (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
-  ;; Available since Emacs 29 (Use `dabbrev-ignored-buffer-regexps' on older Emacs)
   (add-to-list 'dabbrev-ignored-buffer-modes 'authinfo-mode)
   (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
   (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode)
@@ -357,23 +356,11 @@ confirmation. Fortunately it is easy to improve this by using the command
 Shell completion uses the flexible Pcomplete mechanism internally, which allows
 you to program the completions per shell command. If you want to know more, look
 into this [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][blog post]], which shows how to configure Pcomplete for git commands.
-Since Emacs 29, Pcomplete offers the =pcomplete-from-help= function which parses
-the ~--help~ output of a command and produces completions for command line
-options.
-
-Pcomplete has a few bugs on Emacs 28. We can work around the issues
-with the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). Cape provides wrappers
-which sanitize the Pcomplete function. On Emacs 29 the advices should not be
-necessary anymore, since most relevant bugs have been fixed. In case you
-discover any remaining Pcomplete issues, please report them upstream.
-
-#+begin_src emacs-lisp
-;; Sanitize the `pcomplete-completions-at-point' Capf.  The Capf has undesired
-;; side effects on Emacs 28.  These advices are not needed on Emacs 29 and newer.
-(when (< emacs-major-version 29)
-  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
-#+end_src
+Pcomplete offers the =pcomplete-from-help= function which parses the ~--help~ output
+of a command and produces completions for command line options. In the past,
+before Emacs 29, Pcomplete had a few bugs, which had to be worked around using
+the [[https://github.com/minad/cape][Cape]] library (Completion at point extensions). In case you discover any
+remaining Pcomplete issues, please report them upstream.
 
 ** Orderless completion
 

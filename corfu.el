@@ -6,7 +6,7 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
 ;; Version: 2.3
-;; Package-Requires: ((emacs "28.1") (compat "30"))
+;; Package-Requires: ((emacs "29.1") (compat "30"))
 ;; URL: https://github.com/minad/corfu
 ;; Keywords: abbrev, convenience, matching, completion, text
 
@@ -616,28 +616,18 @@ FRAME is the existing frame."
           (eq t (compare-strings word 0 len it 0 len
                                  completion-ignore-case))))))
 
-;; bug#6581: `equal-including-properties' uses `eq' for properties until 29.1.
-;; Approximate by comparing `text-properties-at' position 0.
-(defalias 'corfu--equal-including-properties
-  (static-if (< emacs-major-version 29)
-      (lambda (x y)
-        (and (equal x y)
-             (equal (text-properties-at 0 x) (text-properties-at 0 y))))
-    #'equal-including-properties))
-
 (defun corfu--delete-dups (list)
   "Delete `equal-including-properties' consecutive duplicates from LIST."
   (let ((beg list))
     (while (cdr beg)
       (let ((end (cdr beg)))
         (while (equal (car beg) (car end)) (pop end))
-        ;; The deduplication is quadratic in the number of duplicates.  We can
-        ;; avoid the quadratic complexity with a hash table which takes
-        ;; properties into account (available since Emacs 28).
+        ;; The deduplication is quadratic in the number of duplicates.  We could
+        ;; avoid this via a hash table taking properties into account.
         (while (not (eq beg end))
           (let ((dup beg))
             (while (not (eq (cdr dup) end))
-              (if (corfu--equal-including-properties (car beg) (cadr dup))
+              (if (equal-including-properties (car beg) (cadr dup))
                   (setcdr dup (cddr dup))
                 (pop dup))))
           (pop beg)))))
@@ -1437,17 +1427,6 @@ Quit if no candidate is selected."
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
     (kill-local-variable 'completion-in-region-function))))
 
-(defcustom global-corfu-modes t
-  "List of modes where Corfu should be enabled by `global-corfu-mode'.
-The variable can either be t, nil or a list of t, nil, mode
-symbols or elements of the form (not modes).  Examples:
-  - Enable everywhere, except in Org: ((not org-mode) t).
-  - Enable in programming modes except Python: ((not python-mode) prog-mode).
-  - Enable only in text modes: (text-mode)."
-  :type '(choice (const t) (repeat sexp))
-  :group 'corfu)
-
-;; TODO use `:predicate' on Emacs 29
 (defcustom global-corfu-minibuffer t
   "Corfu should be enabled in the minibuffer by `global-corfu-mode'.
 The variable can either be t, nil or a custom predicate function.  If
@@ -1460,21 +1439,14 @@ local `completion-at-point-functions'."
 (define-globalized-minor-mode global-corfu-mode
   corfu-mode corfu--on
   :group 'corfu
+  :predicate t
   (remove-hook 'minibuffer-setup-hook #'corfu--minibuffer-on)
   (when (and global-corfu-mode global-corfu-minibuffer)
     (add-hook 'minibuffer-setup-hook #'corfu--minibuffer-on 100)))
 
 (defun corfu--on ()
   "Enable `corfu-mode' in the current buffer respecting `global-corfu-modes'."
-  (when (and (not noninteractive) (not (eq (aref (buffer-name) 0) ?\s))
-             ;; TODO use `:predicate' on Emacs 29
-             (or (eq t global-corfu-modes)
-                 (eq t (cl-loop for p in global-corfu-modes thereis
-                                (pcase-exhaustive p
-                                  ('t t)
-                                  ('nil 0)
-                                  ((pred symbolp) (and (derived-mode-p p) t))
-                                  (`(not . ,m) (and (seq-some #'derived-mode-p m) 0)))))))
+  (unless (or noninteractive (eq (aref (buffer-name) 0) ?\s))
     (corfu-mode)))
 
 (defun corfu--minibuffer-on ()

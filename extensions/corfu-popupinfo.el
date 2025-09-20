@@ -6,7 +6,7 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
 ;; Version: 2.3
-;; Package-Requires: ((emacs "28.1") (compat "30") (corfu "2.3"))
+;; Package-Requires: ((emacs "29.1") (compat "30") (corfu "2.3"))
 ;; URL: https://github.com/minad/corfu
 
 ;; This file is part of GNU Emacs.
@@ -346,8 +346,7 @@ form (X Y WIDTH HEIGHT DIR)."
   (when (corfu-popupinfo--visible-p corfu--frame)
     (let* ((cand-changed
             (not (and (corfu-popupinfo--visible-p)
-                      (corfu--equal-including-properties
-                       candidate corfu-popupinfo--candidate))))
+                      (equal-including-properties candidate corfu-popupinfo--candidate))))
            (new-coords (frame-edges corfu--frame 'inner-edges))
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
       (when cand-changed
@@ -493,8 +492,7 @@ not be displayed until this command is called again, even if
                             corfu-popupinfo-delay))
                    (corfu-popupinfo--toggle))
               (if (or (<= delay 0)
-                      (and (corfu--equal-including-properties
-                            cand corfu-popupinfo--candidate)
+                      (and (equal-including-properties cand corfu-popupinfo--candidate)
                            (corfu-popupinfo--visible-p)))
                   (corfu-popupinfo--show cand)
                 (when (corfu-popupinfo--visible-p)
@@ -505,8 +503,7 @@ not be displayed until this command is called again, even if
                     (corfu-popupinfo--show corfu-popupinfo--candidate))))
                 (setq corfu-popupinfo--timer
                     (run-at-time delay nil #'corfu-popupinfo--show cand)))
-            (unless (corfu--equal-including-properties
-                     cand corfu-popupinfo--candidate)
+            (unless (equal-including-properties cand corfu-popupinfo--candidate)
               (corfu-popupinfo--hide))))
       (corfu-popupinfo--hide))))
 
