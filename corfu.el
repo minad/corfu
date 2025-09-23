@@ -1446,7 +1446,7 @@ local `completion-at-point-functions'."
 
 (defun corfu--on ()
   "Enable `corfu-mode' in the current buffer respecting `global-corfu-modes'."
-  (unless (or noninteractive (eq (aref (buffer-name) 0) ?\s))
+  (unless (or noninteractive buffer-read-only (eq (aref (buffer-name) 0) ?\s))
     (corfu-mode)))
 
 (defun corfu--minibuffer-on ()
