@@ -2,6 +2,12 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- Require Emacs 29.1.
+- Handle mixed tty/graphical displays.
+- Do not enable Corfu in read-only buffers.
+
 * Version 2.3 (2025-06-12)
 
 - Minor corrections and fixes.
