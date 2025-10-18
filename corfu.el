@@ -84,7 +84,7 @@ The value should lie between 0 and corfu-count/2."
   '(ignore universal-argument universal-argument-more digit-argument
     "\\`corfu-" "\\`scroll-other-window")
   "Continue Corfu completion after executing these commands.
-The list can container either command symbols or regular expressions."
+The list can contain either command symbols or regular expressions."
   :type '(repeat (choice regexp symbol)))
 
 (defcustom corfu-preview-current 'insert
@@ -186,7 +186,7 @@ the completion backend is costly."
   '("self-insert-command\\'" "delete-backward-char\\'" "\\`backward-delete-char"
     c-electric-colon c-electric-lt-gt c-electric-slash c-scope-operator)
   "Commands which initiate auto completion.
-The list can container either command symbols or regular expressions."
+The list can contain either command symbols or regular expressions."
   :type '(repeat (choice regexp symbol)))
 
 (defcustom corfu-auto nil
@@ -194,7 +194,7 @@ The list can container either command symbols or regular expressions."
 Auto completion is disabled by default for safety and unobtrusiveness.
 Note that auto completion is particularly dangerous in untrusted files
 since some completion functions may perform arbitrary code execution,
-notably the Emacs built-in `elisp-completion-at-point' .  See also the
+notably the Emacs built-in `elisp-completion-at-point'.  See also the
 settings `corfu-auto-delay', `corfu-auto-prefix' and
 `corfu-auto-commands'."
   :type 'boolean)
