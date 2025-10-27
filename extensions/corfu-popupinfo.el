@@ -181,7 +181,7 @@ all values are in pixels relative to the origin.  See
   (save-excursion
     (let ((old-buffers (buffer-list)) (buffer nil))
       (unwind-protect
-          (when-let
+          (when-let*
               ((fun (corfu--metadata-get 'company-location))
                ;; BUG: company-location may throw errors if location is not found
                (loc (ignore-errors (funcall fun candidate)))
@@ -201,7 +201,7 @@ all values are in pixels relative to the origin.  See
               (save-excursion
                 (without-restriction
                   (goto-char (point-min))
-                  (when-let ((pos (cdr loc)))
+                  (when-let* ((pos (cdr loc)))
                     (if (bufferp (car loc))
                         (goto-char pos)
                       (forward-line (1- pos))))
@@ -217,7 +217,7 @@ all values are in pixels relative to the origin.  See
 
 (defun corfu-popupinfo--get-documentation (candidate)
   "Get the documentation for CANDIDATE."
-  (when-let ((fun (corfu--metadata-get 'company-doc-buffer))
+  (when-let* ((fun (corfu--metadata-get 'company-doc-buffer))
              (res (save-excursion
                     (let ((inhibit-message t)
                           (message-log-max nil)
@@ -350,7 +350,7 @@ form (X Y WIDTH HEIGHT DIR)."
            (new-coords (frame-edges corfu--frame 'inner-edges))
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
       (when cand-changed
-        (if-let ((content (funcall corfu-popupinfo--function candidate)))
+        (if-let* ((content (funcall corfu-popupinfo--function candidate)))
             (with-current-buffer (corfu--make-buffer corfu-popupinfo--buffer)
               (with-silent-modifications
                 (erase-buffer)
@@ -358,7 +358,7 @@ form (X Y WIDTH HEIGHT DIR)."
                 (goto-char (point-min)))
               (dolist (var corfu-popupinfo--buffer-parameters)
                 (set (make-local-variable (car var)) (cdr var)))
-              (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
+              (when-let* ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
                 (setcar m 'corfu-popupinfo)))
           (corfu-popupinfo--hide)
           (setq cand-changed nil coords-changed nil)))
@@ -486,7 +486,7 @@ not be displayed until this command is called again, even if
       (setq corfu-popupinfo--timer nil))
     (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
         (let ((cand (nth corfu--index corfu--candidates)))
-          (if-let ((delay (if (consp corfu-popupinfo-delay)
+          (if-let* ((delay (if (consp corfu-popupinfo-delay)
                               (funcall (if (eq corfu-popupinfo--toggle 'init) #'car #'cdr)
                                        corfu-popupinfo-delay)
                             corfu-popupinfo-delay))

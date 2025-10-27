@@ -77,7 +77,7 @@ The shift will decay away after `corfu-history-duplicate' times
     (let ((ht (make-hash-table :test #'equal :size (length corfu-history)))
           (decay (/ -1.0 (* corfu-history-duplicate corfu-history-decay))))
       (cl-loop for elem in corfu-history for idx from 0
-               for r = (if-let ((r (gethash elem ht)))
+               for r = (if-let* ((r (gethash elem ht)))
                            ;; Reduce duplicate rank with exponential decay.
                            (- r (round (* corfu-history-duplicate (exp (* decay idx)))))
                          ;; Never outrank the most recent element.

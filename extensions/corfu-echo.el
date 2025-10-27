@@ -81,7 +81,7 @@ subsequent delay."
   :global t :group 'corfu)
 
 (cl-defmethod corfu--exhibit :after (&context (corfu-echo-mode (eql t)) &optional _auto)
-  (if-let (((not (minibufferp)))
+  (if-let* (((not (minibufferp)))
            (delay (if (consp corfu-echo-delay)
                       (funcall (if corfu-echo--message #'cdr #'car)
                                corfu-echo-delay)
