@@ -1356,16 +1356,16 @@ If a candidate is selected, insert it.  Otherwise invoke
   (if (< corfu--index 0)
       (corfu-expand)
     ;; Continue completion with selected candidate.  Exit with status 'finished
-    ;; if input is a valid match and no further completion is
-    ;; possible. Additionally treat completion as finished if at the end of a
-    ;; boundary, even if other longer candidates would still match, since the
-    ;; user invoked `corfu-complete' with an explicitly selected candidate!
+    ;; if input is a valid match and no further completion is possible.
     (pcase-let ((`(,_beg ,_end ,table ,pred . ,_) completion-in-region--data)
                 (newstr (corfu--insert nil)))
       (and (test-completion newstr table pred)
            (or (not (consp (completion-try-completion
                             newstr table pred (length newstr)
                             (completion-metadata newstr table pred))))
+               ;; Additionally finish completion if at the end of a boundary,
+               ;; even if other longer candidates match, since the user invoked
+               ;; `corfu-complete' with an explicitly selected candidate!
                (equal (completion-boundaries newstr table pred "") '(0 . 0)))
            (corfu--done newstr 'finished nil))
       t)))
