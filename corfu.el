@@ -403,15 +403,14 @@ is a prefix length override, which is t for manual completion."
             (or (eq len t) (>= len corfu-auto-prefix)))
           ;; For non-exclusive Capfs, check for valid completion.
           (or (not (eq 'no (plist-get plist :exclusive)))
-              (let* ((str (buffer-substring-no-properties beg end))
-                     (pt (- (point) beg))
-                     (pred (plist-get plist :predicate))
-                     (md (completion-metadata (substring str 0 pt) table pred)))
+              (let ((str (buffer-substring-no-properties beg end))
+                    (pt (- (point) beg))
+                    (pred (plist-get plist :predicate)))
                 ;; We use `completion-try-completion' to check if there are
                 ;; completions. The upstream `completion--capf-wrapper' uses
                 ;; `try-completion' which is incorrect since it only checks for
                 ;; prefix completions.
-                (completion-try-completion str table pred pt md)))
+                (corfu--try-completion str table pred pt)))
           (cons fun res)))))
 
 (defun corfu--make-buffer (name)
@@ -581,6 +580,11 @@ FRAME is the existing frame."
                           (lambda (x) (car (completion-hilit-commonality (list x) prefix base))))
                     (and cands (nconc cands base)))))
         (cons (apply #'completion-all-completions args) completion-lazy-hilit-fn)))))
+
+(defun corfu--try-completion (str table pred pt &optional md)
+  "Complete STR given TABLE, predicate PRED, point PT and optional metadata MD."
+  (setq md (or md (completion-metadata (substring str 0 pt) table pred)))
+  (completion-try-completion str table pred pt md))
 
 (defsubst corfu--length-string< (x y)
   "Sorting predicate which compares X and Y first by length then by `string<'."
@@ -955,7 +959,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
          (threshold (completion--cycle-threshold md))
          (completion-in-region-mode-predicate
           (or completion-in-region-mode-predicate #'always)))
-    (pcase (completion-try-completion str table pred pt md)
+    (pcase (corfu--try-completion str table pred pt md)
       ('nil (corfu--message "No match") nil)
       ('t (goto-char end)
           (corfu--message "Sole match")
@@ -982,9 +986,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
            ;; Setup popup if `corfu-on-exact-match' is `show' or if completion
            ;; can continue.
            (if (or (eq corfu-on-exact-match 'show)
-                   (consp (completion-try-completion
-                           newstr table pred newpt
-                           (completion-metadata (substring newstr 0 newpt) table pred))))
+                   (consp (corfu--try-completion newstr table pred newpt)))
                (corfu--setup beg end table pred)
              (corfu--exit-function (car cands) 'finished nil)))
           ;; Too many candidates for cycling -> Setup popup.
@@ -1212,9 +1214,7 @@ AUTO is non-nil when initializing auto completion."
            (equal (car corfu--candidates) str) (not (cdr corfu--candidates))
            (not (eq corfu-on-exact-match 'show))
            (or auto corfu-on-exact-match)
-           (not (consp (completion-try-completion
-                        str table pred pt
-                        (completion-metadata (substring str 0 pt) table pred)))))
+           (not (consp (corfu--try-completion str table pred pt))))
       ;; Quit directly when initializing auto completion.
       (if (or auto (eq corfu-on-exact-match 'quit))
           (corfu-quit)
@@ -1361,9 +1361,7 @@ If a candidate is selected, insert it.  Otherwise invoke
     (pcase-let ((`(,_beg ,_end ,table ,pred . ,_) completion-in-region--data)
                 (newstr (corfu--insert nil)))
       (and (test-completion newstr table pred)
-           (or (not (consp (completion-try-completion
-                            newstr table pred (length newstr)
-                            (completion-metadata newstr table pred))))
+           (or (not (consp (corfu--try-completion newstr table pred (length newstr))))
                ;; Additionally finish completion if at the end of a boundary,
                ;; even if other longer candidates match, since the user invoked
                ;; `corfu-complete' with an explicitly selected candidate!
@@ -1382,9 +1380,8 @@ input has been expanded."
       (corfu-complete)
     (pcase-let* ((`(,beg ,end ,table ,pred . ,_) completion-in-region--data)
                  (pt (max 0 (- (point) beg)))
-                 (str (buffer-substring-no-properties beg end))
-                 (md (completion-metadata (substring str 0 pt) table pred)))
-      (pcase (completion-try-completion str table pred pt md)
+                 (str (buffer-substring-no-properties beg end)))
+      (pcase (corfu--try-completion str table pred pt)
         ('t
          (goto-char end)
          (corfu--done str 'finished corfu--candidates)
@@ -1395,9 +1392,7 @@ input has been expanded."
          ;; Exit with status 'finished if input is a valid match
          ;; and no further completion is possible.
          (and (test-completion newstr table pred)
-              (not (consp (completion-try-completion
-                           newstr table pred newpt
-                           (completion-metadata (substring newstr 0 newpt) table pred))))
+              (not (consp (corfu--try-completion newstr table pred newpt)))
               (corfu--done newstr 'finished corfu--candidates))
          t)))))
 
