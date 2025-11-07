@@ -984,7 +984,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
            (if (or (eq corfu-on-exact-match 'show)
                    (consp (completion-try-completion
                            newstr table pred newpt
-                           (completion-metadata newstr table pred))))
+                           (completion-metadata (substring newstr 0 newpt) table pred))))
                (corfu--setup beg end table pred)
              (corfu--exit-function (car cands) 'finished nil)))
           ;; Too many candidates for cycling -> Setup popup.
