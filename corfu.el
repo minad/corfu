@@ -72,7 +72,7 @@ The value should lie between 0 and corfu-count/2."
   "Enable cycling for `corfu-next' and `corfu-previous'."
   :type 'boolean)
 
-(defcustom corfu-on-exact-match 'insert
+(defcustom corfu-on-exact-match nil
   "Configure how a single exact match should be handled.
 - nil: No special handling, continue completion.
 - insert: Insert candidate, quit and call the `:exit-function'.

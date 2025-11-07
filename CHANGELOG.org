@@ -2,6 +2,11 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- =corfu-on-exact-match=: Change default from =insert= to =nil=, which is more
+  compatible with auto completion and template/snippet/abbreviation expansion.
+
 * Version 2.4 (2025-10-13)
 
 - Require Emacs 29.1.
