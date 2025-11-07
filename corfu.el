@@ -167,19 +167,26 @@ This function is used even if a completion table specifies its
 own sort function."
   :type '(choice (const nil) function))
 
+(defcustom corfu-auto-trigger ""
+  "Characters which trigger auto completion.
+If a trigger character is detected `corfu-auto-prefix' is ignored."
+  :type 'string)
+
 (defcustom corfu-auto-prefix 3
   "Minimum length of prefix for auto completion.
-The completion backend can override this with
-:company-prefix-length.  It is *not recommended* to use a small
-prefix length (below 2), since this will create high load for
-Emacs.  See also `corfu-auto-delay'."
+The completion backend can override this with :company-prefix-length.
+It is not recommended to use a small prefix length (below 2), since this
+will create high load for Emacs.  See also `corfu-auto-delay' and
+`corfu-auto-trigger'."
   :type 'natnum)
 
 (defcustom corfu-auto-delay 0.2
   "Delay for auto completion.
-It is *not recommended* to use a short delay or even 0, since
-this will create high load for Emacs, in particular if executing
-the completion backend is costly."
+It is not recommended to use a short delay or even 0, since this will
+create high load for Emacs, in particular if executing the completion
+backend is costly.  Instead of reducing the delay too much, try
+`corfu-auto-trigger' to trigger immediate completion after certain
+characters."
   :type 'float)
 
 (defcustom corfu-auto-commands
@@ -400,7 +407,8 @@ is a prefix length override, which is t for manual completion."
           (let ((len (or prefix
                          (plist-get plist :company-prefix-length)
                          (- (point) beg))))
-            (or (eq len t) (>= len corfu-auto-prefix)))
+            (or (eq len t) (>= len corfu-auto-prefix)
+                (seq-contains-p corfu-auto-trigger last-command-event)))
           ;; For non-exclusive Capfs, check for valid completion.
           (or (not (eq 'no (plist-get plist :exclusive)))
               (let ((str (buffer-substring-no-properties beg end))
@@ -1047,7 +1055,8 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
                 (not buffer-read-only)
                 (corfu--match-symbol-p corfu-auto-commands this-command)
                 (corfu--popup-support-p))
-       (if (<= corfu-auto-delay 0)
+       (if (or (<= corfu-auto-delay 0)
+               (seq-contains-p corfu-auto-trigger last-command-event))
            (corfu--auto-complete-deferred)
          ;; Do not use `timer-set-idle-time' since this leads to
          ;; unpredictable pauses, in particular with `flyspell-mode'.

@@ -6,6 +6,8 @@
 
 - Improve compatibility with Eglot. Fix a manual completion bug in the case when
   Eglot provided no matching candidates.
+- =corfu-auto-trigger=: New customization variable to trigger immediate completion
+  after certain characters.
 - =corfu-on-exact-match=: Change default from =insert= to =nil=, which is more
   compatible with auto completion and template/snippet/abbreviation expansion.
 

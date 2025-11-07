@@ -220,8 +220,10 @@ You may want to configure Corfu to quit completion eagerly, such that the
 completion popup stays out of your way when it appeared unexpectedly.
 
 #+begin_src emacs-lisp
-;; Enable auto completion and configure quitting
+;; Enable auto completion, configure delay, trigger and quitting
 (setq corfu-auto t
+      corfu-auto-delay 0.2
+      corfu-auto-trigger "." ;; Custom trigger characters
       corfu-quit-no-match 'separator) ;; or t
 #+end_src
 
