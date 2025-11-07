@@ -4,6 +4,8 @@
 
 * Development
 
+- Improve compatibility with Eglot. Fix a manual completion bug in the case when
+  Eglot provided no matching candidates.
 - =corfu-on-exact-match=: Change default from =insert= to =nil=, which is more
   compatible with auto completion and template/snippet/abbreviation expansion.
 
