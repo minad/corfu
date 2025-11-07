@@ -951,11 +951,11 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   (when completion-in-region-mode (corfu-quit))
   (let* ((pt (max 0 (- (point) beg)))
          (str (buffer-substring-no-properties beg end))
-         (metadata (completion-metadata (substring str 0 pt) table pred))
-         (threshold (completion--cycle-threshold metadata))
+         (md (completion-metadata (substring str 0 pt) table pred))
+         (threshold (completion--cycle-threshold md))
          (completion-in-region-mode-predicate
           (or completion-in-region-mode-predicate #'always)))
-    (pcase (completion-try-completion str table pred pt metadata)
+    (pcase (completion-try-completion str table pred pt md)
       ('nil (corfu--message "No match") nil)
       ('t (goto-char end)
           (corfu--message "Sole match")
@@ -1212,7 +1212,9 @@ AUTO is non-nil when initializing auto completion."
            (equal (car corfu--candidates) str) (not (cdr corfu--candidates))
            (not (eq corfu-on-exact-match 'show))
            (or auto corfu-on-exact-match)
-           (not (consp (completion-try-completion str table pred pt corfu--metadata))))
+           (not (consp (completion-try-completion
+                        str table pred pt
+                        (completion-metadata (substring str 0 pt) table pred)))))
       ;; Quit directly when initializing auto completion.
       (if (or auto (eq corfu-on-exact-match 'quit))
           (corfu-quit)
@@ -1380,8 +1382,9 @@ input has been expanded."
       (corfu-complete)
     (pcase-let* ((`(,beg ,end ,table ,pred . ,_) completion-in-region--data)
                  (pt (max 0 (- (point) beg)))
-                 (str (buffer-substring-no-properties beg end)))
-      (pcase (completion-try-completion str table pred pt corfu--metadata)
+                 (str (buffer-substring-no-properties beg end))
+                 (md (completion-metadata (substring str 0 pt) table pred)))
+      (pcase (completion-try-completion str table pred pt md)
         ('t
          (goto-char end)
          (corfu--done str 'finished corfu--candidates)
