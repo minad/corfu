@@ -976,16 +976,18 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
               (cands (alist-get 'corfu--candidates state)))
          (cond
           ((<= total 1)
-           ;; If completion is finished and cannot be extended further and
-           ;; `corfu-on-exact-match' is not 'show, return 'finished.  Otherwise
-           ;; setup the popup.
-           (if (and (= total 1)
-                    (or (eq corfu-on-exact-match 'show)
-                        (consp (completion-try-completion
-                                newstr table pred newpt
-                                (completion-metadata newstr table pred)))))
-               (corfu--setup beg end table pred)
-             (corfu--exit-function newstr 'finished cands)))
+           (cond
+            ;; Setup popup if completion can continue or if
+            ;; `corfu-on-exact-match' is `show'.
+            ((and (= total 1)
+                  (or (eq corfu-on-exact-match 'show)
+                      (consp (completion-try-completion
+                              newstr table pred newpt
+                              (completion-metadata newstr table pred)))))
+             (corfu--setup beg end table pred))
+            ;; Otherwise exit completion with status `finished'.
+            ((test-completion newstr table pred)
+             (corfu--exit-function newstr 'finished cands))))
           ;; Too many candidates for cycling -> Setup popup.
           ((or (not threshold) (and (not (eq threshold t)) (< threshold total)))
            (corfu--setup beg end table pred))
