@@ -522,10 +522,15 @@ FRAME is the existing frame."
       ;; Mark window as dedicated to prevent frame reuse (gh:minad/corfu#60)
       (set-window-dedicated-p win t))
     (redirect-frame-focus frame parent)
-    (set-frame-size frame width height t)
     (pcase-let ((`(,px . ,py) (frame-position frame)))
-      (unless (and (= x px) (= y py))
-        (set-frame-position frame x y))))
+      (cond
+       ((and (= x px) (= y py)) (set-frame-size frame width height t))
+       ;; NOTE: Experimental new Emacs 31 addition by Martin Rudalics
+       ;; https://lists.gnu.org/archive/html/emacs-devel/2025-11/msg00322.html
+       ((fboundp 'set-frame-position-and-size)
+        (set-frame-position-and-size frame x y width height t))
+       (t (set-frame-size frame width height t)
+          (set-frame-position frame x y)))))
   (make-frame-visible frame)
   ;; Unparent child frame if EXWM is used, otherwise EXWM buffers are drawn on
   ;; top of the Corfu child frame.

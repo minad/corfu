@@ -4,12 +4,14 @@
 
 * Development
 
-- Improve compatibility with Eglot. Fix a manual completion bug in the case when
-  Eglot provided no matching candidates.
 - =corfu-auto-trigger=: New customization variable to trigger immediate completion
   after certain characters. See also =cape-capf-trigger=.
 - =corfu-on-exact-match=: Change default from =insert= to =nil=, which is more
   compatible with auto completion and template/snippet/abbreviation expansion.
+- Improve compatibility with Eglot. Fix a manual completion bug in the case when
+  Eglot provided no matching candidates.
+- Experimental: Use new function =set-frame-position-and-size= if available. See
+  the patch on [[https://lists.gnu.org/archive/html/emacs-devel/2025-11/msg00322.html][emacs-devel]] by Martin Rudalics.
 
 * Version 2.4 (2025-10-13)
 
