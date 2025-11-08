@@ -44,7 +44,7 @@ frames also for terminal Emacs. On older Emacs versions, you can use the
 
 * Features
 
-- Timer-based auto-completions (/off/ by default).
+- Auto-completion with timer or character trigger (/off/ by default).
 - Popup display with scrollbar indicator and arrow key navigation.
 - The popup can be summoned explicitly by pressing =TAB= at any time.
 - The current candidate is inserted with =TAB= and selected with =RET=.
@@ -59,7 +59,7 @@ frames also for terminal Emacs. On older Emacs versions, you can use the
 - Support for candidate annotations (=annotation-function=, =affixation-function=).
 - Deprecated candidates are displayed as crossed out.
 - Icons are provided by external packages via margin formatter functions.
-- Rich set of extensions: Quick keys, Index keys, Sorting by history, Candidate
+- Rich set of extensions: Quick keys, index keys, sorting by history,
   documentation in echo area, popup or separate buffer.
 
 * Installation
