@@ -424,6 +424,10 @@ is a prefix length override, which is t for manual completion."
                 ;;   non-exclusive via `cape-capf-nonexclusive', the
                 ;;   `eglot--dumb-flex' completion style must additionally be
                 ;;   overridden to not defeat the check here.
+                ;; * An alternative would be to use `completion-all-completions'
+                ;;   to explicitly check for the presence of candidates. This
+                ;;   can be made efficient with a side-effecting predicate which
+                ;;   throws on first successful match.
                 (corfu--try-completion str table pred pt)))
           (cons fun res)))))
 
