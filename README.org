@@ -65,9 +65,9 @@ frames also for terminal Emacs. On older Emacs versions, you can use the
 * Installation
 
 Corfu is available from [[https://elpa.gnu.org/packages/corfu.html][GNU ELPA]]. You can install it directly via =M-x package-install RET corfu RET=.
-After installation, activate the global minor mode with =M-x global-corfu-mode
-RET=. For completion press =M-TAB= (or =TAB=) within a buffer. Auto completion is
-disabled by default for safety and unobtrusiveness.
+After installation, activate the global minor mode with =M-x global-corfu-mode RET=.
+For completion press =M-TAB= (or =TAB=) within a buffer. Auto completion is disabled
+by default for safety and unobtrusiveness.
 
 * Key bindings
 
