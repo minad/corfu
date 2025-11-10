@@ -1507,5 +1507,9 @@ The ORIG function takes the FUN and WHICH arguments."
             :before-while #'corfu--eldoc-advice)
 (eldoc-add-command #'corfu-complete #'corfu-insert #'corfu-expand #'corfu-send)
 
+(with-eval-after-load 'corfu-terminal
+  (when (featurep 'tty-child-frames)
+    (warn "`corfu-terminal' is unnecessary since `tty-child-frames' are supported")))
+
 (provide 'corfu)
 ;;; corfu.el ends here
