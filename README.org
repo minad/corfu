@@ -28,9 +28,9 @@ backends. The Emacs built-in Capfs and the Capfs provided by third-party
 programming language packages are often sufficient. Additional Capfs and
 completion utilities are provided by the separate [[https://github.com/minad/cape][Cape]] package.
 
-*NOTE*: Corfu relies on child frames to show the popup. Emacs 31 supports child
-frames also for terminal Emacs. On older Emacs versions, you can use the
-[[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package.
+*NOTE*: Corfu relies on child frames to show the popup. On Emacs 31 this works
+even for terminal Emacs, but support is still experimental. Use the
+[[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package on older Emacs versions.
 
 #+html: <img src="https://github.com/minad/corfu/blob/screenshots/light.png?raw=true">
 
