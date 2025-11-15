@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 2.5 (2025-11-15)
 
 - =corfu-auto-trigger=: New customization variable to trigger immediate completion
   after certain characters. See also =cape-capf-trigger=.
