@@ -349,6 +349,7 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (no-other-frame . t)
     (unsplittable . t)
     (undecorated . t)
+    (fullscreen . nil)
     (cursor-type . nil)
     (no-special-glyphs . t)
     (desktop-dont-save . t)
