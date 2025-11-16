@@ -606,7 +606,7 @@ the =*Messages*= buffer.
 #+end_src
 
 Sometimes you will find errors inside Capfs. Such errors are bugs in the Capfs
-must be fixed there, since they Corfu cannot work around them.
+must be fixed there, since Corfu cannot work around them.
 
 * Contributions
 
