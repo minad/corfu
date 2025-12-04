@@ -8,6 +8,7 @@
 - Add name to Corfu child frame to improve readability of =(frame-list)=.
 - TTY: Fix child frame misalignment due to internal border.
 - TTY: Hide frame immediately.
+- TTY: Adjust default faces for low-color terminals.
 
 * Version 2.5 (2025-11-15)
 
