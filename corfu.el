@@ -1110,27 +1110,27 @@ A scroll bar is displayed from LO to LO+BAR."
              (ml (min 16 (ceiling (* cw corfu-left-margin-width))))
              (mr (min 16 (ceiling (* cw corfu-right-margin-width))))
              (bw (min mr (ceiling (* cw corfu-bar-width))))
-             (fringe (display-graphic-p))
-             (marginl (and (not fringe) (propertize " " 'display `(space :width (,ml)))))
-             (sbar (if fringe
+             (graphic (display-graphic-p))
+             (marginl (and (not graphic) (propertize " " 'display `(space :width (,ml)))))
+             (sbar (if graphic
                        #(" " 0 1 (display (right-fringe corfu--bar corfu--bar)))
                      (concat
                       (propertize " " 'display `(space :align-to (- right (,bw))))
                       (propertize " " 'face 'corfu-bar 'display `(space :width (,bw))))))
-             (cbar (if fringe
+             (cbar (if graphic
                        #("  " 0 1 (display (left-fringe corfu--nil corfu-current))
                          1 2 (display (right-fringe corfu--bar corfu--cbar)))
                      sbar))
-             (cmargin (and fringe
+             (cmargin (and graphic
                            #("  " 0 1 (display (left-fringe corfu--nil corfu-current))
                              1 2 (display (right-fringe corfu--nil corfu-current)))))
              (pos (posn-x-y pos))
-             (width (+ (* width cw) (if fringe 0 (+ ml mr))))
+             (width (+ (* width cw) (if graphic 0 (+ ml mr))))
              ;; XXX HACK: Minimum popup height must be at least 1 line of the
              ;; parent frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
-             (border (alist-get 'internal-border-width corfu--frame-parameters))
+             (border (if graphic (alist-get 'internal-border-width corfu--frame-parameters) 0))
              (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
                             (- (frame-pixel-width) width))))
              (yb (+ (cadr edge) (or (cdr pos) 0) lh
@@ -1139,7 +1139,7 @@ A scroll bar is displayed from LO to LO+BAR."
                     (- yb height lh border border)
                   yb))
              (bmp (logxor (1- (ash 1 mr)) (1- (ash 1 bw)))))
-        (setq left-fringe-width (if fringe ml 0) right-fringe-width (if fringe mr 0))
+        (setq left-fringe-width (if graphic ml 0) right-fringe-width (if graphic mr 0))
         ;; Define an inverted corfu--bar face
         (unless (equal (and (facep 'corfu--bar) (face-attribute 'corfu--bar :foreground))
                        (face-attribute 'corfu-bar :background))
