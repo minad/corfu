@@ -28,9 +28,8 @@ backends. The Emacs built-in Capfs and the Capfs provided by third-party
 programming language packages are often sufficient. Additional Capfs and
 completion utilities are provided by the separate [[https://github.com/minad/cape][Cape]] package.
 
-*NOTE*: Corfu relies on child frames to show the popup. On Emacs 31 this works
-even for terminal Emacs, but support is still experimental. Use the
-[[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package on older Emacs versions.
+*NOTE*: Corfu relies on child frames to show the popup. On Emacs 31 this works for
+terminal Emacs. Use the [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]] package on older Emacs versions.
 
 #+html: <img src="https://github.com/minad/corfu/blob/screenshots/light.png?raw=true">
 
@@ -544,8 +543,7 @@ enhance your setup.
   available (works only with =corfu-auto= disabled).
 
 - [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-terminal]]: Child frames are supported by terminal Emacs 31 out of the
-  box. On older Emacs versions, this package provides an overlay-based popup
-  display.
+  box. On older Emacs versions, this package provides an overlay-based popup.
 
 - [[https://github.com/oantolin/orderless][Orderless]]: Corfu supports completion styles, including the advanced =orderless=
   completion style, where the filter expressions are separated by spaces or
