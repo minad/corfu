@@ -214,6 +214,7 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
 (defface corfu-default
   '((((class color) (min-colors 88) (background dark)) :background "#191a1b")
     (((class color) (min-colors 88) (background light)) :background "#f0f0f0")
+    (((background dark)) :background "gray" :foreground "black")
     (t :background "gray"))
   "Default face, foreground and background colors used for the popup.")
 
@@ -222,13 +223,13 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
      :background "#00415e" :foreground "white" :extend t)
     (((class color) (min-colors 88) (background light))
      :background "#c0efff" :foreground "black" :extend t)
-    (t :background "blue" :foreground "white" :extend t))
+    (t :background "magenta" :foreground "white" :extend t))
   "Face used to highlight the currently selected candidate.")
 
 (defface corfu-bar
   '((((class color) (min-colors 88) (background dark)) :background "#a8a8a8")
     (((class color) (min-colors 88) (background light)) :background "#505050")
-    (t :background "gray"))
+    (t :background "black"))
   "The background color is used for the scrollbar indicator.")
 
 (defface corfu-border
