@@ -1252,7 +1252,7 @@ AUTO is non-nil when initializing auto completion."
         (corfu--done (car corfu--candidates) 'finished nil)))
      ;; 2) There exist candidates => Show candidates popup.
      (corfu--candidates
-      (let ((pos (posn-at-point (+ beg (length corfu--base)))))
+      (let ((pos (posn-at-point (min (point-max) (+ beg (length corfu--base))))))
         (corfu--preview-current beg end)
         (corfu--candidates-popup pos)))
      ;; 3) No candidates & `corfu-quit-no-match' & initialized => Confirmation popup.
