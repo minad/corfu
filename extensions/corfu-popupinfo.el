@@ -453,7 +453,7 @@ See `corfu-popupinfo-scroll-up' for more details."
       (unless (corfu-popupinfo--visible-p)
         (user-error "No %s available for `%s'"
                     (car (last (split-string (symbol-name fun) "-+")))
-                    cand)))))
+                    (substring-no-properties cand))))))
 
 (defun corfu-popupinfo-documentation ()
   "Show or hide documentation in popup.

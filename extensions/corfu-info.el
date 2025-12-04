@@ -73,14 +73,15 @@ If called with a prefix ARG, the buffer is persistent."
   ;; Company support, taken from `company.el', see `company-show-doc-buffer'.
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
-  (let ((cand (nth corfu--index corfu--candidates)))
+  (let* ((cand (nth corfu--index corfu--candidates))
+         (cand-str (substring-no-properties cand)))
     (if-let ((fun (corfu--metadata-get 'company-doc-buffer))
              (res (funcall fun cand)))
         (set-window-start (corfu-info--display-buffer
                            (get-buffer (or (car-safe res) res))
-                           (and arg (format "*corfu doc: %s*" cand)))
+                           (and arg (format "*corfu doc: %s*" cand-str)))
                           (or (cdr-safe res) (point-min)))
-      (user-error "No documentation available for `%s'" cand))))
+      (user-error "No documentation available for `%s'" cand-str))))
 
 ;;;###autoload
 (defun corfu-info-location (&optional arg)
@@ -90,7 +91,8 @@ If called with a prefix ARG, the buffer is persistent."
   ;; Company support, taken from `company.el', see `company-show-location'.
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
-  (let ((cand (nth corfu--index corfu--candidates)))
+  (let* ((cand (nth corfu--index corfu--candidates))
+         (cand-str (substring-no-properties cand)))
     (if-let ((fun (corfu--metadata-get 'company-location))
              ;; BUG: company-location may throw errors if location is not found
              (loc (ignore-errors (funcall fun cand))))
@@ -98,7 +100,7 @@ If called with a prefix ARG, the buffer is persistent."
             (corfu-info--display-buffer
              (or (and (bufferp (car loc)) (car loc))
                  (find-file-noselect (car loc) t))
-             (and arg (format "*corfu loc: %s*" cand)))
+             (and arg (format "*corfu loc: %s*" cand-str)))
           (without-restriction
             (goto-char (point-min))
             (when-let ((pos (cdr loc)))
@@ -106,7 +108,7 @@ If called with a prefix ARG, the buffer is persistent."
                   (goto-char pos)
                 (forward-line (1- pos))))
             (set-window-start nil (point))))
-      (user-error "No location available for `%s'" cand))))
+      (user-error "No location available for `%s'" cand-str))))
 
 (provide 'corfu-info)
 ;;; corfu-info.el ends here
