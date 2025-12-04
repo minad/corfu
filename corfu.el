@@ -564,10 +564,14 @@ FRAME is the existing frame."
 
 (defun corfu--hide-frame (frame)
   "Hide child FRAME."
-  (when (and (frame-live-p frame) (frame-visible-p frame)
-             (not (frame-parameter frame 'corfu--hide-timer)))
-    (set-frame-parameter frame 'corfu--hide-timer
-                         (run-at-time 0 nil #'corfu--hide-frame-deferred frame))))
+  (when (and (frame-live-p frame) (frame-visible-p frame))
+    (cond
+     ((not (display-graphic-p frame))
+      (corfu--hide-frame-deferred frame))
+     ((not (frame-parameter frame 'corfu--hide-timer))
+      (set-frame-parameter
+       frame 'corfu--hide-timer
+       (run-at-time 0 nil #'corfu--hide-frame-deferred frame))))))
 
 (defun corfu--move-to-front (elem list)
   "Move ELEM to front of LIST."
