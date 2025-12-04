@@ -1516,7 +1516,7 @@ The ORIG function takes the FUN and WHICH arguments."
 
 (with-eval-after-load 'corfu-terminal
   (when (featurep 'tty-child-frames)
-    (display-warning 'corfu "Suggestion: Try `tty-child-frames' instead of `corfu-terminal' on Emacs 31")))
+    (display-warning 'corfu "`corfu-terminal' is not needed on Emacs 31")))
 
 (provide 'corfu)
 ;;; corfu.el ends here
