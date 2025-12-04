@@ -5,6 +5,8 @@
 * Development
 
 - Bugfixes.
+- TTY: Fix child frame misalignment due to internal border.
+- TTY: Hide frame immediately.
 
 * Version 2.5 (2025-11-15)
 
