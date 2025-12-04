@@ -5,6 +5,7 @@
 * Development
 
 - Bugfixes.
+- Add name to Corfu child frame to improve readability of =(frame-list)=.
 - TTY: Fix child frame misalignment due to internal border.
 - TTY: Hide frame immediately.
 
