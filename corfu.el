@@ -479,21 +479,21 @@ FRAME is the existing frame."
          (x-gtk-resize-child-frames corfu--gtk-resize-child-frames)
          (before-make-frame-hook)
          (after-make-frame-functions)
-         (parent (window-frame)))
+         (parent (window-frame))
+         (graphic (display-graphic-p parent)))
     (unless (and (frame-live-p frame)
                  (eq (frame-parent frame)
-                     (and (not (and (bound-and-true-p exwm--connection)
-                                    (display-graphic-p parent)))
+                     (and (not (and graphic (bound-and-true-p exwm--connection)))
                           parent))
                  ;; Handle mixed tty/graphical sessions
-                 (eq (display-graphic-p frame)
-                     (display-graphic-p parent))
+                 (eq graphic (display-graphic-p frame))
                  ;; If there is more than one window, `frame-root-window' may
                  ;; return nil.  Recreate the frame in this case.
                  (window-live-p (frame-root-window frame)))
       (when frame (delete-frame frame))
       (setq frame (make-frame
                    `((parent-frame . ,parent)
+                     (name . ,(if graphic "EmacsCorfuGUI" "EmacsCorfuTTY"))
                      (minibuffer . ,(minibuffer-window parent))
                      (width . 0) (height . 0) (visibility . nil)
                      (right-fringe . ,right-fringe-width)
