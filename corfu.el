@@ -482,7 +482,9 @@ FRAME is the existing frame."
          (parent (window-frame)))
     (unless (and (frame-live-p frame)
                  (eq (frame-parent frame)
-                     (and (not (bound-and-true-p exwm--connection)) parent))
+                     (and (not (and (bound-and-true-p exwm--connection)
+                                    (display-graphic-p parent)))
+                          parent))
                  ;; Handle mixed tty/graphical sessions
                  (eq (display-graphic-p frame)
                      (display-graphic-p parent))
