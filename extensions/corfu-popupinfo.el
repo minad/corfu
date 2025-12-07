@@ -426,19 +426,23 @@ See `corfu-popupinfo-end' for the argument N."
 If ARG is omitted or nil, scroll upward by a near full screen.
 See `scroll-up' for details.  If the info popup is not visible,
 the other window is scrolled."
-  (interactive "p")
+  (interactive "P")
   (if (corfu-popupinfo--visible-p)
       (with-selected-frame corfu-popupinfo--frame
         (with-current-buffer corfu-popupinfo--buffer
-          (scroll-up n)))
+          (scroll-up-command n)))
     (scroll-other-window n)))
 
 (defun corfu-popupinfo-scroll-down (&optional n)
   "Scroll text of info popup window down N lines.
 
 See `corfu-popupinfo-scroll-up' for more details."
-  (interactive "p")
-  (corfu-popupinfo-scroll-up (- (or n 1))))
+  (interactive "P")
+  (if (corfu-popupinfo--visible-p)
+      (with-selected-frame corfu-popupinfo--frame
+        (with-current-buffer corfu-popupinfo--buffer
+          (scroll-down-command n)))
+    (scroll-other-window-down n)))
 
 (defun corfu-popupinfo--toggle (fun)
   "Set documentation getter FUN and toggle popup."
