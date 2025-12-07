@@ -195,7 +195,11 @@ all values are in pixels relative to the origin.  See
                                 (enable-local-variables :safe)
                                 (non-essential t)
                                 (delay-mode-hooks t)
-                                (find-file-hook '(global-font-lock-mode-check-buffers)))
+                                (find-file-hook
+                                 (list
+                                  (static-if (>= emacs-major-version 30)
+                                      'global-font-lock-mode-enable-in-buffer
+                                    'global-font-lock-mode-check-buffers))))
                             (find-file-noselect (car loc) t))))))
             (with-current-buffer buffer
               (save-excursion
