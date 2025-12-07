@@ -2,6 +2,11 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- corfu-popupinfo: Faster scrolling speed.
+- corfu-popupinfo: Fix Emacs 30 deprecation warning.
+
 * Version 2.6 (2025-12-07)
 
 - Bugfixes.
