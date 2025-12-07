@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 2.6 (2025-12-07)
 
 - Bugfixes.
 - Add name to Corfu child frame to improve readability of =(frame-list)=.
