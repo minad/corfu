@@ -539,13 +539,10 @@ FRAME is the existing frame."
     (pcase-let ((`(,px . ,py) (frame-position frame)))
       (cond
        ((and (= x px) (= y py)) (set-frame-size frame width height t))
-       ;; NOTE: Experimental new Emacs 31 addition by Martin Rudalics. The API
-       ;; is still fluctuating.
+       ;; NOTE: Experimental new Emacs 31 addition by Martin Rudalics.
        ;; https://lists.gnu.org/archive/html/emacs-devel/2025-11/msg00322.html
-       ((fboundp 'set-frame-position-and-size)
-        (set-frame-position-and-size frame x y width height t))
-       ((fboundp 'set-frame-size-and-position-internal)
-        (set-frame-size-and-position-internal frame width height x y 1))
+       ((fboundp 'set-frame-size-and-position-pixelwise)
+        (set-frame-size-and-position-pixelwise frame width height x y))
        (t (set-frame-size frame width height t)
           (set-frame-position frame x y)))))
   (make-frame-visible frame)
