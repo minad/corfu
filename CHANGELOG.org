@@ -7,7 +7,8 @@
 - corfu-popupinfo: Faster scrolling speed.
 - corfu-popupinfo: Fix Emacs 30 deprecation warning.
 - Experimental: Use new function =set-frame-size-and-position-pixelwise= if
-  available.
+  available. The patch can be downloaded from here:
+  https://lists.gnu.org/archive/html/emacs-devel/2025-12/msg00359.html
 
 * Version 2.6 (2025-12-07)
 
