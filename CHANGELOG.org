@@ -6,7 +6,7 @@
 
 - corfu-popupinfo: Faster scrolling speed.
 - corfu-popupinfo: Fix Emacs 30 deprecation warning.
-- Experimental: Use new function =set-frame-size-and-position-internal= if
+- Experimental: Use new function =set-frame-size-and-position-pixelwise= if
   available.
 
 * Version 2.6 (2025-12-07)
