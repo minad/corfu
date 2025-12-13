@@ -223,13 +223,15 @@ all values are in pixels relative to the origin.  See
   "Get the documentation for CANDIDATE."
   (when-let ((fun (corfu--metadata-get 'company-doc-buffer))
              (res (save-excursion
-                    (let ((inhibit-message t)
-                          (message-log-max nil)
-                          (inhibit-redisplay t)
-                          ;; Reduce print length for elisp backend (#249)
-                          (print-level 3)
-                          (print-length (* corfu-popupinfo-max-width
-                                           corfu-popupinfo-max-height)))
+                    (cl-letf (((symbol-function #'help-buffer) ;; Work around bug#79792
+                               (lambda () (get-buffer-create " *corfu-info*")))
+                              (inhibit-message t)
+                              (message-log-max nil)
+                              (inhibit-redisplay t)
+                              ;; Reduce print length for elisp backend (#249)
+                              (print-level 3)
+                              (print-length (* corfu-popupinfo-max-width
+                                               corfu-popupinfo-max-height)))
                       (funcall fun candidate)))))
     (with-current-buffer (or (car-safe res) res)
       (setq res (string-trim

@@ -35,7 +35,8 @@
 
 (require 'corfu)
 (eval-when-compile
-  (require 'subr-x))
+  (require 'subr-x)
+  (require 'cl-lib))
 
 (defun corfu-info--restore-on-next-command ()
   "Restore window configuration before next command."
@@ -73,13 +74,15 @@ If called with a prefix ARG, the buffer is persistent."
   ;; Company support, taken from `company.el', see `company-show-doc-buffer'.
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
-  (let* ((cand (nth corfu--index corfu--candidates))
-         (cand-str (substring-no-properties cand)))
+  (cl-letf* ((cand (nth corfu--index corfu--candidates))
+             (cand-str (substring-no-properties cand))
+             ((symbol-function #'help-buffer) ;; Work around bug#79792
+              (lambda () (get-buffer-create " *corfu-info*"))))
     (if-let ((fun (corfu--metadata-get 'company-doc-buffer))
              (res (funcall fun cand)))
         (set-window-start (corfu-info--display-buffer
                            (get-buffer (or (car-safe res) res))
-                           (and arg (format "*corfu doc: %s*" cand-str)))
+                           (and arg (format "*corfu info: %s*" cand-str)))
                           (or (cdr-safe res) (point-min)))
       (user-error "No documentation available for `%s'" cand-str))))
 
