@@ -340,7 +340,6 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (border-width . 0)
     (outer-border-width . 0)
     (internal-border-width . 1)
-    (child-frame-border-width . 1)
     (vertical-scroll-bars . nil)
     (horizontal-scroll-bars . nil)
     (menu-bar-lines . 0)
@@ -499,6 +498,8 @@ FRAME is the existing frame."
                      (width . 0) (height . 0) (visibility . nil)
                      (right-fringe . ,right-fringe-width)
                      (left-fringe . ,left-fringe-width)
+                     (child-frame-border-width
+                      . ,(alist-get 'internal-border-width corfu--frame-parameters))
                      ,@corfu--frame-parameters))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
@@ -523,6 +524,8 @@ FRAME is the existing frame."
                      (font . ,(frame-parameter parent 'font))
                      (right-fringe . ,right-fringe-width)
                      (left-fringe . ,left-fringe-width)
+                     (child-frame-border-width
+                      . ,(alist-get 'internal-border-width corfu--frame-parameters))
                      ,@corfu--frame-parameters))
            (diff (cl-loop for p in should for (k . v) = p
                           unless (equal (alist-get k is) v) collect p)))
