@@ -210,6 +210,22 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
 `corfu-auto-commands'."
   :type 'boolean)
 
+(defcustom corfu-border-on-tty 'blended
+  "Display popup borders on TTY.
+
+Setting this to nil disables the popup border.
+
+If set to t, a 1-character-wide border is displayed while
+retaining the popup\\='s background color.
+
+If set to \\='blended, the border is displayed, and the popup background
+will match the \\='default face to achieve a blended appearance, making the
+popup look as if it has no independent background."
+  :type '(choice
+          (const :tag "No border" nil)
+          (const :tag "Display border" t)
+          (const :tag "Display border (blended background)" blended)))
+
 (defgroup corfu-faces nil
   "Faces used by Corfu."
   :group 'corfu
@@ -351,7 +367,6 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (tab-bar-lines-keep-state . t)
     (no-other-frame . t)
     (unsplittable . t)
-    (undecorated . t)
     (fullscreen . nil)
     (cursor-type . nil)
     (no-special-glyphs . t)
@@ -449,6 +464,10 @@ is a prefix length override, which is t for manual completion."
         (set (make-local-variable (car var)) (cdr var)))
       (setq-local face-remapping-alist (copy-tree fr)
                   line-spacing ls)
+      (when (and (not (display-graphic-p))
+                 (eq corfu-border-on-tty 'blended))
+        (face-remap-add-relative 'corfu-default
+                                 :background (face-attribute 'default :background)))
       (cl-pushnew 'corfu-default (alist-get 'default face-remapping-alist))
       buffer)))
 
@@ -486,13 +505,17 @@ FRAME is the existing frame."
          (after-make-frame-functions)
          (parent (window-frame))
          (graphic (display-graphic-p parent))
+         (undecorated (or graphic (not corfu-border-on-tty)))
          (params `((background-color
-                    . ,(face-attribute 'corfu-default :background nil 'default))
+                    . ,(if (and (not graphic) (eq corfu-border-on-tty 'blended))
+                           (face-background 'default)
+                         (face-background 'corfu-default nil 'default)))
                    (font . ,(frame-parameter parent 'font))
                    (right-fringe . ,right-fringe-width)
                    (left-fringe . ,left-fringe-width)
                    (internal-border-width . ,corfu-border-width)
                    (child-frame-border-width . ,corfu-border-width)
+                   (undecorated . ,undecorated)
                    ,@corfu--frame-parameters)))
     (unless (and (frame-live-p frame)
                  (eq (frame-parent frame)
@@ -500,6 +523,8 @@ FRAME is the existing frame."
                           parent))
                  ;; Handle mixed tty/graphical sessions
                  (eq graphic (display-graphic-p frame))
+                 ;; Handle TTY border visibility changes
+                 (eq undecorated (frame-parameter frame 'undecorated))
                  ;; If there is more than one window, `frame-root-window' may
                  ;; return nil.  Recreate the frame in this case.
                  (window-live-p (frame-root-window frame)))
@@ -515,12 +540,16 @@ FRAME is the existing frame."
     ;; on Mac. We have to apply the face background before adjusting the frame
     ;; parameter, otherwise the border is not updated.
     (let ((new (face-attribute 'corfu-border :background nil 'default)))
-      (unless (equal (face-attribute 'internal-border :background frame 'default) new)
-        (set-face-background 'internal-border new frame))
-      ;; XXX The Emacs Mac Port does not support `internal-border', we also have
-      ;; to set `child-frame-border'.
-      (unless (equal (face-attribute 'child-frame-border :background frame 'default) new)
-        (set-face-background 'child-frame-border new frame)))
+      (if (and (not graphic) corfu-border-on-tty)
+          ;; Set the foreground color of the `border' face on TTY.
+          (unless (equal (face-attribute 'border :foreground frame 'default) new)
+            (set-face-foreground 'border new frame))
+        (unless (equal (face-attribute 'internal-border :background frame 'default) new)
+          (set-face-background 'internal-border new frame))
+        ;; XXX The Emacs Mac Port does not support `internal-border', we also have
+        ;; to set `child-frame-border'.
+        (unless (equal (face-attribute 'child-frame-border :background frame 'default) new)
+          (set-face-background 'child-frame-border new frame))))
     ;; Reset frame parameters if they changed.  For example `tool-bar-mode'
     ;; overrides the parameter `tool-bar-lines' for every frame, including child
     ;; frames.  The child frame API is a pleasure to work with.  It is full of
@@ -1133,15 +1162,21 @@ A scroll bar is displayed from LO to LO+BAR."
              ;; parent frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
-             (border (if graphic corfu-border-width 0))
-             (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
-                            (- (frame-pixel-width) width
-                               (if graphic (+ ml mr (* 2 border)) 0)))))
+             (border (cond
+                       (graphic corfu-border-width)
+                       (corfu-border-on-tty 1)
+                       (t 0)))
+             ;; 1-character-wide offset when corfu-border-on-tty is non-nil
+             (offset (if (and (not graphic) corfu-border-on-tty) border 0))
+             (x (max offset
+                     (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border) offset)
+                          (- (frame-pixel-width) width
+                             (if graphic (+ ml mr (* 2 border)) 0) offset))))
              (yb (+ (cadr edge) (or (cdr pos) 0) lh
                     (static-if (< emacs-major-version 31) (window-tab-line-height) 0)))
-             (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
-                    (- yb height lh border border)
-                  yb))
+             (y (+ offset (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
+                              (- yb height lh border border)
+                            yb)))
              (bmp (logxor (1- (ash 1 mr)) (1- (ash 1 bw)))))
         (setq left-fringe-width (if graphic ml 0) right-fringe-width (if graphic mr 0))
         ;; Define an inverted corfu--bar face
