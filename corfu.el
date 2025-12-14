@@ -333,13 +333,13 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
   "Initial Corfu state.")
 
 (defvar corfu--frame-parameters
-  '((no-accept-focus . t)
+  '((internal-border-width . 1) ;; Customize for a thicker GUI border
+    (no-accept-focus . t)
     (no-focus-on-map . t)
     (min-width . t)
     (min-height . t)
     (border-width . 0)
     (outer-border-width . 0)
-    (internal-border-width . 1)
     (vertical-scroll-bars . nil)
     (horizontal-scroll-bars . nil)
     (menu-bar-lines . 0)
@@ -354,7 +354,12 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (no-special-glyphs . t)
     (desktop-dont-save . t)
     (inhibit-double-buffering . t)) ;; Avoid display artifacts on X/Gtk builds
-  "Default child frame parameters.")
+  "Default child frame parameters.
+Some of the parameters can be customized via `setf' and `alist-get', for
+example, use this to make the border on GUI thicker:
+    (setf (alist-get \\='internal-border-width
+                     corfu--frame-parameters) 3)
+It is recommended to leave most of the parameters unchanged.")
 
 (defvar corfu--buffer-parameters
   '((mode-line-format . nil)
@@ -377,7 +382,8 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (indicate-buffer-boundaries . nil)
     (buffer-read-only . t)
     (pixel-scroll-precision-mode . nil))
-  "Default child frame buffer parameters.")
+  "Default child frame buffer parameters.
+It is recommended to avoid changing these parameters.")
 
 (defvar corfu--mouse-ignore-map
   (let ((map (define-keymap "<touchscreen-begin>" #'ignore)))
