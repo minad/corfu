@@ -1141,7 +1141,8 @@ A scroll bar is displayed from LO to LO+BAR."
              (edge (window-inside-pixel-edges))
              (border (if graphic corfu-border-width 0))
              (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
-                            (- (frame-pixel-width) width))))
+                            (- (frame-pixel-width) width
+                               (if graphic (+ ml mr (* 2 border)) 0)))))
              (yb (+ (cadr edge) (or (cdr pos) 0) lh
                     (static-if (< emacs-major-version 31) (window-tab-line-height) 0)))
              (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
