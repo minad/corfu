@@ -548,7 +548,7 @@ FRAME is the existing frame."
       (cond
        ((and (= x px) (= y py)) (set-frame-size frame width height t))
        ;; NOTE: Experimental new Emacs 31 addition by Martin Rudalics.
-       ;; https://lists.gnu.org/archive/html/emacs-devel/2025-12/msg00359.html
+       ;; https://lists.gnu.org/archive/html/emacs-devel/2025-12/msg00414.html
        ((fboundp 'set-frame-size-and-position-pixelwise)
         (set-frame-size-and-position-pixelwise frame width height x y))
        (t (set-frame-size frame width height t)
