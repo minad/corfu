@@ -4,8 +4,9 @@
 
 * Development
 
-- corfu-popupinfo: Faster scrolling speed.
-- corfu-popupinfo: Fix Emacs 30 deprecation warning.
+- ~corfu-border-width~: New customization variable.
+- ~corfu-popupinfo~: Faster scrolling speed.
+- ~corfu-popupinfo~: Fix Emacs 30 deprecation warning.
 - Work around Emacs bug#79792, where the ~*Help*~ buffer is replaced unexpectedly.
 - Experimental: Use new function =set-frame-size-and-position-pixelwise= if
   available. The patch can be downloaded from here:

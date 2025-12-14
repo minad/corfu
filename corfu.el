@@ -140,6 +140,10 @@ separator: Only stay alive if there is no match and
   "Width of the bar in units of the character width."
   :type 'float)
 
+(defcustom corfu-border-width 1
+  "Width of the border in pixels, only applies to GUI Emacs."
+  :type 'natnum)
+
 (defcustom corfu-margin-formatters nil
   "Registry for margin formatter functions.
 Each function of the list is called with the completion metadata as
@@ -333,8 +337,7 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
   "Initial Corfu state.")
 
 (defvar corfu--frame-parameters
-  '((internal-border-width . 1) ;; Customize for a thicker GUI border
-    (no-accept-focus . t)
+  '((no-accept-focus . t)
     (no-focus-on-map . t)
     (min-width . t)
     (min-height . t)
@@ -355,11 +358,7 @@ settings `corfu-auto-delay', `corfu-auto-prefix' and
     (desktop-dont-save . t)
     (inhibit-double-buffering . t)) ;; Avoid display artifacts on X/Gtk builds
   "Default child frame parameters.
-Some of the parameters can be customized via `setf' and `alist-get', for
-example, use this to make the border on GUI thicker:
-    (setf (alist-get \\='internal-border-width
-                     corfu--frame-parameters) 3)
-It is recommended to leave most of the parameters unchanged.")
+It is recommended to avoid changing these parameters.")
 
 (defvar corfu--buffer-parameters
   '((mode-line-format . nil)
@@ -504,8 +503,8 @@ FRAME is the existing frame."
                      (width . 0) (height . 0) (visibility . nil)
                      (right-fringe . ,right-fringe-width)
                      (left-fringe . ,left-fringe-width)
-                     (child-frame-border-width
-                      . ,(alist-get 'internal-border-width corfu--frame-parameters))
+                     (internal-border-width . ,corfu-border-width)
+                     (child-frame-border-width . ,corfu-border-width)
                      ,@corfu--frame-parameters))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
@@ -530,8 +529,8 @@ FRAME is the existing frame."
                      (font . ,(frame-parameter parent 'font))
                      (right-fringe . ,right-fringe-width)
                      (left-fringe . ,left-fringe-width)
-                     (child-frame-border-width
-                      . ,(alist-get 'internal-border-width corfu--frame-parameters))
+                     (internal-border-width . ,corfu-border-width)
+                     (child-frame-border-width . ,corfu-border-width)
                      ,@corfu--frame-parameters))
            (diff (cl-loop for p in should for (k . v) = p
                           unless (equal (alist-get k is) v) collect p)))
@@ -1140,7 +1139,7 @@ A scroll bar is displayed from LO to LO+BAR."
              ;; parent frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
-             (border (if graphic (alist-get 'internal-border-width corfu--frame-parameters) 0))
+             (border (if graphic corfu-border-width 0))
              (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
                             (- (frame-pixel-width) width))))
              (yb (+ (cadr edge) (or (cdr pos) 0) lh
