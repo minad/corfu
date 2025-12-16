@@ -377,7 +377,7 @@ form (X Y WIDTH HEIGHT DIR)."
                          (cons
                           (- (frame-pixel-width corfu-popupinfo--frame) border border)
                           (- (frame-pixel-height corfu-popupinfo--frame) border border)))))
-                     (margin-quirk (not corfu-popupinfo--frame)))
+                     (margin-quirk (not (frame-live-p corfu-popupinfo--frame))))
           (with-current-buffer corfu-popupinfo--buffer
             (setq corfu-popupinfo--frame
                   (corfu--make-frame corfu-popupinfo--frame
