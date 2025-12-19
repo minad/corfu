@@ -45,11 +45,6 @@
   (require 'cl-lib)
   (require 'subr-x))
 
-(defface corfu-popupinfo
-  '((t :inherit corfu-default))
-  "Face used for the info popup."
-  :group 'corfu-faces)
-
 (defcustom corfu-popupinfo-delay '(2.0 . 1.0)
   "Automatically update info popup after that number of seconds.
 
@@ -363,9 +358,7 @@ form (X Y WIDTH HEIGHT DIR)."
                 (insert content)
                 (goto-char (point-min)))
               (dolist (var corfu-popupinfo--buffer-parameters)
-                (set (make-local-variable (car var)) (cdr var)))
-              (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
-                (setcar m 'corfu-popupinfo)))
+                (set (make-local-variable (car var)) (cdr var))))
           (corfu-popupinfo--hide)
           (setq cand-changed nil coords-changed nil)))
       (when (or cand-changed coords-changed)
