@@ -383,7 +383,7 @@ form (X Y WIDTH HEIGHT DIR)."
                          (cons
                           (- (frame-pixel-width corfu-popupinfo--frame) border border)
                           (- (frame-pixel-height corfu-popupinfo--frame) border border)))))
-                     (margin-quirk (not (frame-live-p corfu-popupinfo--frame))))
+                     (old-frame corfu-popupinfo--frame))
           (with-current-buffer corfu-popupinfo--buffer
             (setq corfu-popupinfo--frame
                   (corfu--make-frame corfu-popupinfo--frame
@@ -395,7 +395,7 @@ form (X Y WIDTH HEIGHT DIR)."
             ;; XXX HACK: Force margin update. For some reason, the call to
             ;; `set-window-buffer' in `corfu--make-frame' is not effective the
             ;; first time. Why does Emacs have all these quirks?
-            (when margin-quirk
+            (unless (eq old-frame corfu-popupinfo--frame)
               (set-window-buffer (frame-root-window corfu-popupinfo--frame)
                                  corfu-popupinfo--buffer))))))))
 
