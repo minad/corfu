@@ -79,9 +79,9 @@ documentation from the backend is usually expensive."
   :type 'boolean
   :group 'corfu)
 
-(defcustom corfu-popupinfo-margin-width 1
-  "Margin at the left and right side of the popup."
-  :type 'natnum
+(defcustom corfu-popupinfo-margin-width 0.5
+  "Width of the left and right margin in units of the character width."
+  :type 'number
   :group 'corfu)
 
 (defcustom corfu-popupinfo-max-width 80
@@ -250,7 +250,7 @@ all values are in pixels relative to the origin.  See
   "Return popup size as pair."
   (let* ((cw (default-font-width))
          (lh (default-line-height))
-         (margin (* cw (* 2 corfu-popupinfo-margin-width)))
+         (margin (* 2 (round cw corfu-popupinfo-margin-width)))
          (max-height (* lh corfu-popupinfo-max-height))
          (max-width (* cw corfu-popupinfo-max-width)))
     (or (when corfu-popupinfo-resize
@@ -358,7 +358,8 @@ form (X Y WIDTH HEIGHT DIR)."
             (not (and (corfu-popupinfo--visible-p)
                       (equal-including-properties candidate corfu-popupinfo--candidate))))
            (new-coords (frame-edges corfu--frame 'inner-edges))
-           (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
+           (coords-changed (not (equal new-coords corfu-popupinfo--coordinates)))
+           (graphic (display-graphic-p corfu--frame)))
       (when cand-changed
         (if-let ((content (funcall corfu-popupinfo--function candidate)))
             (with-current-buffer (corfu--make-buffer corfu-popupinfo--buffer)
@@ -368,14 +369,18 @@ form (X Y WIDTH HEIGHT DIR)."
                 (goto-char (point-min)))
               (dolist (var corfu-popupinfo--buffer-parameters)
                 (set (make-local-variable (car var)) (cdr var)))
-              (setq left-margin-width corfu-popupinfo-margin-width
-                    right-margin-width corfu-popupinfo-margin-width)
+              (if graphic
+                  (setq left-fringe-width (round (* (default-font-width)
+                                                    corfu-popupinfo-margin-width))
+                        right-fringe-width left-fringe-width)
+                (setq left-margin-width (ceiling corfu-popupinfo-margin-width)
+                      right-margin-width left-margin-width))
               (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
                 (setcar m 'corfu-popupinfo)))
           (corfu-popupinfo--hide)
           (setq cand-changed nil coords-changed nil)))
       (when (or cand-changed coords-changed)
-        (pcase-let* ((border (if (display-graphic-p corfu--frame) corfu-border-width 0))
+        (pcase-let* ((border (if graphic corfu-border-width 0))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
                       (corfu-popupinfo--area
                        (if cand-changed
