@@ -79,6 +79,11 @@ documentation from the backend is usually expensive."
   :type 'boolean
   :group 'corfu)
 
+(defcustom corfu-popupinfo-margin-width 1
+  "Margin at the left and right side of the popup."
+  :type 'natnum
+  :group 'corfu)
+
 (defcustom corfu-popupinfo-max-width 80
   "The maximum width of the info popup in characters."
   :type 'natnum
@@ -129,11 +134,10 @@ documentation from the backend is usually expensive."
 (defvar corfu-popupinfo--buffer-parameters
   '((truncate-partial-width-windows . nil)
     (truncate-lines . nil)
-    (left-margin-width . 1)
-    (right-margin-width . 1)
     (word-wrap . t)
     (char-property-alias-alist (face font-lock-face)))
-  "Buffer parameters.")
+  "Additional child frame buffer parameters.
+It is recommended to avoid changing these parameters.")
 
 (defvar corfu-popupinfo--frame nil
   "Info popup child frame.")
@@ -246,9 +250,7 @@ all values are in pixels relative to the origin.  See
   "Return popup size as pair."
   (let* ((cw (default-font-width))
          (lh (default-line-height))
-         (margin
-          (* cw (+ (alist-get 'left-margin-width corfu-popupinfo--buffer-parameters)
-                   (alist-get 'right-margin-width corfu-popupinfo--buffer-parameters))))
+         (margin (* cw (* 2 corfu-popupinfo-margin-width)))
          (max-height (* lh corfu-popupinfo-max-height))
          (max-width (* cw corfu-popupinfo-max-width)))
     (or (when corfu-popupinfo-resize
@@ -366,6 +368,8 @@ form (X Y WIDTH HEIGHT DIR)."
                 (goto-char (point-min)))
               (dolist (var corfu-popupinfo--buffer-parameters)
                 (set (make-local-variable (car var)) (cdr var)))
+              (setq-local left-margin-width corfu-popupinfo-margin-width
+                          right-margin-width corfu-popupinfo-margin-width)
               (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
                 (setcar m 'corfu-popupinfo)))
           (corfu-popupinfo--hide)
