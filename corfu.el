@@ -485,7 +485,15 @@ FRAME is the existing frame."
          (before-make-frame-hook)
          (after-make-frame-functions)
          (parent (window-frame))
-         (graphic (display-graphic-p parent)))
+         (graphic (display-graphic-p parent))
+         (params `((background-color
+                    . ,(face-attribute 'corfu-default :background nil 'default))
+                   (font . ,(frame-parameter parent 'font))
+                   (right-fringe . ,right-fringe-width)
+                   (left-fringe . ,left-fringe-width)
+                   (internal-border-width . ,corfu-border-width)
+                   (child-frame-border-width . ,corfu-border-width)
+                   ,@corfu--frame-parameters)))
     (unless (and (frame-live-p frame)
                  (eq (frame-parent frame)
                      (and (not (and graphic (bound-and-true-p exwm--connection)))
@@ -497,15 +505,11 @@ FRAME is the existing frame."
                  (window-live-p (frame-root-window frame)))
       (when frame (delete-frame frame))
       (setq frame (make-frame
-                   `((parent-frame . ,parent)
-                     (name . ,(if graphic "EmacsCorfuGUI" "EmacsCorfuTTY"))
+                   `((name . ,(if graphic "EmacsCorfuGUI" "EmacsCorfuTTY"))
+                     (parent-frame . ,parent)
                      (minibuffer . ,(minibuffer-window parent))
                      (width . 0) (height . 0) (visibility . nil)
-                     (right-fringe . ,right-fringe-width)
-                     (left-fringe . ,left-fringe-width)
-                     (internal-border-width . ,corfu-border-width)
-                     (child-frame-border-width . ,corfu-border-width)
-                     ,@corfu--frame-parameters))))
+                     ,@params))))
     ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
     ;; on Mac. We have to apply the face background before adjusting the frame
@@ -524,15 +528,7 @@ FRAME is the existing frame."
     ;; lovely surprises.
     (let* ((win (frame-root-window frame))
            (is (frame-parameters frame))
-           (should `((background-color
-                      . ,(face-attribute 'corfu-default :background nil 'default))
-                     (font . ,(frame-parameter parent 'font))
-                     (right-fringe . ,right-fringe-width)
-                     (left-fringe . ,left-fringe-width)
-                     (internal-border-width . ,corfu-border-width)
-                     (child-frame-border-width . ,corfu-border-width)
-                     ,@corfu--frame-parameters))
-           (diff (cl-loop for p in should for (k . v) = p
+           (diff (cl-loop for p in params for (k . v) = p
                           unless (equal (alist-get k is) v) collect p)))
       (when diff (modify-frame-parameters frame diff))
       ;; XXX HACK: `set-window-buffer' must be called to force fringe update.
