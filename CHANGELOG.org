@@ -4,6 +4,7 @@
 
 * Development
 
+- ~corfu-popupinfo-margin-width~: New customization variable.
 - ~corfu-border-width~: New customization variable.
 - ~corfu-popupinfo~: Faster scrolling speed.
 - ~corfu-popupinfo~: Fix Emacs 30 deprecation warning.
