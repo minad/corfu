@@ -47,7 +47,9 @@
 
 (defface corfu-popupinfo
   '((t :inherit corfu-default))
-  "Face used for the info popup."
+  "Face used for the info popup.
+In order to use a smaller face for the popupinfo, use for example:
+  (set-face-attribute \\='corfu-popupinfo nil :height 0.8)"
   :group 'corfu-faces)
 
 (defcustom corfu-popupinfo-delay '(2.0 . 1.0)
