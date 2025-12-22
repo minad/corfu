@@ -543,8 +543,7 @@ FRAME is the existing frame."
     (pcase-let ((`(,px . ,py) (frame-position frame)))
       (cond
        ((and (= x px) (= y py)) (set-frame-size frame width height t))
-       ;; NOTE: Experimental new Emacs 31 addition by Martin Rudalics.
-       ;; https://lists.gnu.org/archive/html/emacs-devel/2025-12/msg00414.html
+       ;; New Emacs 31 function for faster resizing/movement in one go.
        ((fboundp 'set-frame-size-and-position-pixelwise)
         (set-frame-size-and-position-pixelwise frame width height x y))
        (t (set-frame-size frame width height t)

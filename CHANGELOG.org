@@ -10,9 +10,7 @@
 - ~corfu-popupinfo~: Fix Emacs 30 deprecation warning.
 - Fix Corfu popup position at the right edge of the parent frame.
 - Work around Emacs bug#79792, where the ~*Help*~ buffer is replaced unexpectedly.
-- Experimental: Use new function =set-frame-size-and-position-pixelwise= if
-  available. The patch can be downloaded from here:
-  https://lists.gnu.org/archive/html/emacs-devel/2025-12/msg00414.html
+- Use new function =set-frame-size-and-position-pixelwise= on Emacs 31.
 
 * Version 2.6 (2025-12-07)
 
