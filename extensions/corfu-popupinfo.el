@@ -359,7 +359,8 @@ form (X Y WIDTH HEIGHT DIR)."
                       (equal-including-properties candidate corfu-popupinfo--candidate))))
            (new-coords (frame-edges corfu--frame 'inner-edges))
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates)))
-           (graphic (display-graphic-p corfu--frame)))
+           (graphic (display-graphic-p corfu--frame))
+           (fringe-margin (round (* (default-font-width) corfu-popupinfo-margin-width))))
       (when cand-changed
         (if-let ((content (funcall corfu-popupinfo--function candidate)))
             (with-current-buffer (corfu--make-buffer corfu-popupinfo--buffer)
@@ -370,9 +371,8 @@ form (X Y WIDTH HEIGHT DIR)."
               (dolist (var corfu-popupinfo--buffer-parameters)
                 (set (make-local-variable (car var)) (cdr var)))
               (if graphic
-                  (setq left-fringe-width (round (* (default-font-width)
-                                                    corfu-popupinfo-margin-width))
-                        right-fringe-width left-fringe-width)
+                  (setq left-fringe-width fringe-margin
+                        right-fringe-width fringe-margin)
                 (setq left-margin-width (ceiling corfu-popupinfo-margin-width)
                       right-margin-width left-margin-width))
               (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
@@ -392,7 +392,11 @@ form (X Y WIDTH HEIGHT DIR)."
           (setq corfu-popupinfo--frame
                 (with-current-buffer corfu-popupinfo--buffer
                   (corfu--make-frame corfu-popupinfo--frame
-                                     area-x area-y area-w area-h))
+                                     area-x area-y
+                                     (if graphic
+                                         (- area-w (* 2 fringe-margin))
+                                       area-w)
+                                     area-h))
                 corfu-popupinfo--toggle t
                 corfu-popupinfo--lock-dir area-d
                 corfu-popupinfo--candidate candidate
