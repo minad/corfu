@@ -505,7 +505,6 @@ FRAME is the existing frame."
          (after-make-frame-functions)
          (parent (window-frame))
          (graphic (display-graphic-p parent))
-         (undecorated (or graphic (not corfu-border-on-tty)))
          (params `((background-color
                     . ,(if (and (not graphic) (eq corfu-border-on-tty 'blended))
                            (face-background 'default)
@@ -515,7 +514,7 @@ FRAME is the existing frame."
                    (left-fringe . ,left-fringe-width)
                    (internal-border-width . ,corfu-border-width)
                    (child-frame-border-width . ,corfu-border-width)
-                   (undecorated . ,undecorated)
+                   (undecorated . ,(or graphic (not corfu-border-on-tty)))
                    ,@corfu--frame-parameters)))
     (unless (and (frame-live-p frame)
                  (eq (frame-parent frame)
@@ -523,8 +522,6 @@ FRAME is the existing frame."
                           parent))
                  ;; Handle mixed tty/graphical sessions
                  (eq graphic (display-graphic-p frame))
-                 ;; Handle TTY border visibility changes
-                 (eq undecorated (frame-parameter frame 'undecorated))
                  ;; If there is more than one window, `frame-root-window' may
                  ;; return nil.  Recreate the frame in this case.
                  (window-live-p (frame-root-window frame)))
