@@ -246,8 +246,8 @@ all values are in pixels relative to the origin.  See
                   (buffer-string))))
       (and (not (string-blank-p res)) res))))
 
-(defun corfu-popupinfo--size ()
-  "Return popup size as pair."
+(defun corfu-popupinfo--compute-size ()
+  "Compute popup size from buffer content and return as pair."
   (let* ((cw (default-font-width))
          (lh (default-line-height))
          (margin (* cw (* 2 corfu-popupinfo-margin-width)))
@@ -273,6 +273,13 @@ all values are in pixels relative to the origin.  See
                       ;; `window-safe-min-height' to 0, which feels problematic.
                       (min (max (cdr size) lh) max-height))))))
         (cons (+ margin max-width) max-height))))
+
+(defun corfu-popupinfo--last-size ()
+  "Return last popup size as pair."
+  (let ((border (if (display-graphic-p corfu--frame) (* 2 corfu-border-width) 0)))
+    (cons
+     (- (frame-pixel-width corfu-popupinfo--frame) border)
+     (- (frame-pixel-height corfu-popupinfo--frame) border))))
 
 (defun corfu-popupinfo--frame-geometry (frame)
   "Return position and size geometric attributes of FRAME.
@@ -372,14 +379,11 @@ form (X Y WIDTH HEIGHT DIR)."
           (corfu-popupinfo--hide)
           (setq cand-changed nil coords-changed nil)))
       (when (or cand-changed coords-changed)
-        (pcase-let* ((border (if (display-graphic-p corfu--frame) corfu-border-width 0))
-                     (`(,area-x ,area-y ,area-w ,area-h ,area-d)
+        (pcase-let* ((`(,area-x ,area-y ,area-w ,area-h ,area-d)
                       (corfu-popupinfo--area
                        (if cand-changed
-                           (corfu-popupinfo--size)
-                         (cons
-                          (- (frame-pixel-width corfu-popupinfo--frame) border border)
-                          (- (frame-pixel-height corfu-popupinfo--frame) border border)))))
+                           (corfu-popupinfo--compute-size)
+                         (corfu-popupinfo--last-size))))
                      (old-frame corfu-popupinfo--frame))
           (setq corfu-popupinfo--frame
                 (with-current-buffer corfu-popupinfo--buffer
