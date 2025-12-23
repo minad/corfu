@@ -74,7 +74,7 @@ documentation from the backend is usually expensive."
                                (choice (const nil) number))))
   :group 'corfu)
 
-(defcustom corfu-popupinfo-hide t
+(defcustom corfu-popupinfo-hide nil
   "Hide the popup during the transition between candidates."
   :type 'boolean
   :group 'corfu)
