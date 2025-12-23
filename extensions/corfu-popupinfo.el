@@ -52,7 +52,7 @@ In order to use a smaller face for the popupinfo, use for example:
   (set-face-attribute \\='corfu-popupinfo nil :height 0.8)"
   :group 'corfu-faces)
 
-(defcustom corfu-popupinfo-delay '(2.0 . 1.0)
+(defcustom corfu-popupinfo-delay '(2.0 . 0.5)
   "Automatically update info popup after that number of seconds.
 
 The value can be a pair of two floats to specify initial and
