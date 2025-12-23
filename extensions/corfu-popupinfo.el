@@ -283,7 +283,6 @@ all values are in pixels relative to the origin.  See
 
 (defun corfu-popupinfo--frame-geometry (frame)
   "Return position and size geometric attributes of FRAME.
-
 The geometry represents the position and size in pixels
 in the form of (X Y WIDTH HEIGHT)."
   (pcase-let ((`(,x . ,y) (frame-position frame)))
@@ -291,25 +290,21 @@ in the form of (X Y WIDTH HEIGHT)."
 
 (defun corfu-popupinfo--fits-p (size area)
   "Check if SIZE fits into the AREA.
-
 SIZE is in the form (WIDTH . HEIGHT).
 AREA is in the form (X Y WIDTH HEIGHT DIR)."
   (and (>= (nth 2 area) (car size)) (>= (nth 3 area) (cdr size))))
 
 (defun corfu-popupinfo--larger-p (area1 area2)
   "Check if AREA1 is larger than AREA2.
-
 AREA1 and AREA2 are both in the form (X Y WIDTH HEIGHT DIR)."
   (>= (* (nth 2 area1) (nth 3 area1)) (* (nth 2 area2) (nth 3 area2))))
 
-(defun corfu-popupinfo--area (ps)
-  "Calculate the display area for the info popup.
-
-PS is the pixel size of the popup.  The calculated area is in the
-form (X Y WIDTH HEIGHT DIR)."
+(defun corfu-popupinfo--possible-areas (ps)
+  "Calculate possible display areas for the info popup.
+PS is the pixel size of the popup.  Return a list of left area, right
+area and vertical area."
   (pcase-let*
-      ((cw (default-font-width))
-       (lh (default-line-height))
+      ((lh (default-line-height))
        (`(,pw . ,ph) ps)
        (border (if (display-graphic-p corfu--frame) corfu-border-width 0))
        (`(,_pfx ,_pfy ,pfw ,pfh)
@@ -335,22 +330,29 @@ form (X Y WIDTH HEIGHT DIR)."
                (list cfx (+ cfy cfh (- border)) avw (min (- pfh cfy cfh border) ph) 'vertical)
              (let ((h (min (- cfy border border) ph)))
                (list cfx (max 0 (- cfy h border)) avw h 'vertical)))))
+    (list al ar av)))
+
+(defun corfu-popupinfo--area (ps)
+  "Calculate the display area for the info popup.
+PS is the pixel size of the popup.  The calculated area is in the
+form (X Y WIDTH HEIGHT DIR)."
+  (pcase-let ((`(,al ,ar ,av) (corfu-popupinfo--possible-areas ps)))
     (unless (and corfu-popupinfo--lock-dir
                  (corfu-popupinfo--fits-p
-                  (cons (* cw corfu-popupinfo-min-width) (* lh corfu-popupinfo-min-height))
+                  (cons (* (default-font-width) corfu-popupinfo-min-width)
+                        (* (default-line-height) corfu-popupinfo-min-height))
                   (pcase corfu-popupinfo--lock-dir ('left al) ('right ar) ('vertical av))))
       (setq corfu-popupinfo--lock-dir nil))
-    (or
-     (cl-loop for dir in corfu-popupinfo-direction thereis
-              (pcase dir
-                ((or 'force-right (guard (eq corfu-popupinfo--lock-dir 'right))) ar)
-                ((or 'force-left (guard (eq corfu-popupinfo--lock-dir 'left))) al)
-                ((or 'force-vertical (guard (eq corfu-popupinfo--lock-dir 'vertical))) av)
-                ((and 'right (guard (corfu-popupinfo--fits-p ps ar))) ar)
-                ((and 'left (guard (corfu-popupinfo--fits-p ps al))) al)
-                ((and 'vertical (guard (corfu-popupinfo--fits-p ps av))) av)))
-     (let ((ah (if (corfu-popupinfo--larger-p ar al) ar al)))
-       (if (corfu-popupinfo--larger-p av ah) av ah)))))
+    (or (cl-loop for dir in corfu-popupinfo-direction thereis
+                 (pcase dir
+                   ((or 'force-right (guard (eq corfu-popupinfo--lock-dir 'right))) ar)
+                   ((or 'force-left (guard (eq corfu-popupinfo--lock-dir 'left))) al)
+                   ((or 'force-vertical (guard (eq corfu-popupinfo--lock-dir 'vertical))) av)
+                   ((and 'right (guard (corfu-popupinfo--fits-p ps ar))) ar)
+                   ((and 'left (guard (corfu-popupinfo--fits-p ps al))) al)
+                   ((and 'vertical (guard (corfu-popupinfo--fits-p ps av))) av)))
+        (let ((ah (if (corfu-popupinfo--larger-p ar al) ar al)))
+          (if (corfu-popupinfo--larger-p av ah) av ah)))))
 
 (defun corfu-popupinfo--show (candidate)
   "Show the info popup for CANDIDATE."
@@ -406,10 +408,9 @@ form (X Y WIDTH HEIGHT DIR)."
 
 (defun corfu-popupinfo-end (&optional n)
   "Scroll text of info popup window to its end.
-
-If arg N is omitted or nil, scroll to end.  If a numerical value,
-put point N/10 of the way from the end.  If the info popup is not
-visible, the other window is moved to beginning or end."
+If N is omitted or nil, scroll to end.  If a numerical value, put point
+N/10 of the way from the end.  If the info popup is not visible, the
+other window is moved to beginning or end."
   (interactive "P")
   (if (corfu-popupinfo--visible-p)
       (with-selected-frame corfu-popupinfo--frame
@@ -427,10 +428,9 @@ See `corfu-popupinfo-end' for the argument N."
 
 (defun corfu-popupinfo-scroll-up (&optional n)
   "Scroll text of info popup window upward N lines.
-
-If ARG is omitted or nil, scroll upward by a near full screen.
-See `scroll-up' for details.  If the info popup is not visible,
-the other window is scrolled."
+If ARG is omitted or nil, scroll upward by a near full screen.  See
+`scroll-up' for details.  If the info popup is not visible, the other
+window is scrolled."
   (interactive "P")
   (if (corfu-popupinfo--visible-p)
       (with-selected-frame corfu-popupinfo--frame
@@ -440,7 +440,6 @@ the other window is scrolled."
 
 (defun corfu-popupinfo-scroll-down (&optional n)
   "Scroll text of info popup window down N lines.
-
 See `corfu-popupinfo-scroll-up' for more details."
   (interactive "P")
   (if (corfu-popupinfo--visible-p)
