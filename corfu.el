@@ -519,8 +519,7 @@ FRAME is the existing frame."
         (set-face-background 'internal-border new frame))
       ;; XXX The Emacs Mac Port does not support `internal-border', we also have
       ;; to set `child-frame-border'.
-      (unless (or (not (facep 'child-frame-border))
-                  (equal (face-attribute 'child-frame-border :background frame 'default) new))
+      (unless (equal (face-attribute 'child-frame-border :background frame 'default) new)
         (set-face-background 'child-frame-border new frame)))
     ;; Reset frame parameters if they changed.  For example `tool-bar-mode'
     ;; overrides the parameter `tool-bar-lines' for every frame, including child
