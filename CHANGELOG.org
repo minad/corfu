@@ -4,6 +4,8 @@
 
 * Development
 
+- ~corfu-popupinfo-hide~: Change default to nil.
+- ~corfu-popupinfo-delay~: Reduce delay when changing candidates to 0.5.
 - ~corfu-popupinfo-margin-width~: New customization variable.
 - ~corfu-border-width~: New customization variable.
 - ~corfu-popupinfo~: Faster scrolling speed.
