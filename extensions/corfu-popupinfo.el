@@ -303,6 +303,7 @@ form (X Y WIDTH HEIGHT DIR)."
   (pcase-let*
       ((cw (default-font-width))
        (lh (default-line-height))
+       (`(,pw . ,ph) ps)
        (border (if (display-graphic-p corfu--frame) corfu-border-width 0))
        (`(,_pfx ,_pfy ,pfw ,pfh)
         (corfu-popupinfo--frame-geometry (frame-parent corfu--frame)))
@@ -312,24 +313,20 @@ form (X Y WIDTH HEIGHT DIR)."
                          (window-tab-line-height)
                          (or (cdr (posn-x-y (posn-at-point (point)))) 0))))
        ;; Popups aligned at top
-       (top-aligned (or below (< (cdr ps) cfh)))
+       (top-aligned (or below (< ph cfh)))
        ;; Left display area
-       (ahy (if top-aligned
-                cfy
-              (max 0 (- (+ cfy cfh) border border (cdr ps)))))
-       (ahh (if top-aligned
-                (min (- pfh cfy) (cdr ps))
-              (min (- (+ cfy cfh) border border) (cdr ps))))
-       (al (list (max 0 (- cfx (car ps) border)) ahy
-                 (min (- cfx border) (car ps)) ahh 'left))
+       (ahy (if top-aligned cfy (max 0 (- (+ cfy cfh) border border ph))))
+       (ahh (min ph (if top-aligned (- pfh cfy) (- (+ cfy cfh) border border))))
+       (al (list (max 0 (- cfx pw border)) ahy
+                 (min (- cfx border) pw) ahh 'left))
        ;; Right display area
        (arx (+ cfx cfw (- border)))
-       (ar (list arx ahy (min (- pfw arx border border) (car ps)) ahh 'right))
+       (ar (list arx ahy (min (- pfw arx border border) pw) ahh 'right))
        ;; Vertical display area
-       (avw (min (car ps) (- pfw cfx border border)))
+       (avw (min pw (- pfw cfx border border)))
        (av (if below
-               (list cfx (+ cfy cfh (- border)) avw (min (- pfh cfy cfh border) (cdr ps)) 'vertical)
-             (let ((h (min (- cfy border border) (cdr ps))))
+               (list cfx (+ cfy cfh (- border)) avw (min (- pfh cfy cfh border) ph) 'vertical)
+             (let ((h (min (- cfy border border) ph)))
                (list cfx (max 0 (- cfy h border)) avw h 'vertical)))))
     (unless (and corfu-popupinfo--lock-dir
                  (corfu-popupinfo--fits-p
