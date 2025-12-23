@@ -313,9 +313,7 @@ form (X Y WIDTH HEIGHT DIR)."
        ;; Popups aligned at top
        (top-aligned (or below (< (cdr ps) cfh)))
        (graphic (display-graphic-p corfu--frame))
-       (border (if graphic
-                   corfu-border-width
-                 (if corfu-border-on-tty 1 0)))
+       (border (cond (graphic corfu-border-width) (corfu-border-on-tty 1) (t 0)))
        ;; 1 border-width space when corfu-border-on-tty is non-nil
        (space (if (and (not graphic) corfu-border-on-tty) border 0))
        ;; Horizontal display area
@@ -388,9 +386,7 @@ form (X Y WIDTH HEIGHT DIR)."
           (corfu-popupinfo--hide)
           (setq cand-changed nil coords-changed nil)))
       (when (or cand-changed coords-changed)
-        (pcase-let* ((border (if graphic
-                                 corfu-border-width
-                               (if corfu-border-on-tty 1 0)))
+        (pcase-let* ((border (cond (graphic corfu-border-width) (corfu-border-on-tty 1) (t 0)))
                      (`(,area-x ,area-y ,area-w ,area-h ,area-d)
                       (corfu-popupinfo--area
                        (if cand-changed

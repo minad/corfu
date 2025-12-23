@@ -1160,9 +1160,7 @@ A scroll bar is displayed from LO to LO+BAR."
              ;; parent frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
-             (border (if graphic
-                         corfu-border-width
-                       (if corfu-border-on-tty 1 0)))
+             (border (cond (graphic corfu-border-width) (corfu-border-on-tty 1) (t 0)))
              ;; 1 border-width space when corfu-border-on-tty is non-nil
              (space (if (and (not graphic) corfu-border-on-tty) border 0))
              (x (max space
