@@ -508,18 +508,15 @@ not be displayed until this command is called again, even if
                                        corfu-popupinfo-delay)
                             corfu-popupinfo-delay))
                    (corfu-popupinfo--toggle))
-              (if (or (<= delay 0)
-                      (and (equal-including-properties cand corfu-popupinfo--candidate)
-                           (corfu-popupinfo--visible-p)))
-                  (corfu-popupinfo--show cand)
-                (when (corfu-popupinfo--visible-p)
+              (progn
+                (when (and (corfu-popupinfo--visible-p) (> delay 0))
                   (cond
                    (corfu-popupinfo-hide
                     (corfu-popupinfo--hide))
                    (corfu-popupinfo--candidate
                     (corfu-popupinfo--show corfu-popupinfo--candidate))))
                 (setq corfu-popupinfo--timer
-                    (run-at-time delay nil #'corfu-popupinfo--show cand)))
+                      (run-at-time delay nil #'corfu-popupinfo--show cand)))
             (unless (equal-including-properties cand corfu-popupinfo--candidate)
               (corfu-popupinfo--hide))))
       (corfu-popupinfo--hide))))
