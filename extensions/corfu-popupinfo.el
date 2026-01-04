@@ -211,7 +211,7 @@ all values are in pixels relative to the origin.  See
               (save-excursion
                 (without-restriction
                   (goto-char (point-min))
-                  (when-let ((pos (cdr loc)))
+                  (when-let* ((pos (cdr loc)))
                     (if (bufferp (car loc))
                         (goto-char pos)
                       (forward-line (1- pos))))
@@ -227,18 +227,18 @@ all values are in pixels relative to the origin.  See
 
 (defun corfu-popupinfo--get-documentation (candidate)
   "Get the documentation for CANDIDATE."
-  (when-let ((fun (corfu--metadata-get 'company-doc-buffer))
-             (res (save-excursion
-                    (cl-letf (((symbol-function #'help-buffer) ;; Work around bug#79792
-                               (lambda () (get-buffer-create " *corfu-info*")))
-                              (inhibit-message t)
-                              (message-log-max nil)
-                              (inhibit-redisplay t)
-                              ;; Reduce print length for elisp backend (#249)
-                              (print-level 3)
-                              (print-length (* corfu-popupinfo-max-width
-                                               corfu-popupinfo-max-height)))
-                      (funcall fun candidate)))))
+  (when-let* ((fun (corfu--metadata-get 'company-doc-buffer))
+              (res (save-excursion
+                     (cl-letf (((symbol-function #'help-buffer) ;; Work around bug#79792
+                                (lambda () (get-buffer-create " *corfu-info*")))
+                               (inhibit-message t)
+                               (message-log-max nil)
+                               (inhibit-redisplay t)
+                               ;; Reduce print length for elisp backend (#249)
+                               (print-level 3)
+                               (print-length (* corfu-popupinfo-max-width
+                                                corfu-popupinfo-max-height)))
+                       (funcall fun candidate)))))
     (with-current-buffer (or (car-safe res) res)
       (setq res (string-trim
                  (replace-regexp-in-string
@@ -366,7 +366,7 @@ form (X Y WIDTH HEIGHT DIR)."
            (new-coords (frame-edges corfu--frame 'inner-edges))
            (coords-changed (not (equal new-coords corfu-popupinfo--coordinates))))
       (when cand-changed
-        (if-let ((content (funcall corfu-popupinfo--function candidate)))
+        (if-let* ((content (funcall corfu-popupinfo--function candidate)))
             (with-current-buffer (corfu--make-buffer corfu-popupinfo--buffer)
               (with-silent-modifications
                 (erase-buffer)
@@ -376,7 +376,7 @@ form (X Y WIDTH HEIGHT DIR)."
                 (set (make-local-variable (car var)) (cdr var)))
               (setq left-margin-width corfu-popupinfo-margin-width
                     right-margin-width corfu-popupinfo-margin-width)
-              (when-let ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
+              (when-let* ((m (memq 'corfu-default (alist-get 'default face-remapping-alist))))
                 (setcar m 'corfu-popupinfo)))
           (corfu-popupinfo--hide)
           (setq cand-changed nil coords-changed nil)))
@@ -502,11 +502,11 @@ not be displayed until this command is called again, even if
       (setq corfu-popupinfo--timer nil))
     (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
         (let ((cand (nth corfu--index corfu--candidates)))
-          (if-let ((delay (if (consp corfu-popupinfo-delay)
-                              (funcall (if (eq corfu-popupinfo--toggle 'init) #'car #'cdr)
-                                       corfu-popupinfo-delay)
-                            corfu-popupinfo-delay))
-                   (corfu-popupinfo--toggle))
+          (if-let* ((delay (if (consp corfu-popupinfo-delay)
+                               (funcall (if (eq corfu-popupinfo--toggle 'init) #'car #'cdr)
+                                        corfu-popupinfo-delay)
+                             corfu-popupinfo-delay))
+                    (corfu-popupinfo--toggle))
               (progn
                 (when (and (corfu-popupinfo--visible-p) (> delay 0))
                   (cond

@@ -473,8 +473,8 @@ is a prefix length override, which is t for manual completion."
 (defun corfu--make-frame (frame x y width height)
   "Show current buffer in child frame at X/Y with WIDTH/HEIGHT.
 FRAME is the existing frame."
-  (when-let (((frame-live-p frame))
-             (timer (frame-parameter frame 'corfu--hide-timer)))
+  (when-let* (((frame-live-p frame))
+              (timer (frame-parameter frame 'corfu--hide-timer)))
     (cancel-timer timer)
     (set-frame-parameter frame 'corfu--hide-timer nil))
   (let* ((window-min-height 1)
@@ -690,7 +690,7 @@ FRAME is the existing frame."
                (field (substring str (car bounds) (+ pt (cdr bounds))))
                (completing-file (eq (corfu--metadata-get 'category) 'file))
                (`(,all . ,hl) (corfu--filter-completions str table pred pt corfu--metadata))
-               (base (or (when-let ((z (last all))) (prog1 (cdr z) (setcdr z nil))) 0))
+               (base (or (when-let* ((z (last all))) (prog1 (cdr z) (setcdr z nil))) 0))
                (corfu--base (substring str 0 base))
                (pre nil))
     ;; Filter the ignored file extensions. We cannot use modified predicate for
@@ -934,7 +934,7 @@ the stack trace is shown in the *Messages* buffer."
 (defun corfu--exit-function (str status cands)
   "Call the `:exit-function' with STR and STATUS.
 Lookup STR in CANDS to restore text properties."
-  (when-let ((exit (plist-get completion-extra-properties :exit-function)))
+  (when-let* ((exit (plist-get completion-extra-properties :exit-function)))
     (funcall exit (or (car (member str cands)) str) status)))
 
 (defun corfu--done (str status cands)
@@ -1064,7 +1064,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
          (`(,fun ,beg ,end ,table . ,plist)
           (let ((completion-in-region-mode-predicate
                  (lambda ()
-                   (when-let ((newbeg (car-safe (funcall fun))))
+                   (when-let* ((newbeg (car-safe (funcall fun))))
                      (= newbeg beg))))
                 (completion-extra-properties plist))
             (corfu--setup beg end table (plist-get plist :predicate))
@@ -1201,9 +1201,9 @@ A scroll bar is displayed from LO to LO+BAR."
          (mf (let ((completion-extra-properties (nth 4 completion-in-region--data)))
                (run-hook-with-args-until-success 'corfu-margin-formatters corfu--metadata))))
     (setq cands
-          (if-let ((aff (corfu--metadata-get 'affixation-function)))
+          (if-let* ((aff (corfu--metadata-get 'affixation-function)))
               (funcall aff cands)
-            (if-let ((ann (corfu--metadata-get 'annotation-function)))
+            (if-let* ((ann (corfu--metadata-get 'annotation-function)))
                 (cl-loop for cand in cands collect
                          (let ((suff (or (funcall ann cand) "")))
                            ;; The default completion UI adds the
