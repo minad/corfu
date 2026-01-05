@@ -946,7 +946,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
            (default-value 'completion-in-region-function))
          args))
 
-(defun corfu--in-region-1 (beg end table &optional pred)
+(defun corfu--in-region-1 (beg end table pred)
   "Complete in region, see `completion-in-region' for BEG, END, TABLE, PRED."
   (barf-if-buffer-read-only)
   ;; Restart the completion. This can happen for example if C-M-/
