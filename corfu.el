@@ -363,9 +363,7 @@ It is recommended to avoid changing these parameters.")
 (defun corfu--replace (beg end str)
   "Replace range between BEG and END with STR."
   (unless (equal str (buffer-substring-no-properties beg end))
-    ;; bug#55205: completion--replace removed properties as an unwanted
-    ;; side-effect.  We also don't want to leave text properties.
-    (completion--replace beg end (substring-no-properties str))))
+    (completion--replace beg end str)))
 
 (defun corfu--capf-wrapper (fun &optional prefix trigger)
   "Wrapper for `completion-at-point' FUN.
