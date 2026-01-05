@@ -399,22 +399,22 @@ It is recommended to avoid changing these parameters.")
     ;; side-effect.  We also don't want to leave text properties.
     (completion--replace beg end (substring-no-properties str))))
 
-(defun corfu--capf-wrapper (fun &optional prefix)
+(defun corfu--capf-wrapper (fun &optional prefix trigger)
   "Wrapper for `completion-at-point' FUN.
 The wrapper determines if the Capf is applicable at the current position
 and performs sanity checking on the returned result.  For non-exclusive
 Capfs, the wrapper checks if the current input can be completed.  PREFIX
-is a prefix length override, which is t for manual completion."
+is the minimum prefix length and TRIGGER is a list of trigger events."
   (pcase (funcall fun)
     ((and res `(,beg ,end ,table . ,plist))
      (and (integer-or-marker-p beg) ;; Valid Capf result
           (<= beg (point) end)      ;; Sanity checking
-          ;; When auto completing, check the prefix length!
-          (let ((len (or prefix
-                         (plist-get plist :company-prefix-length)
-                         (- (point) beg))))
-            (or (eq len t) (>= len corfu-auto-prefix)
-                (seq-contains-p corfu-auto-trigger last-command-event)))
+          ;; Check minimal prefix length if given.
+          (or (not prefix)
+              (let ((len (or (plist-get plist :company-prefix-length)
+                             (- (point) beg))))
+                (or (eq len t) (>= len prefix)
+                    (seq-contains-p trigger last-command-event))))
           ;; For non-exclusive Capfs, check for valid completion.
           (or (not (eq 'no (plist-get plist :exclusive)))
               (let ((str (buffer-substring-no-properties beg end))
@@ -1060,7 +1060,9 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
      (when (and (not completion-in-region-mode)
                 (or (not tick) (equal tick (corfu--auto-tick))))
        (pcase (while-no-input ;; Interruptible Capf query
-                (run-hook-wrapped 'completion-at-point-functions #'corfu--capf-wrapper))
+                (run-hook-wrapped
+                 'completion-at-point-functions
+                 #'corfu--capf-wrapper corfu-auto-prefix corfu-auto-trigger))
          (`(,fun ,beg ,end ,table . ,plist)
           (let ((completion-in-region-mode-predicate
                  (lambda ()
@@ -1502,7 +1504,7 @@ local `completion-at-point-functions'."
 (defun corfu--capf-wrapper-advice (orig fun which)
   "Around advice for `completion--capf-wrapper'.
 The ORIG function takes the FUN and WHICH arguments."
-  (if corfu-mode (corfu--capf-wrapper fun t) (funcall orig fun which)))
+  (if corfu-mode (corfu--capf-wrapper fun) (funcall orig fun which)))
 
 (defun corfu--eldoc-advice ()
   "Return non-nil if Corfu is currently not active."
