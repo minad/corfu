@@ -801,7 +801,7 @@ FRAME is the existing frame."
               (pt (point))
               (`(,beg ,end . ,_) completion-in-region--data))
     (and beg end
-         (eq buf (marker-buffer beg)) (eq buf (window-buffer))
+         (eq buf (marker-buffer end)) (eq buf (window-buffer))
          (<= beg pt end)
          (save-excursion (goto-char beg) (<= (pos-bol) pt (pos-eol))))))
 
@@ -915,9 +915,8 @@ Lookup STR in CANDS to restore text properties."
 (defun corfu--setup (beg end table pred)
   "Setup Corfu completion state.
 See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
-  (setq beg (if (markerp beg) beg (copy-marker beg))
-        end (if (and (markerp end) (marker-insertion-type end)) end (copy-marker end t))
-        completion-in-region--data (list beg end table pred completion-extra-properties))
+  (setq end (if (and (markerp end) (marker-insertion-type end)) end (copy-marker end t))
+        completion-in-region--data (list (+ 0 beg) end table pred completion-extra-properties))
   (completion-in-region-mode)
   (activate-change-group (setq corfu--change-group (prepare-change-group)))
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
@@ -969,8 +968,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
              (alist-get 'corfu--candidates (corfu--compute input table pred))))
           t)
       ((and newinp `(,newstr . ,newpt))
-       (setq beg (if (markerp beg) beg (copy-marker beg))
-             end (copy-marker end t))
+       (setq end (copy-marker end t))
        (corfu--replace beg end newstr)
        (goto-char (+ beg newpt))
        (let* ((state (corfu--compute newinp table pred))
