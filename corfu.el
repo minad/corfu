@@ -1225,6 +1225,7 @@ there hasn't been any input, then quit."
     (pcase-let* ((`(,beg ,end . ,_) completion-in-region--data)
                  (str (buffer-substring-no-properties beg end)))
       (cancel-change-group corfu--change-group)
+      (goto-char end)
       (activate-change-group (setq corfu--change-group (prepare-change-group)))
       ;; Quit when resetting, when input did not change.
       (when (equal str (buffer-substring-no-properties beg end))
