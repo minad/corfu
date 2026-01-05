@@ -1370,7 +1370,7 @@ Quit if no candidate is selected."
    (corfu-mode
     (when corfu-auto
       (require 'corfu-auto)
-      (add-hook 'post-command-hook 'corfu-auto--post-command 100 'local))
+      (add-hook 'post-command-hook 'corfu-auto--post-command 1 'local))
     (setq-local completion-in-region-function #'corfu--in-region))
    (t
     (remove-hook 'post-command-hook 'corfu-auto--post-command 'local)
