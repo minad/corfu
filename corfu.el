@@ -644,9 +644,10 @@ FRAME is the existing frame."
       (corfu--metadata-get 'display-sort-function)
       corfu-sort-function))
 
-(defun corfu--recompute (str pt table pred)
-  "Recompute state from STR, PT, TABLE and PRED."
-  (pcase-let* ((before (substring str 0 pt))
+(defun corfu--compute (input table pred)
+  "Compute state from INPUT, TABLE and PRED."
+  (pcase-let* ((`(,str . ,pt) input)
+               (before (substring str 0 pt))
                (after (substring str pt))
                (corfu--metadata (completion-metadata before table pred))
                ;; bug#47678: `completion-boundaries' fails for `partial-completion'
@@ -688,7 +689,8 @@ FRAME is the existing frame."
                            (not (and completing-file (equal (concat field "/") (car all))))
                            (test-completion str table pred)))
                   -1 0))
-    `((corfu--base . ,corfu--base)
+    `((corfu--input . ,input)
+      (corfu--base . ,corfu--base)
       (corfu--metadata . ,corfu--metadata)
       (corfu--candidates . ,all)
       (corfu--total . ,(length all))
@@ -713,11 +715,10 @@ FRAME is the existing frame."
       ;; without the user explicitly requesting it via M-TAB.
       (pcase (let ((non-essential t))
                (if interruptible
-                   (while-no-input (corfu--recompute str pt table pred))
-                 (corfu--recompute str pt table pred)))
+                   (while-no-input (corfu--compute input table pred))
+                 (corfu--compute input table pred)))
         ('nil (keyboard-quit))
         ((and state (pred consp))
-         (setq corfu--input input)
          (dolist (s state) (set (car s) (cdr s))))))
     input))
 
@@ -954,6 +955,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
   (when completion-in-region-mode (corfu-quit))
   (let* ((pt (max 0 (- (point) beg)))
          (str (buffer-substring-no-properties beg end))
+         (input (cons str pt))
          (md (completion-metadata (substring str 0 pt) table pred))
          (threshold (completion--cycle-threshold md))
          (completion-in-region-mode-predicate
@@ -966,14 +968,14 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
               (corfu--setup beg end table pred)
             (corfu--exit-function
              str 'finished
-             (alist-get 'corfu--candidates (corfu--recompute str pt table pred))))
+             (alist-get 'corfu--candidates (corfu--compute input table pred))))
           t)
-      (`(,newstr . ,newpt)
+      ((and newinp `(,newstr . ,newpt))
        (setq beg (if (markerp beg) beg (copy-marker beg))
              end (copy-marker end t))
        (corfu--replace beg end newstr)
        (goto-char (+ beg newpt))
-       (let* ((state (corfu--recompute newstr newpt table pred))
+       (let* ((state (corfu--compute newinp table pred))
               (base (alist-get 'corfu--base state))
               (total (alist-get 'corfu--total state))
               (cands (alist-get 'corfu--candidates state)))
