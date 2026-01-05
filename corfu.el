@@ -382,26 +382,14 @@ is the minimum prefix length and TRIGGER is a list of trigger events."
                 (or (eq len t) (>= len prefix)
                     (seq-contains-p trigger last-command-event))))
           ;; For non-exclusive Capfs, check for valid completion.
-          (or (not (eq 'no (plist-get plist :exclusive)))
-              (let ((str (buffer-substring-no-properties beg end))
-                    (pt (- (point) beg))
-                    (pred (plist-get plist :predicate)))
-                ;; NOTE:
-                ;; * We use `completion-try-completion' to check if there are
-                ;;   completions. The upstream `completion--capf-wrapper' uses
-                ;;   `try-completion' which is incorrect since it only checks
-                ;;   for prefix completions.
-                ;; * `eglot--dumb-tryc' always returns nil which is
-                ;;   exceptional. Even if `eglot-completion-at-point' is marked
-                ;;   non-exclusive via `cape-capf-nonexclusive', the
-                ;;   `eglot--dumb-flex' completion style must additionally be
-                ;;   overridden to not defeat the check here.
-                ;; * An alternative would be to use `completion-all-completions'
-                ;;   to explicitly check for the presence of candidates. This
-                ;;   can be made efficient with a side-effecting predicate which
-                ;;   throws on first successful match.
-                (corfu--try-completion str table pred pt)))
-          (cons fun res)))))
+          (if (eq 'no (plist-get plist :exclusive))
+              (let* ((str (buffer-substring-no-properties beg end))
+                     (pt (- (point) beg))
+                     (pred (plist-get plist :predicate))
+                     (state (corfu--compute (cons str pt) table pred)))
+                (and (alist-get 'corfu--candidates state)
+                     `(,fun ,@res :corfu--state ,state)))
+            (cons fun res))))))
 
 (defun corfu--make-buffer (name)
   "Create buffer with NAME."
@@ -821,7 +809,7 @@ the last command must be listed in `corfu-continue-commands'."
            ;; Check if it is an explicitly listed continue command
            (corfu--match-symbol-p corfu-continue-commands this-command)
            (pcase-let ((`(,beg ,end . ,_) completion-in-region--data))
-             (and (or (not corfu--input) (< beg end)) ;; Check for empty input
+             (and (or (equal (or (car corfu--input) "") "") (< beg end)) ;; Check for empty input
                   (or (not corfu-quit-at-boundary) ;; Check separator or predicate
                       (and (eq corfu-quit-at-boundary 'separator)
                            (or (eq this-command #'corfu-insert-separator)
@@ -915,6 +903,9 @@ Lookup STR in CANDS to restore text properties."
 (defun corfu--setup (beg end table pred)
   "Setup Corfu completion state.
 See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
+  (when-let* ((state (plist-get completion-extra-properties :corfu--state)))
+    (plist-put completion-extra-properties :corfu--state nil)
+    (dolist (s state) (set (car s) (cdr s))))
   (setq end (if (and (markerp end) (marker-insertion-type end)) end (copy-marker end t))
         completion-in-region--data (list (+ 0 beg) end table pred completion-extra-properties))
   (completion-in-region-mode)
