@@ -923,9 +923,7 @@ the stack trace is shown in the *Messages* buffer."
    (lambda ()
      (if (corfu--continue-p)
          (corfu--exhibit)
-       (corfu-quit))
-     (when corfu-auto
-       (corfu--auto-post-command)))))
+       (corfu-quit)))))
 
 (defun corfu--goto (index)
   "Go to candidate with INDEX."
@@ -1457,7 +1455,7 @@ Quit if no candidate is selected."
   :group 'corfu :keymap corfu-mode-map
   (cond
    (corfu-mode
-    (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command nil 'local))
+    (and corfu-auto (add-hook 'post-command-hook #'corfu--auto-post-command 100 'local))
     (setq-local completion-in-region-function #'corfu--in-region))
    (t
     (remove-hook 'post-command-hook #'corfu--auto-post-command 'local)
