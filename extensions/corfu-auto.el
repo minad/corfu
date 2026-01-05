@@ -26,7 +26,7 @@
 
 ;;; Commentary:
 
-;; Automatically show the popup.  Enable `corfu-auto-mode'.
+;; Automatically show the popup if `corfu-auto' is non-nil.
 
 ;;; Code:
 
