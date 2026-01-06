@@ -387,7 +387,7 @@ the initial completion state.  PREFIX is the minimum prefix length."
                    `(,fun ,beg ,end ,table :corfu--state ,state ,@plist))
                   ;; Stop with empty result for exclusive Capf.
                   ((not (eq 'no (plist-get plist :exclusive)))
-                   `(ignore ,beg ,end nil))))))))
+                   '(nil))))))))
 
 (defun corfu--make-buffer (name)
   "Create buffer with NAME."
@@ -901,11 +901,12 @@ Lookup STR in CANDS to restore text properties."
 (defun corfu--setup (beg end table pred)
   "Setup Corfu completion state.
 See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
-  (when-let* ((state (plist-get completion-extra-properties :corfu--state)))
-    (plist-put completion-extra-properties :corfu--state nil)
-    (dolist (s state) (set (car s) (cdr s))))
-  (setq end (if (and (markerp end) (marker-insertion-type end)) end (copy-marker end t))
-        completion-in-region--data (list (+ 0 beg) end table pred completion-extra-properties))
+  (let ((props completion-extra-properties))
+    (when (eq (car props) :corfu--state)
+      (dolist (s (cadr props)) (set (car s) (cdr s)))
+      (setq props (cddr props)))
+    (setq end (if (and (markerp end) (marker-insertion-type end)) end (copy-marker end t))
+          completion-in-region--data (list (+ 0 beg) end table pred props)))
   (completion-in-region-mode)
   (activate-change-group (setq corfu--change-group (prepare-change-group)))
   (setcdr (assq #'completion-in-region-mode minor-mode-overriding-map-alist) corfu-map)
