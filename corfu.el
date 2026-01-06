@@ -365,12 +365,11 @@ It is recommended to avoid changing these parameters.")
   (unless (equal str (buffer-substring-no-properties beg end))
     (completion--replace beg end str)))
 
-(defun corfu--capf-wrapper (fun &optional prefix trigger)
+(defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
-The wrapper determines if the Capf is applicable at the current position
-and performs sanity checking on the returned result.  For non-exclusive
-Capfs, the wrapper checks if the current input can be completed.  PREFIX
-is the minimum prefix length and TRIGGER is a list of trigger events."
+The wrapper determines if the Capf is applicable at the current
+position, performs sanity checking on the returned result and computes
+the initial completion state.  PREFIX is the minimum prefix length."
   (pcase (funcall fun)
     (`(,beg ,end ,table . ,plist)
      (and (integer-or-marker-p beg) ;; Valid Capf result
@@ -379,8 +378,7 @@ is the minimum prefix length and TRIGGER is a list of trigger events."
           (or (not prefix)
               (let ((len (or (plist-get plist :company-prefix-length)
                              (- (point) beg))))
-                (or (eq len t) (>= len prefix)
-                    (seq-contains-p trigger last-command-event))))
+                (or (eq len t) (>= len prefix))))
           (let* ((str (buffer-substring-no-properties beg end))
                  (pt (- (point) beg))
                  (pred (plist-get plist :predicate))

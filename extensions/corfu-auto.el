@@ -77,7 +77,9 @@ The list can contain either command symbols or regular expressions."
        (pcase (while-no-input ;; Interruptible Capf query
                 (run-hook-wrapped
                  'completion-at-point-functions
-                 #'corfu--capf-wrapper corfu-auto-prefix corfu-auto-trigger))
+                 #'corfu--capf-wrapper
+                 (unless (seq-contains-p corfu-auto-trigger last-command-event)
+                   corfu-auto-prefix)))
          (`(,fun ,beg ,end ,table . ,plist)
           (pcase-let* ((completion-in-region-mode-predicate
                         (lambda ()
