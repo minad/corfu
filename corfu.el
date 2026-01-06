@@ -372,7 +372,7 @@ and performs sanity checking on the returned result.  For non-exclusive
 Capfs, the wrapper checks if the current input can be completed.  PREFIX
 is the minimum prefix length and TRIGGER is a list of trigger events."
   (pcase (funcall fun)
-    ((and res `(,beg ,end ,table . ,plist))
+    (`(,beg ,end ,table . ,plist)
      (and (integer-or-marker-p beg) ;; Valid Capf result
           (<= beg (point) end)      ;; Sanity checking
           ;; Check minimal prefix length if given.
@@ -381,15 +381,15 @@ is the minimum prefix length and TRIGGER is a list of trigger events."
                              (- (point) beg))))
                 (or (eq len t) (>= len prefix)
                     (seq-contains-p trigger last-command-event))))
-          ;; For non-exclusive Capfs, check for valid completion.
-          (if (eq 'no (plist-get plist :exclusive))
-              (let* ((str (buffer-substring-no-properties beg end))
-                     (pt (- (point) beg))
-                     (pred (plist-get plist :predicate))
-                     (state (corfu--compute (cons str pt) table pred)))
-                (and (alist-get 'corfu--candidates state)
-                     `(,fun ,@res :corfu--state ,state)))
-            (cons fun res))))))
+          (let* ((str (buffer-substring-no-properties beg end))
+                 (pt (- (point) beg))
+                 (pred (plist-get plist :predicate))
+                 (state (corfu--compute (cons str pt) table pred)))
+            (cond ((alist-get 'corfu--candidates state)
+                   `(,fun ,beg ,end ,table :corfu--state ,state ,@plist))
+                  ;; Stop with empty result for exclusive Capf.
+                  ((not (eq 'no (plist-get plist :exclusive)))
+                   '(ignore))))))))
 
 (defun corfu--make-buffer (name)
   "Create buffer with NAME."
