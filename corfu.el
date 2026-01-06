@@ -389,7 +389,7 @@ is the minimum prefix length and TRIGGER is a list of trigger events."
                    `(,fun ,beg ,end ,table :corfu--state ,state ,@plist))
                   ;; Stop with empty result for exclusive Capf.
                   ((not (eq 'no (plist-get plist :exclusive)))
-                   '(ignore))))))))
+                   `(ignore ,beg ,end nil))))))))
 
 (defun corfu--make-buffer (name)
   "Create buffer with NAME."
