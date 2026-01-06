@@ -310,12 +310,11 @@ frames to display the candidates. The Corfu popup floats on top of the Emacs
 frame and can be shown even if it doesn't fit inside the minibuffer.
 
 ~global-corfu-mode~ activates ~corfu-mode~ in the minibuffer if the variable
-~global-corfu-minibuffer~ is non-nil. In order to avoid interference with
-specialised minibuffer completion UIs like Vertico or Mct, Corfu is only enabled
-if the minibuffer sets the variable ~completion-at-point-functions~ locally. This
-way minibuffers with completion can be detected, such that minibuffer commands
-like ~M-:~ (~eval-expression~) or ~M-!~ (~shell-command~) are enhanced with Corfu
-completion.
+~global-corfu-minibuffer~ is =t=. In order to avoid interference with specialised
+minibuffer completion UIs like Vertico or Mct, Corfu is only enabled if the
+minibuffer sets the variable ~completion-at-point-functions~ locally. This way
+minibuffers with completion can be detected, such that minibuffer commands like
+~M-:~ (~eval-expression~) or ~M-!~ (~shell-command~) are enhanced with Corfu completion.
 
 If needed, one can also enable Corfu more generally in all minibuffers, as long
 as no completion UI is active. In the following example we set
@@ -518,6 +517,7 @@ be enabled manually if desired. Furthermore it is possible to install all of the
 files separately, both ~corfu.el~ and the ~corfu-*.el~ extensions. Currently the
 following extensions come with the Corfu ELPA package:
 
+- [[https://github.com/minad/corfu/blob/main/extensions/corfu-auto.el][corfu-auto]]: Auto completion is enabled if =corfu-auto= is set to =t=.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-echo.el][corfu-echo]]: =corfu-echo-mode= displays a brief candidate documentation in the
   echo area.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-history.el][corfu-history]]: =corfu-history-mode= remembers selected candidates and sorts the
