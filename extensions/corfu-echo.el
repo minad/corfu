@@ -80,7 +80,7 @@ subsequent delay."
   "Show candidate documentation in echo area."
   :global t :group 'corfu)
 
-(cl-defmethod corfu--exhibit :after (&context (corfu-echo-mode (eql t)) &optional _auto)
+(cl-defmethod corfu--exhibit :after (&context (corfu-echo-mode (eql t)))
   (if-let* (((not (minibufferp)))
             (delay (if (consp corfu-echo-delay)
                        (funcall (if corfu-echo--message #'cdr #'car)

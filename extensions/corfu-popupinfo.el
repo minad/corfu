@@ -493,7 +493,7 @@ not be displayed until this command is called again, even if
   "Corfu info popup minor mode."
   :global t :group 'corfu)
 
-(cl-defmethod corfu--exhibit :after (&context (corfu-popupinfo-mode (eql t)) &optional _auto)
+(cl-defmethod corfu--exhibit :after (&context (corfu-popupinfo-mode (eql t)))
   (when completion-in-region-mode
     (setf (alist-get #'corfu-popupinfo-mode minor-mode-overriding-map-alist)
           corfu-popupinfo-map)

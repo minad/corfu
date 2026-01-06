@@ -1150,20 +1150,17 @@ A scroll bar is displayed from LO to LO+BAR."
                 (corfu--match-symbol-p corfu-continue-commands this-command)))
        (corfu--insert 'exact)))
 
-(cl-defgeneric corfu--exhibit (&optional auto)
-  "Exhibit Corfu UI.
-AUTO is non-nil when initializing auto completion."
+(cl-defgeneric corfu--exhibit ()
+  "Exhibit Corfu UI."
   (pcase-let ((`(,beg ,end ,table ,pred . ,_) completion-in-region--data)
               (`(,str . ,pt) (corfu--update 'interruptible)))
     (cond
      ;; 1) Single exactly matching candidate and no further completion is possible.
-     ((and (not (equal str ""))
-           (equal (car corfu--candidates) str) (not (cdr corfu--candidates))
+     ((and corfu-on-exact-match
            (not (eq corfu-on-exact-match 'show))
-           (or auto corfu-on-exact-match)
+           (equal corfu--candidates (list str))
            (not (consp (corfu--try-completion str table pred pt))))
-      ;; Quit directly when initializing auto completion.
-      (if (or auto (eq corfu-on-exact-match 'quit))
+      (if (eq corfu-on-exact-match 'quit)
           (corfu-quit)
         (corfu--done (car corfu--candidates) 'finished nil)))
      ;; 2) There exist candidates => Show candidates popup.
@@ -1177,8 +1174,8 @@ AUTO is non-nil when initializing auto completion."
         ('nil corfu--input)
         ('separator (seq-contains-p (car corfu--input) corfu-separator)))
       (corfu--popup-show (posn-at-point beg) 0 8 '(#("No match" 0 8 (face italic)))))
-     ;; 4) No candidates & auto completing or initialized => Quit.
-     ((or auto corfu--input) (corfu-quit)))))
+     ;; 4) No candidates & initialized => Quit.
+     (corfu--input (corfu-quit)))))
 
 (cl-defgeneric corfu--teardown (buffer)
   "Tear-down Corfu in BUFFER, which might be dead at this point."

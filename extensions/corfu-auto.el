@@ -79,13 +79,22 @@ The list can contain either command symbols or regular expressions."
                  'completion-at-point-functions
                  #'corfu--capf-wrapper corfu-auto-prefix corfu-auto-trigger))
          (`(,fun ,beg ,end ,table . ,plist)
-          (let ((completion-in-region-mode-predicate
-                 (lambda ()
-                   (when-let* ((newbeg (car-safe (funcall fun))))
-                     (= newbeg beg))))
-                (completion-extra-properties plist))
-            (corfu--setup beg end table (plist-get plist :predicate))
-            (corfu--exhibit 'auto))))))))
+          (pcase-let* ((completion-in-region-mode-predicate
+                        (lambda ()
+                          (when-let* ((newbeg (car-safe (funcall fun))))
+                            (= newbeg beg))))
+                       (completion-extra-properties plist)
+                       (pred (plist-get plist :predicate))
+                       (state (plist-get plist :corfu--state))
+                       (`(,str . ,pt) (alist-get 'corfu--input state))
+                       (cands (alist-get 'corfu--candidates state)))
+            ;; Bail out immediately for exactly matching candidates
+            ;; if no further completion is possible.
+            (when (or (eq corfu-on-exact-match 'show)
+                      (not (equal cands (list str)))
+                      (consp (corfu--try-completion str table pred pt)))
+              (corfu--setup beg end table pred)
+              (corfu--exhibit)))))))))
 
 (defun corfu-auto--post-command ()
   "Post command hook which initiates auto completion."
