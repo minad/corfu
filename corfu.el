@@ -420,7 +420,6 @@ the initial completion state.  PREFIX is the minimum prefix length."
 ;; Not present on non-gtk/non-x builds
 (defvar x-gtk-resize-child-frames)
 (defvar x-fast-protocol-requests)
-(defvar x-wait-for-event-timeout)
 
 ;; Function adapted from posframe.el by tumashu
 (defun corfu--make-frame (frame x y width height)
@@ -433,7 +432,6 @@ FRAME is the existing frame."
   (let* ((window-min-height 1)
          (window-min-width 1)
          (inhibit-redisplay t)
-         (x-wait-for-event-timeout)
          (x-fast-protocol-requests t)
          (x-gtk-resize-child-frames corfu--gtk-resize-child-frames)
          (before-make-frame-hook)
