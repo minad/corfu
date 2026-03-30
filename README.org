@@ -61,10 +61,10 @@ terminal Emacs. Use the [[https://codeberg.org/akib/emacs-corfu-terminal][corfu-
 
 * Installation
 
-Corfu is available from MELPA. You can install it directly via =M-x
-package-install RET corfu RET=. After installation, activate the global minor
-mode with =M-x global-corfu-mode RET=. For completion press =M-TAB= (or =TAB=) within
-a buffer. Auto completion is disabled by default for safety and unobtrusiveness.
+Corfu is available from MELPA and can be installed via =M-x package-install RET corfu RET=.
+After installation, activate the global minor mode with =M-x global-corfu-mode
+RET=. For completion press =M-TAB= (or =TAB=) within a buffer. Auto completion is
+disabled by default for safety and unobtrusiveness.
 
 * Key bindings
 
