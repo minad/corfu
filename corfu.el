@@ -763,6 +763,11 @@ FRAME is the existing frame."
                              (max 0 (+ corfu--index off 1 (- corfu-count))
                                   (min (- corfu--index off corr) corfu--scroll))))))
 
+(defun corfu--lines-pixel-width (lines)
+  "Return the rendered width of popup LINES in pixels."
+  (cl-loop for line in lines
+           maximize (string-pixel-width line (current-buffer))))
+
 (defun corfu--candidates-popup (pos)
   "Show candidates popup at POS."
   (corfu--compute-scroll)
@@ -1052,9 +1057,7 @@ A scroll bar is displayed from LO to LO+BAR."
              (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
              (border (if graphic corfu-border-width 0))
-             (x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
-                            (- (frame-pixel-width) width
-                               (if graphic (+ ml mr (* 2 border)) 0)))))
+             (x nil)
              (yb (+ (cadr edge) (or (cdr pos) 0) lh
                     (static-if (< emacs-major-version 31) (window-tab-line-height) 0)))
              (y (if (> (+ yb (* corfu-count ch) lh lh) (frame-pixel-height))
@@ -1088,6 +1091,13 @@ A scroll bar is displayed from LO to LO+BAR."
                          0 (length str) 'corfu-current 'append str))
                       str)))
           (goto-char (point-min)))
+        (when graphic
+          ;; Account for glyphs rendered wider than their character width,
+          ;; such as color emoji shown in right-hand annotations.
+          (setq width (max width (1+ (corfu--lines-pixel-width lines)))))
+        (setq x (max 0 (min (+ (car edge) (- (or (car pos) 0) ml (* cw off) border))
+                            (- (frame-pixel-width) width
+                               (if graphic (+ ml mr (* 2 border)) 0)))))
         (setq corfu--frame (corfu--make-frame corfu--frame x y width height))))))
 
 (cl-defgeneric corfu--popup-hide ()
