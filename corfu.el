@@ -536,12 +536,11 @@ FRAME is the existing frame."
        (run-at-time 0 nil #'corfu--hide-frame-deferred frame))))))
 
 (defun corfu--move-to-front (elem list)
-  "Move ELEM to front of LIST."
-  ;; In contrast to Vertico, this function handles duplicates. See also the
-  ;; special deduplication function `corfu--delete-dups' based on
-  ;; `equal-including-properties'
-  (nconc (cl-loop for x in list if (equal x elem) collect x)
-         (delete elem list)))
+  "Move all ELEM (also duplicates) to front of LIST."
+  (if (member elem list)
+      (nconc (cl-loop for x in list if (equal x elem) collect x)
+             (delete elem list))
+    list))
 
 (defun corfu--filter-completions (&rest args)
   "Compute all completions for ARGS with lazy highlighting."
