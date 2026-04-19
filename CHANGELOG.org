@@ -4,7 +4,7 @@
 
 * Development
 
-- Improve deduplicate of candidates.
+- Improve deduplication of candidates.
 
 * Version 2.9 (2026-03-09)
 
