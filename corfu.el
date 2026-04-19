@@ -666,11 +666,11 @@ FRAME is the existing frame."
     ;; `:exit-function' to help Capfs with candidate disambiguation.  This
     ;; matters in particular for Lsp backends, which produce duplicates for
     ;; overloaded methods.
-    (setq all (corfu--delete-dups (funcall (or (corfu--sort-function) #'identity) all))
+    (setq all (funcall (or (corfu--sort-function) #'identity) all)
           all (corfu--move-prefix-candidates-to-front field all))
     (when (and completing-file (not (string-suffix-p "/" field)))
       (setq all (corfu--move-to-front (concat field "/") all)))
-    (setq all (corfu--move-to-front field all)
+    (setq all (corfu--delete-dups (corfu--move-to-front field all))
           pre (if (or (eq corfu-preselect 'prompt) (not all)
                       (and completing-file (eq corfu-preselect 'directory)
                            (= (length corfu--base) (length str))
