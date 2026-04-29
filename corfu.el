@@ -108,8 +108,25 @@ of this separator character will inhibit quitting at completion
 boundaries, so that any further characters can be entered.  To enter the
 first separator character, call `corfu-insert-separator' (bound to M-SPC
 by default).  Useful for multi-component completion styles such as
-Orderless."
-  :type 'character)
+Orderless.
+
+Can be either a concrete character, or a zero-argument
+function, to dynamically look up a separator character
+in the given context, or a symbol for a potentially
+buffer-local variable."
+  :type `(choice
+          (character :tag "Custom character")
+          (symbol :tag "Custom variable")
+          (function :tag "Custom function")))
+
+(defun corfu--get-separator ()
+  (let ((val (symbol-value 'corfu-separator)))
+    (cond
+     ((functionp val)
+      (funcall val))
+     ((symbolp val)
+      (symbol-value val))
+     (t val))))
 
 (defcustom corfu-quit-at-boundary 'separator
   "Automatically quit at completion boundary.
@@ -604,7 +621,7 @@ FRAME is the existing frame."
 (defun corfu--move-prefix-candidates-to-front (field cands)
   "Move CANDS which match prefix of FIELD to the beginning."
   (let* ((word (substring field 0
-                          (seq-position field corfu-separator)))
+                          (seq-position field (corfu--get-separator))))
          (len (length word)))
     (corfu--partition!
      cands
@@ -819,7 +836,7 @@ the last command must be listed in `corfu-continue-commands'."
                       (and (eq corfu-quit-at-boundary 'separator)
                            (or (eq this-command #'corfu-insert-separator)
                                ;; with separator, any further chars allowed
-                               (seq-contains-p (car corfu--input) corfu-separator)))
+                               (seq-contains-p (car corfu--input) (corfu--get-separator))))
                       (funcall completion-in-region-mode--predicate)))))))
 
 (defun corfu--preview-current-p ()
@@ -1178,7 +1195,7 @@ A scroll bar is displayed from LO to LO+BAR."
      ((pcase-exhaustive corfu-quit-no-match
         ('t nil)
         ('nil corfu--input)
-        ('separator (seq-contains-p (car corfu--input) corfu-separator)))
+        ('separator (seq-contains-p (car corfu--input) (corfu--get-separator))))
       (corfu--popup-show (posn-at-point beg) 0 8 '(#("No match" 0 8 (face italic)))))
      ;; 4) No candidates & initialized => Quit.
      (corfu--input (corfu-quit)))))
@@ -1231,11 +1248,11 @@ If the currently selected candidate is previewed, jump to the input
 prompt instead.  See `corfu-separator' for more details."
   (interactive)
   (if (not (corfu--preview-current-p))
-      (insert corfu-separator)
+      (insert (corfu--get-separator))
     (corfu--goto -1)
     (unless (or (= (car completion-in-region--data) (point))
-                (= (char-before) corfu-separator))
-      (insert corfu-separator))))
+                (= (char-before) (corfu--get-separator)))
+      (insert (corfu--get-separator)))))
 
 (defun corfu-next (&optional n)
   "Go forward N candidates."
