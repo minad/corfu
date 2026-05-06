@@ -5,6 +5,7 @@
 * Development
 
 - Improve deduplication of candidates.
+- Require Compat 31.
 
 * Version 2.9 (2026-03-09)
 
