@@ -511,11 +511,11 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
 :end:
 
 We maintain small extension packages to Corfu in this repository in the
-subdirectory [[https://github.com/minad/corfu/tree/main/extensions][extensions/]]. The extensions are installed together with Corfu if
-you install the package. The extensions are inactive by default and can be
-enabled manually if desired. Furthermore it is possible to install all of the
-files separately, both ~corfu.el~ and the ~corfu-*.el~ extensions. Currently the
-following extensions come with the Corfu package:
+subdirectory [[https://github.com/minad/corfu/tree/main/extensions][extensions/]]. The extensions are installed together with Corfu. The
+extensions are inactive by default and can be enabled manually if desired.
+Furthermore it is possible to install all of the files separately, both ~corfu.el~
+and the ~corfu-*.el~ extensions. Currently the following extensions come with the
+Corfu package:
 
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-auto.el][corfu-auto]]: Auto completion is enabled if =corfu-auto= is set to =t=.
 - [[https://github.com/minad/corfu/blob/main/extensions/corfu-echo.el][corfu-echo]]: =corfu-echo-mode= displays a brief candidate documentation in the
