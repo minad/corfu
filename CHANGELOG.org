@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 2.10 (2026-05-19)
 
 - Improve deduplication of candidates.
 - Require Compat 31.
