@@ -513,6 +513,7 @@ FRAME is the existing frame."
   (when (and (bound-and-true-p exwm--connection)
              (display-graphic-p frame) (frame-parent frame))
     (redisplay t)
+    (set-frame-parameter frame 'delete-before (frame-parent frame))
     (set-frame-parameter frame 'parent-frame nil))
   frame)
 
