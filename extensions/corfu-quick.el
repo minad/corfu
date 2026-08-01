@@ -5,8 +5,8 @@
 ;; Author: Luis Henriquez-Perez <luis@luishp.xyz>, Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
-;; Version: 2.11
-;; Package-Requires: ((emacs "29.1") (compat "31") (corfu "2.11"))
+;; Version: 2.12
+;; Package-Requires: ((emacs "29.1") (compat "31") (corfu "2.12"))
 ;; URL: https://github.com/minad/corfu
 
 ;; This file is part of GNU Emacs.

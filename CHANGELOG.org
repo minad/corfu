@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 2.12 (2026-08-01)
 
 - =corfu-mouse=, =corfu-popupinfo=: Improve mouse scrolling, bugfixes.
 
