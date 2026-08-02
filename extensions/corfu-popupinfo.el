@@ -74,6 +74,11 @@ documentation from the backend is usually expensive."
                                (choice (const nil) number))))
   :group 'corfu)
 
+(defcustom corfu-popupinfo-hide nil
+  "Hide the popup during the transition between candidates."
+  :type 'boolean
+  :group 'corfu)
+
 (defcustom corfu-popupinfo-margin-width 1
   "Margin at the left and right side of the popup."
   :type 'natnum
@@ -491,19 +496,24 @@ not be displayed until this command is called again, even if
       (cancel-timer corfu-popupinfo--timer)
       (setq corfu-popupinfo--timer nil))
     (if (and (>= corfu--index 0) (corfu-popupinfo--visible-p corfu--frame))
-        (let ((cand (nth corfu--index corfu--candidates))
-              (delay (if (consp corfu-popupinfo-delay)
-                         (funcall (if (eq corfu-popupinfo--toggle 'init) #'car #'cdr)
-                                  corfu-popupinfo-delay)
-                       corfu-popupinfo-delay)))
+        (let* ((old-cand corfu-popupinfo--candidate)
+               (new-cand (nth corfu--index corfu--candidates))
+               (cand-changed (not (equal-including-properties new-cand old-cand)))
+               (delay (if (consp corfu-popupinfo-delay)
+                          (funcall (if (eq corfu-popupinfo--toggle 'init) #'car #'cdr)
+                                   corfu-popupinfo-delay)
+                        corfu-popupinfo-delay)))
           (cond
            ((and delay corfu-popupinfo--toggle)
-            (when (and (corfu-popupinfo--visible-p) (> delay 0)
-                       corfu-popupinfo--candidate)
-              (corfu-popupinfo--show corfu-popupinfo--candidate))
+            (when (and (corfu-popupinfo--visible-p) (> delay 0))
+              (cond
+               ((and corfu-popupinfo-hide cand-changed)
+                (corfu-popupinfo--hide))
+               (old-cand
+                (corfu-popupinfo--show old-cand))))
             (setq corfu-popupinfo--timer
-                  (run-at-time delay nil #'corfu-popupinfo--show cand)))
-           ((not (equal-including-properties cand corfu-popupinfo--candidate))
+                  (run-at-time delay nil #'corfu-popupinfo--show new-cand)))
+           (cand-changed
             (corfu-popupinfo--hide))))
       (corfu-popupinfo--hide))))
 
