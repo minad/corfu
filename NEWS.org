@@ -1,4 +1,4 @@
-#+title: corfu.el - Changelog
+#+title: corfu.el - News
 #+author: Daniel Mendler
 #+language: en
 
