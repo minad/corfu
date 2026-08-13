@@ -2,7 +2,7 @@
 #+author: Daniel Mendler
 #+language: en
 
-* Development
+* Version 2.13 (2026-08-13)
 
 - =corfu-popupinfo=: Bugfix when =corfu-popupinfo-delay= is set to nil.
 
