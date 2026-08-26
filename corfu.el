@@ -551,36 +551,6 @@ FRAME is the existing frame."
              (delete elem list))
     list))
 
-(defun corfu--filter-completions (&rest args)
-  "Compute all completions for ARGS with lazy highlighting."
-  (dlet ((completion-lazy-hilit t) (completion-lazy-hilit-fn nil))
-    (static-if (>= emacs-major-version 30)
-        (cons (apply #'completion-all-completions args) completion-lazy-hilit-fn)
-      (cl-letf* ((orig-pcm (symbol-function #'completion-pcm--hilit-commonality))
-                 (orig-flex (symbol-function #'completion-flex-all-completions))
-                 ((symbol-function #'completion-flex-all-completions)
-                  (lambda (&rest args)
-                    ;; Unfortunately for flex we have to undo the lazy highlighting, since flex uses
-                    ;; the completion-score for sorting, which is applied during highlighting.
-                    (cl-letf (((symbol-function #'completion-pcm--hilit-commonality) orig-pcm))
-                      (apply orig-flex args))))
-                 ((symbol-function #'completion-pcm--hilit-commonality)
-                  (lambda (pattern cands)
-                    (setq completion-lazy-hilit-fn
-                          (lambda (x)
-                            ;; `completion-pcm--hilit-commonality' sometimes throws an internal error
-                            ;; for example when entering "/sudo:://u".
-                            (condition-case nil
-                                (car (completion-pcm--hilit-commonality pattern (list x)))
-                              (t x))))
-                    cands))
-                 ((symbol-function #'completion-hilit-commonality)
-                  (lambda (cands prefix &optional base)
-                    (setq completion-lazy-hilit-fn
-                          (lambda (x) (car (completion-hilit-commonality (list x) prefix base))))
-                    (and cands (nconc cands base)))))
-        (cons (apply #'completion-all-completions args) completion-lazy-hilit-fn)))))
-
 (defun corfu--try-completion (str table pred pt &optional md)
   "Complete STR given TABLE, predicate PRED, point PT and optional metadata MD."
   (setq md (or md (completion-metadata (substring str 0 pt) table pred)))
@@ -657,7 +627,10 @@ FRAME is the existing frame."
                          (t (cons 0 (length after)))))
                (field (substring str (car bounds) (+ pt (cdr bounds))))
                (completing-file (eq (corfu--metadata-get 'category) 'file))
-               (`(,all . ,hl) (corfu--filter-completions str table pred pt corfu--metadata))
+               (`(,all . ,hl)
+                (dlet ((completion-lazy-hilit t) (completion-lazy-hilit-fn nil))
+                  (cons (completion-all-completions str table pred pt corfu--metadata)
+                        completion-lazy-hilit-fn)))
                (base (or (when-let* ((z (last all))) (prog1 (cdr z) (setcdr z nil))) 0))
                (corfu--base (substring str 0 base))
                (pre nil))
