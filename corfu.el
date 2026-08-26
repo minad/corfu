@@ -638,7 +638,7 @@ FRAME is the existing frame."
     ;; this filtering, since this breaks the special casing in the
     ;; `completion-file-name-table' for `file-exists-p' and `file-directory-p'.
     (when completing-file
-      (let ((exact (member field all)))
+      (let ((exact (and (not (equal field "")) (member field all))))
         (setq all (completion-pcm--filename-try-filter all))
         (and exact (not (member field all)) (push field all))))
     ;; Sort using the `display-sort-function' or the Corfu sort functions, and
@@ -650,11 +650,13 @@ FRAME is the existing frame."
     ;; `:exit-function' to help Capfs with candidate disambiguation.  This
     ;; matters in particular for Lsp backends, which produce duplicates for
     ;; overloaded methods.
-    (setq all (funcall (or (corfu--sort-function) #'identity) all)
-          all (corfu--move-prefix-candidates-to-front field all))
-    (when (and completing-file (not (string-suffix-p "/" field)))
-      (setq all (corfu--move-to-front (concat field "/") all)))
-    (setq all (corfu--delete-dups (corfu--move-to-front field all))
+    (setq all (funcall (or (corfu--sort-function) #'identity) all))
+    (unless (equal field "")
+      (setq all (corfu--move-prefix-candidates-to-front field all))
+      (when (and completing-file (not (string-suffix-p "/" field)))
+        (setq all (corfu--move-to-front (concat field "/") all)))
+      (setq all (corfu--move-to-front field all)))
+    (setq all (corfu--delete-dups all)
           pre (if (or (eq corfu-preselect 'prompt) (not all)
                       (and completing-file (eq corfu-preselect 'directory)
                            (= (length corfu--base) (length str))
