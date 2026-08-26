@@ -661,10 +661,15 @@ FRAME is the existing frame."
                (base (or (when-let* ((z (last all))) (prog1 (cdr z) (setcdr z nil))) 0))
                (corfu--base (substring str 0 base))
                (pre nil))
-    ;; Filter the ignored file extensions. We cannot use modified predicate for
-    ;; this filtering, since this breaks the special casing in the
-    ;; `completion-file-name-table' for `file-exists-p' and `file-directory-p'.
-    (when completing-file (setq all (completion-pcm--filename-try-filter all)))
+    ;; Filter ignored extensions. We cannot use a modified predicate, since this
+    ;; breaks special casing in `completion-file-name-table' for `file-exists-p'
+    ;; and `file-directory-p'. See also `completion-pcm--filename-try-filter'.
+    (when completing-file
+      (cl-loop with r = (concat "\\(?:\\`\\.\\.?/\\|"
+                                (regexp-opt completion-ignored-extensions)
+                                "\\)\\'")
+               for x in all if (or (equal field x) (not (string-match-p r x)))
+               collect x into xs finally (setq all xs)))
     ;; Sort using the `display-sort-function' or the Corfu sort functions, and
     ;; delete duplicates with respect to `equal-including-properties'.  This is
     ;; a deviation from the Vertico completion UI with more aggressive
