@@ -514,7 +514,7 @@ The command ~corfu-move-to-minibuffer~ is defined here in terms of
 We maintain small extension packages to Corfu in this repository in the
 subdirectory [[https://github.com/minad/corfu/tree/main/extensions][extensions/]]. The extensions are installed together with Corfu. The
 extensions are inactive by default and can be enabled manually if desired.
-Furthermore it is possible to install all of the files separately, both ~corfu.el~
+Furthermore it is possible to install each of the files individually, ~corfu.el~
 and the ~corfu-*.el~ extensions. Currently the following extensions come with the
 Corfu package:
 
