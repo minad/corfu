@@ -403,7 +403,7 @@ the initial completion state.  PREFIX is the minimum prefix length."
         (ls line-spacing)
         (buffer (get-buffer-create name)))
     (with-current-buffer buffer
-      ;;; XXX HACK install mouse ignore map
+      ;;; HACK Install mouse ignore map
       (use-local-map corfu--mouse-ignore-map)
       (dolist (var corfu--buffer-parameters)
         (set-local (car var) (cdr var)))
@@ -414,7 +414,7 @@ the initial completion state.  PREFIX is the minimum prefix length."
 
 (defvar corfu--gtk-resize-child-frames
   (let ((case-fold-search t))
-     ;; XXX HACK to fix resizing on gtk3/gnome taken from posframe.el
+     ;; HACK to fix resizing on gtk3/gnome taken from posframe.el
      ;; More information:
      ;; * https://github.com/minad/corfu/issues/17
      ;; * https://gitlab.gnome.org/GNOME/mutter/-/issues/840
@@ -470,15 +470,15 @@ FRAME is the existing frame."
                      (minibuffer . ,(minibuffer-window parent))
                      (width . 0) (height . 0) (visibility . nil)
                      ,@params))))
-    ;; XXX HACK Setting the same frame-parameter/face-background is not a nop.
+    ;; HACK Setting the same frame-parameter/face-background is not a nop.
     ;; Check before applying the setting. Without the check, the frame flickers
     ;; on Mac. We have to apply the face background before adjusting the frame
     ;; parameter, otherwise the border is not updated.
     (let ((new (face-attribute 'corfu-border :background nil 'default)))
       (unless (equal (face-attribute 'internal-border :background frame 'default) new)
         (set-face-background 'internal-border new frame))
-      ;; XXX The Emacs Mac Port does not support `internal-border', we also have
-      ;; to set `child-frame-border'.
+      ;; HACK The Emacs Mac Port does not support `internal-border', therefore
+      ;; also set `child-frame-border'.
       (unless (equal (face-attribute 'child-frame-border :background frame 'default) new)
         (set-face-background 'child-frame-border new frame)))
     ;; Reset frame parameters if they changed.  For example `tool-bar-mode'
@@ -491,7 +491,7 @@ FRAME is the existing frame."
            (diff (cl-loop for p in params for (k . v) = p
                           unless (equal (alist-get k is) v) collect p)))
       (when diff (modify-frame-parameters frame diff))
-      ;; XXX HACK: `set-window-buffer' must be called to force fringe update.
+      ;; HACK `set-window-buffer' must be called to force fringe update.
       (when (or diff (not (eq (window-buffer win) (current-buffer))))
         (set-window-buffer win (current-buffer)))
       ;; Disallow selection of root window (gh:minad/corfu#63)
@@ -920,7 +920,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
 
 (defun corfu--in-region (&rest args)
   "Corfu completion in region function called with ARGS."
-  ;; XXX We can get an endless loop when `completion-in-region-function' is set
+  ;; We can get an endless loop when `completion-in-region-function' is set
   ;; globally to `corfu--in-region'. This should never happen.
   (apply (if (corfu--popup-support-p) #'corfu--in-region-1
            (default-value 'completion-in-region-function))
@@ -1032,8 +1032,8 @@ A scroll bar is displayed from LO to LO+BAR."
                              1 2 (display (right-fringe corfu--nil corfu-current)))))
              (pos (posn-x-y pos))
              (width (+ (* width cw) (if graphic 0 (+ ml mr))))
-             ;; XXX HACK: Minimum popup height must be at least 1 line of the
-             ;; parent frame (gh:minad/corfu#261).
+             ;; HACK Minimum popup height must be at least 1 line of the parent
+             ;; frame (gh:minad/corfu#261).
              (height (max lh (* (length lines) ch)))
              (edge (window-inside-pixel-edges))
              (border (if graphic corfu-border-width 0))
@@ -1085,11 +1085,10 @@ A scroll bar is displayed from LO to LO+BAR."
 
 (cl-defgeneric corfu--insert (status)
   "Insert current candidate, exit with STATUS if non-nil."
-  ;; XXX There is a small bug here, depending on interpretation.
-  ;; When completing "~/emacs/master/li|/calc" where "|" is the
-  ;; cursor, then the candidate only includes the prefix
-  ;; "~/emacs/master/lisp/", but not the suffix "/calc". Default
-  ;; completion has the same problem when selecting in the
+  ;; There is a small bug here, depending on interpretation.  When completing
+  ;; "~/emacs/master/li|/calc" where "|" is the cursor, then the candidate only
+  ;; includes the prefix "~/emacs/master/lisp/", but not the suffix
+  ;; "/calc". Default completion has the same problem when selecting in the
   ;; *Completions* buffer. See bug#48356.
   (pcase-let* ((`(,beg ,end . ,_) completion-in-region--data)
                (str (concat corfu--base (nth corfu--index corfu--candidates))))

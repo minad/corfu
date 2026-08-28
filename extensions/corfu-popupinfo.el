@@ -265,7 +265,7 @@ The list has the form (LEFT TOP WIDTH HIEGHT) with the values in pixels.")
               ;; since lines will get wrapped.
               (when (<= (car size) max-width)
                 (cons (+ margin (car size))
-                      ;; XXX HACK: Ensure that popup has at least a height of 1,
+                      ;; HACK Ensure that popup has at least a height of 1,
                       ;; which is the minimum frame height (#261). Maybe we
                       ;; should ask upstream how smaller frames can be created.
                       ;; I only managed to create smaller frames by setting
@@ -387,9 +387,8 @@ form (X Y WIDTH HEIGHT DIR)."
                 corfu-popupinfo--lock-dir area-d
                 corfu-popupinfo--candidate candidate
                 corfu-popupinfo--geometry new-geo)
-          ;; XXX HACK: Force margin update. For some reason, the call to
-          ;; `set-window-buffer' in `corfu--make-frame' is not effective the
-          ;; first time. Why does Emacs have all these quirks?
+          ;; HACK Force margin update. The call to `set-window-buffer' in
+          ;; `corfu--make-frame' is not effective the first time.
           (unless (eq old-frame corfu-popupinfo--frame)
             (set-window-buffer (frame-root-window corfu-popupinfo--frame)
                                corfu-popupinfo--buffer)))))))
