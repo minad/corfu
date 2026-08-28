@@ -505,8 +505,7 @@ FRAME is the existing frame."
                    (size-change (or (/= ow width) (/= oh height))))
         (cond
          ((and pos-change size-change)
-          ;; TODO: New Emacs 31 function for faster resizing/movement in one go.
-          ;; Add this function to Compat 31 as backport.
+          ;; New Emacs 31 function for faster resize and move in one go.
           (static-if (fboundp 'set-frame-size-and-position-pixelwise)
               (set-frame-size-and-position-pixelwise frame width height x y)
             (set-frame-size frame width height t)
