@@ -2,6 +2,12 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- Minor optimizations during candidate computation.
+- Do not remove a file from the candidate list if it matches the input exactly,
+  even if it should be filtered according to =completion-ignored-extensions=.
+
 * Version 2.14 (2026-08-21)
 
 - =corfu-popupinfo=: Bugfixes.
