@@ -960,7 +960,14 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
          (cond
           ((= total 0)
            (when (test-completion newstr table pred)
-             (corfu--exit-function newstr 'finished nil)))
+             ;; Check completion boundaries. Completion is not finished if there
+             ;; is a different completion field now.
+             (corfu--exit-function
+              newstr
+              (if (equal (completion-boundaries newstr table pred "") '(0 . 0))
+                  'finished
+                'exact)
+              nil)))
           ((= total 1)
            ;; Setup popup if `corfu-on-exact-match' is `show' or if completion
            ;; can continue.
