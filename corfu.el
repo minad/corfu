@@ -373,6 +373,11 @@ It is recommended to avoid changing these parameters.")
   (unless (equal str (buffer-substring-no-properties beg end))
     (completion--replace beg end str)))
 
+(defun corfu--simple-field-p (str table pred)
+  "Non-nil if completing a simple completion field.
+STR and PRED are passed to the completion TABLE."
+  (equal (completion-boundaries str table pred "") '(0 . 0)))
+
 (defun corfu--capf-wrapper (fun &optional prefix)
   "Wrapper for `completion-at-point' FUN.
 The wrapper determines if the Capf is applicable at the current
@@ -964,7 +969,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
              ;; is a different completion field now.
              (corfu--exit-function
               newstr
-              (if (equal (completion-boundaries newstr table pred "") '(0 . 0))
+              (if (corfu--simple-field-p newstr table pred)
                   'finished
                 'exact)
               nil)))
@@ -982,7 +987,7 @@ See `completion-in-region' for the arguments BEG, END, TABLE, PRED."
            ;; Cycle through candidates.
            (corfu--cycle-candidates total cands (+ (length base) beg) end)
            ;; Do not show Corfu when completion is finished after the candidate.
-           (unless (equal (completion-boundaries (car cands) table pred "") '(0 . 0))
+           (unless (corfu--simple-field-p (car cands) table pred)
              (corfu--setup beg end table pred)))))
        t))))
 
@@ -1304,10 +1309,10 @@ If a candidate is selected, insert it.  Otherwise invoke
                 (newstr (corfu--insert nil)))
       (and (test-completion newstr table pred)
            (or (not (consp (corfu--try-completion newstr table pred (length newstr))))
-               ;; Additionally finish completion if at the end of a boundary,
-               ;; even if other longer candidates match, since the user invoked
-               ;; `corfu-complete' with an explicitly selected candidate!
-               (equal (completion-boundaries newstr table pred "") '(0 . 0)))
+               ;; Finish completion if inside simple field, even if other longer
+               ;; candidates match, since the user invoked `corfu-complete' with
+               ;; an explicitly selected candidate.
+               (corfu--simple-field-p newstr table pred))
            (corfu--done newstr 'finished nil))
       t)))
 
