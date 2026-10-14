@@ -94,6 +94,13 @@ If the variable has the value `insert', the candidate is automatically
 inserted on further input."
   :type '(choice boolean (const insert)))
 
+(defcustom corfu-move-to-front 'prefix
+  "Move candidates which math the input exactly or as prefix to the front.
+If set to the symbol prefix, all candidates which have the input as prefix
+are moved to the front of the candidate list. If set to another non-nil value,
+only exactly matching candidates are moved."
+  :type '(choice boolean (const prefix)))
+
 (defcustom corfu-preselect 'valid
   "Configure if the prompt or first candidate is preselected.
 - prompt: Always select the prompt.
@@ -656,10 +663,12 @@ FRAME is the existing frame."
     ;; overloaded methods.
     (setq all (funcall (or (corfu--sort-function) #'identity) all))
     (unless (equal field "")
-      (setq all (corfu--move-prefix-candidates-to-front field all))
-      (when (and completing-file (not (string-suffix-p "/" field)))
-        (setq all (corfu--move-to-front (concat field "/") all)))
-      (setq all (corfu--move-to-front field all)))
+      (when (eq corfu-move-to-front 'prefix)
+        (setq all (corfu--move-prefix-candidates-to-front field all)))
+      (when corfu-move-to-front
+        (when (and completing-file (not (string-suffix-p "/" field)))
+          (setq all (corfu--move-to-front (concat field "/") all)))
+        (setq all (corfu--move-to-front field all))))
     (setq all (corfu--delete-dups all)
           pre (if (or (eq corfu-preselect 'prompt) (not all)
                       (and completing-file (eq corfu-preselect 'directory)

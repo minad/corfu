@@ -2,6 +2,10 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Development
+
+- =corfu-move-to-front=: New customization option.
+
 * Version 2.16 (2026-09-13)
 
 - Improve completion field handling in =corfu--in-region=.
