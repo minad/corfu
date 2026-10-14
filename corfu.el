@@ -95,7 +95,7 @@ inserted on further input."
   :type '(choice boolean (const insert)))
 
 (defcustom corfu-move-to-front 'prefix
-  "Move candidates which math the input exactly or as prefix to the front.
+  "Move candidates which match the input exactly or as prefix to the front.
 If set to the symbol prefix, all candidates which have the input as prefix
 are moved to the front of the candidate list. If set to another non-nil value,
 only exactly matching candidates are moved."
