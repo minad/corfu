@@ -154,7 +154,7 @@ It is recommended to avoid changing these parameters.")
 
 (defvar corfu-popupinfo--geometry nil
   "Geometry of the candidate popup.
-The list has the form (LEFT TOP WIDTH HIEGHT) with the values in pixels.")
+The list has the form (LEFT TOP WIDTH HEIGHT) with the values in pixels.")
 
 (defvar corfu-popupinfo--lock-dir nil
   "Locked position direction of the info popup.")
